@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>RazorParked</title>
+</head>
+<body>
+
+    <h2>Register</h2>
+
+    <input id="regName" placeholder="Full Name" /><br /><br />
+    <input id="regEmail" placeholder="Email" /><br /><br />
+    <input id="regPassword" type="password" placeholder="Password" /><br /><br />
+    <input id="regRole" placeholder="Role (Customer or Host)" /><br /><br />
+
+    <button onclick="register()">Register</button>
+
+    <hr />
+
+    <h2>Login</h2>
+
+    <input id="loginEmail" placeholder="Email" /><br /><br />
+    <input id="loginPassword" type="password" placeholder="Password" /><br /><br />
+
+    <button onclick="login()">Login</button>
+
+    <h3 id="message"></h3>
+
+    <script>
+async function register() {
+    const response = await fetch('/api/Auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            fullName: document.getElementById('regName').value,
+            email: document.getElementById('regEmail').value,
+            password: document.getElementById('regPassword').value,
+            roleName: document.getElementById('regRole').value
+        })
+    });
+
+    const data = await response.json();
+    document.getElementById('message').innerText = data.message;
+}
+
+async function login() {
+    const response = await fetch('/api/Auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email: document.getElementById('loginEmail').value,
+            password: document.getElementById('loginPassword').value
+        })
+    });
+
+    const data = await response.json();
+    document.getElementById('message').innerText = data.message;
+}
+    </script>
+
+</body>
+</html>
