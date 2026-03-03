@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using RazorParked.API.Models;
@@ -16,8 +17,12 @@ public class AuthController : ControllerBase
         _config = config;
     }
 
+    // ===============================
+    // REGISTER
+    // ===============================
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register(
+    [FromBody] RazorParked.API.Models.RegisterRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.FullName) ||
             string.IsNullOrWhiteSpace(request.Email) ||
@@ -32,7 +37,7 @@ public class AuthController : ControllerBase
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
 
-        // Check if email exists
+        // Check if email already exists
         var existingUser = await connection.QueryFirstOrDefaultAsync<int?>(
             "SELECT UserID FROM dbo.Users WHERE Email = @Email",
             new { request.Email });
@@ -48,10 +53,10 @@ public class AuthController : ControllerBase
         if (roleId == null)
             return BadRequest(new { message = "Invalid role." });
 
-        // Hash password
+        // Hash password using BCrypt
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-        // Insert
+        // Insert user
         await connection.ExecuteAsync(@"
             INSERT INTO dbo.Users (FullName, Email, PasswordHash, RoleID)
             VALUES (@FullName, @Email, @PasswordHash, @RoleID)",
@@ -64,5 +69,50 @@ public class AuthController : ControllerBase
             });
 
         return StatusCode(201, new { message = "Account created successfully." });
+    }
+
+    // ===============================
+    // LOGIN
+    // ===============================
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(
+    [FromBody] RazorParked.API.Models.LoginRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) ||
+            string.IsNullOrWhiteSpace(request.Password))
+        {
+            return BadRequest(new { message = "Email and password are required." });
+        }
+
+        var connectionString = _config.GetConnectionString("DefaultConnection");
+
+        using var connection = new SqlConnection(connectionString);
+        await connection.OpenAsync();
+
+        var user = await connection.QueryFirstOrDefaultAsync<dynamic>(
+            @"SELECT UserID, FullName, Email, PasswordHash 
+              FROM dbo.Users 
+              WHERE Email = @Email",
+            new { request.Email });
+
+        if (user == null)
+            return Unauthorized(new { message = "Invalid email or password." });
+
+        // BCrypt password verification (Criteria 3)
+        bool isValidPassword = BCrypt.Net.BCrypt.Verify(
+            request.Password,
+            (string)user.PasswordHash
+        );
+
+        if (!isValidPassword)
+            return Unauthorized(new { message = "Invalid email or password." });
+
+        return Ok(new
+        {
+            message = "Login successful.",
+            userId = user.UserID,
+            fullName = user.FullName,
+            email = user.Email
+        });
     }
 }
