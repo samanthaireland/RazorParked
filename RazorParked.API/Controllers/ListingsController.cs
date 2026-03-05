@@ -1,42 +1,53 @@
-﻿using Dapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RazorParked.API.Data;
 using RazorParked.API.Models;
 
-namespace RazorParked.API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class ListingsController : ControllerBase
+namespace RazorParked.Controllers
 {
-    private readonly IConfiguration _config;
-
-    public ListingsController(IConfiguration config)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ListingsController : ControllerBase
     {
-        _config = config;
-    }
+        private readonly ApplicationDbContext _context;
 
-    [HttpPost]
-    public async Task<IActionResult> CreateListing([FromBody] CreateListingRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Title) ||
-            request.PricePerHour <= 0)
+        public ListingsController(ApplicationDbContext context)
         {
-            return BadRequest(new { message = "Invalid listing data." });
+            _context = context;
         }
 
-        var connectionString = _config.GetConnectionString("DefaultConnection");
+        // GET: api/Listings
+        [HttpGet]
+        public async Task<IActionResult> SearchListings(
+            [FromQuery] bool? availability,
+            [FromQuery] string? location,
+            [FromQuery] DateTime? date)
+        {
+            var query = _context.ParkingListings.AsQueryable();
 
-        using var connection = new SqlConnection(connectionString);
-        await connection.OpenAsync();
+            // Filter by availability
+            if (availability.HasValue)
+            {
+                query = query.Where(l => l.IsAvailable == availability.Value);
+            }
 
-        await connection.ExecuteAsync(@"
-            INSERT INTO dbo.ParkingListings
-            (HostUserID, Title, Description, Location, PricePerHour, IsAvailable, CreatedDate)
-            VALUES
-            (@HostUserID, @Title, @Description, @Location, @PricePerHour, 1, GETDATE())",
-            request);
+            // Filter by location
+            if (!string.IsNullOrEmpty(location))
+            {
+                query = query.Where(l => l.Location.Contains(location));
+            }
 
-        return StatusCode(201, new { message = "Listing created successfully." });
+            // Filter by date
+            if (date.HasValue)
+            {
+                query = query.Where(l =>
+                    l.AvailableFrom <= date &&
+                    l.AvailableTo >= date);
+            }
+
+            var listings = await query.ToListAsync();
+
+            return Ok(listings);
+        }
     }
 }
