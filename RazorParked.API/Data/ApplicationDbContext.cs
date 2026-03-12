@@ -11,7 +11,8 @@ namespace RazorParked.API.Data
         }
 
         public DbSet<User> Users { get; set; }
-
         public DbSet<ParkingListing> ParkingListings { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<Payment> Payments { get; set; }
     }
 }
