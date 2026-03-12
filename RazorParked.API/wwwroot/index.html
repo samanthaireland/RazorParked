@@ -1,62 +1,1288 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RazorParked</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Serif+4:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #faf9f7;
+            --surface2: #f3f0ec;
+            --border: #e5e0d8;
+            --red: #9d2235;
+            --red-dark: #7a1a28;
+            --red-light: #f5e8eb;
+            --text: #1a1208;
+            --muted: #7a6e62;
+            --muted2: #a8a09a;
+            --gold: #c0892a;
+            --gold-light: #fdf6e8;
+            --radius: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── UA TOP STRIPE ── */
+        .ua-stripe {
+            height: 5px;
+            background: linear-gradient(90deg, var(--red) 0%, var(--gold) 50%, var(--red) 100%);
+        }
+
+        /* ── NAVBAR ── */
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            height: 64px;
+            background: var(--red);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(157,34,53,0.25);
+        }
+
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 2px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+            .nav-logo span {
+                color: var(--gold);
+            }
+
+        .nav-links {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.8);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .nav-btn:hover {
+                background: rgba(255,255,255,0.15);
+                color: #fff;
+            }
+
+            .nav-btn.highlight {
+                background: #fff;
+                color: var(--red);
+                font-weight: 700;
+            }
+
+                .nav-btn.highlight:hover {
+                    background: var(--gold-light);
+                }
+
+        #nav-user {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+            #nav-user span {
+                color: var(--gold);
+                font-weight: 600;
+                font-size: 13px;
+            }
+
+        #nav-logout {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.7);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            #nav-logout:hover {
+                border-color: #fff;
+                color: #fff;
+            }
+
+        /* ── PAGES ── */
+        .page {
+            display: none;
+            padding: 48px 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+            .page.active {
+                display: block;
+                animation: fadeUp 0.3s ease;
+            }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── HERO ── */
+        .hero {
+            padding: 72px 40px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .hero::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: radial-gradient(ellipse at 20% 50%, rgba(157,34,53,0.05) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(192,137,42,0.04) 0%, transparent 50%);
+                pointer-events: none;
+            }
+
+        .woo-pig {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 11px;
+            letter-spacing: 5px;
+            color: var(--red);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+            .woo-pig::before, .woo-pig::after {
+                content: '';
+                display: block;
+                width: 40px;
+                height: 1px;
+                background: var(--red);
+                opacity: 0.35;
+            }
+
+        .hero h1 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(56px, 8vw, 96px);
+            letter-spacing: 3px;
+            line-height: 0.95;
+            color: var(--text);
+            margin-bottom: 24px;
+        }
+
+            .hero h1 em {
+                font-style: normal;
+                color: var(--red);
+                display: block;
+            }
+
+        .hero p {
+            font-family: 'Source Serif 4', serif;
+            font-size: 19px;
+            color: var(--muted);
+            max-width: 440px;
+            margin: 0 auto 40px;
+            line-height: 1.65;
+            font-weight: 300;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 48px 0 32px;
+        }
+
+            .section-divider span {
+                font-family: 'Bebas Neue', sans-serif;
+                font-size: 13px;
+                letter-spacing: 3px;
+                color: var(--muted2);
+            }
+
+            .section-divider::before, .section-divider::after {
+                content: '';
+                flex: 1;
+                height: 1px;
+                background: var(--border);
+            }
+
+        /* ── FEATURE CARDS ── */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-top: 56px;
+        }
+
+        .feature-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            cursor: pointer;
+            transition: all 0.22s;
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+        }
+
+            .feature-card::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: var(--red);
+                transform: scaleX(0);
+                transition: transform 0.22s;
+                transform-origin: left;
+            }
+
+            .feature-card:hover {
+                border-color: var(--red);
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(157,34,53,0.1);
+            }
+
+                .feature-card:hover::after {
+                    transform: scaleX(1);
+                }
+
+        .feature-icon {
+            font-size: 26px;
+            margin-bottom: 14px;
+        }
+
+        .feature-card h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 1px;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+
+        /* ── BUTTONS ── */
+        .btn-primary {
+            background: var(--red);
+            color: #fff;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 13px 28px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .btn-primary:hover {
+                background: var(--red-dark);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 14px rgba(157,34,53,0.3);
+            }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--text);
+            border: 1.5px solid var(--border);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 13px 28px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .btn-secondary:hover {
+                border-color: var(--red);
+                color: var(--red);
+            }
+
+        .btn-ghost {
+            background: none;
+            border: none;
+            color: var(--red);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 0;
+            transition: opacity 0.2s;
+        }
+
+            .btn-ghost:hover {
+                opacity: 0.7;
+            }
+
+        /* ── FORMS ── */
+        .form-card {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+
+            .form-card .card-top {
+                border-bottom: 3px solid var(--red);
+                padding-bottom: 20px;
+                margin-bottom: 28px;
+            }
+
+        .form-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 1.5px;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .form-subtitle {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+            .form-group label {
+                display: block;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--muted);
+                margin-bottom: 7px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                width: 100%;
+                background: var(--surface);
+                border: 1.5px solid var(--border);
+                color: var(--text);
+                font-family: 'DM Sans', sans-serif;
+                font-size: 15px;
+                padding: 11px 14px;
+                border-radius: 8px;
+                outline: none;
+                transition: border-color 0.2s;
+            }
+
+                .form-group input:focus,
+                .form-group select:focus,
+                .form-group textarea:focus {
+                    border-color: var(--red);
+                }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-link {
+            font-size: 14px;
+            color: var(--muted);
+            margin-top: 18px;
+            text-align: center;
+        }
+
+            .form-link a {
+                color: var(--red);
+                cursor: pointer;
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+                .form-link a:hover {
+                    text-decoration: underline;
+                }
+
+        /* ── MESSAGES ── */
+        .msg {
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 14px;
+            display: none;
+        }
+
+            .msg.success {
+                background: #edf7f0;
+                border: 1px solid #6abf8a;
+                color: #2d7a4f;
+                display: block;
+            }
+
+            .msg.error {
+                background: var(--red-light);
+                border: 1px solid var(--red);
+                color: var(--red-dark);
+                display: block;
+            }
+
+        /* ── PAGE HEADERS ── */
+        .page-header {
+            margin-bottom: 32px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+            .page-header h2 {
+                font-family: 'Bebas Neue', sans-serif;
+                font-size: 40px;
+                letter-spacing: 1.5px;
+                color: var(--text);
+                margin-bottom: 4px;
+            }
+
+            .page-header p {
+                font-size: 15px;
+                color: var(--muted);
+            }
+
+        /* ── LISTING CARDS ── */
+        .listings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .listing-card {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+            .listing-card:hover {
+                border-color: var(--red);
+                box-shadow: 0 6px 20px rgba(157,34,53,0.1);
+                transform: translateY(-2px);
+            }
+
+            .listing-card h3 {
+                font-family: 'Source Serif 4', serif;
+                font-size: 17px;
+                font-weight: 700;
+                margin-bottom: 6px;
+                color: var(--text);
+            }
+
+            .listing-card .location {
+                font-size: 13px;
+                color: var(--muted);
+                margin-bottom: 14px;
+            }
+
+            .listing-card .price {
+                font-family: 'Bebas Neue', sans-serif;
+                font-size: 26px;
+                letter-spacing: 1px;
+                color: var(--red);
+            }
+
+                .listing-card .price span {
+                    font-family: 'DM Sans', sans-serif;
+                    font-size: 13px;
+                    color: var(--muted);
+                    font-weight: 400;
+                    letter-spacing: 0;
+                }
+
+        .badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+            .badge.available {
+                background: #edf7f0;
+                color: #2d7a4f;
+                border: 1px solid #b3dfc4;
+            }
+
+            .badge.unavailable {
+                background: var(--red-light);
+                color: var(--red);
+                border: 1px solid #e8b4bc;
+            }
+
+        /* ── FILTERS ── */
+        .filters {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+            .filters .form-group {
+                margin-bottom: 0;
+                flex: 1;
+                min-width: 150px;
+            }
+
+        /* ── DETAIL GRID ── */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .detail-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+        }
+
+            .detail-item label {
+                font-size: 10px;
+                font-weight: 700;
+                color: var(--muted2);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                display: block;
+                margin-bottom: 4px;
+            }
+
+            .detail-item span {
+                font-size: 16px;
+                font-weight: 600;
+                color: var(--text);
+            }
+
+        /* ── EMPTY STATE ── */
+        .empty {
+            text-align: center;
+            padding: 64px 20px;
+            color: var(--muted);
+        }
+
+            .empty .empty-icon {
+                font-size: 44px;
+                margin-bottom: 14px;
+            }
+
+            .empty p {
+                font-size: 15px;
+                font-family: 'Source Serif 4', serif;
+            }
+
+        .loading {
+            color: var(--muted);
+            font-size: 14px;
+            padding: 48px;
+            text-align: center;
+            font-family: 'Source Serif 4', serif;
+            font-style: italic;
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            margin-top: 80px;
+            background: var(--red);
+            padding: 24px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+        }
+
+            footer .footer-logo {
+                font-family: 'Bebas Neue', sans-serif;
+                font-size: 20px;
+                letter-spacing: 2px;
+                color: #fff;
+            }
+
+            footer span {
+                color: var(--gold);
+            }
+    </style>
 </head>
 <body>
 
-    <h2>Register</h2>
+    <div class="ua-stripe"></div>
 
-    <input id="regName" placeholder="Full Name" /><br /><br />
-    <input id="regEmail" placeholder="Email" /><br /><br />
-    <input id="regPassword" type="password" placeholder="Password" /><br /><br />
-    <input id="regRole" placeholder="Role (Customer or Host)" /><br /><br />
+    <!-- ── NAVBAR ── -->
+    <nav>
+        <div class="nav-logo" onclick="showPage('home')">🐗 Razor<span>Parked</span></div>
+        <div class="nav-links" id="nav-guest">
+            <button class="nav-btn" onclick="showPage('search')">Find Parking</button>
+            <button class="nav-btn" onclick="showPage('login')">Log In</button>
+            <button class="nav-btn highlight" onclick="showPage('register')">Sign Up</button>
+        </div>
+        <div id="nav-user">
+            <span id="nav-name"></span>
+            <button class="nav-btn" onclick="showPage('search')">Find Parking</button>
+            <button class="nav-btn" id="nav-host-btn" onclick="showPage('host')" style="display:none">My Listings</button>
+            <button class="nav-btn" onclick="showPage('my-reservations')">My Reservations</button>
+            <button id="nav-logout" onclick="logout()">Log Out</button>
+        </div>
+    </nav>
 
-    <button onclick="register()">Register</button>
+    <!-- ══════════════════════════════════════
+         PAGE: HOME
+    ══════════════════════════════════════ -->
+    <div id="page-home" class="page active">
+        <div class="hero">
+            <div class="woo-pig">🐗 Woo Pig Sooie 🐗</div>
+            <h1>Park Smart.<br /><em>Ride With The Hogs.</em></h1>
+            <p>Find and reserve private parking near Fayetteville events — listed by fellow Razorback fans.</p>
+            <div class="hero-actions">
+                <button class="btn-primary" onclick="showPage('search')">Find Parking</button>
+                <button class="btn-secondary" onclick="showPage('register')">List Your Space</button>
+            </div>
+            <div class="section-divider"><span>What We Offer</span></div>
+            <div class="feature-grid">
+                <div class="feature-card" onclick="showPage('search')">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Search Listings</h3>
+                    <p>Browse available spots near your event by location, date, and price.</p>
+                </div>
+                <div class="feature-card" onclick="showPage('register')">
+                    <div class="feature-icon">🏠</div>
+                    <h3>Host Your Space</h3>
+                    <p>Have a driveway near Razorback Stadium? List it and earn on game days.</p>
+                </div>
+                <div class="feature-card" onclick="showPage('my-reservations')">
+                    <div class="feature-icon">🎫</div>
+                    <h3>My Reservations</h3>
+                    <p>View and manage your upcoming parking reservations in one place.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <hr />
+    <!-- ══════════════════════════════════════
+         PAGE: REGISTER (Samantha)
+    ══════════════════════════════════════ -->
+    <div id="page-register" class="page">
+        <div class="form-card">
+            <div class="card-top">
+                <div class="form-title">Create Account</div>
+                <div class="form-subtitle">Join RazorParked — Go Hogs! 🐗</div>
+            </div>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input id="reg-name" placeholder="Jane Smith" />
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input id="reg-email" type="email" placeholder="jane@uark.edu" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input id="reg-password" type="password" placeholder="••••••••" />
+            </div>
+            <div class="form-group">
+                <label>I want to...</label>
+                <select id="reg-role">
+                    <option value="">Select a role</option>
+                    <option value="Customer">Find Parking (Driver)</option>
+                    <option value="Host">List My Space (Host)</option>
+                </select>
+            </div>
+            <button class="btn-primary" style="width:100%" onclick="register()">Create Account</button>
+            <div id="reg-msg" class="msg"></div>
+            <div class="form-link">Already have an account? <a onclick="showPage('login')">Log in</a></div>
+        </div>
+    </div>
 
-    <h2>Login</h2>
+    <!-- ══════════════════════════════════════
+         PAGE: LOGIN (Samantha)
+    ══════════════════════════════════════ -->
+    <div id="page-login" class="page">
+        <div class="form-card">
+            <div class="card-top">
+                <div class="form-title">Welcome Back</div>
+                <div class="form-subtitle">Log in to your RazorParked account.</div>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input id="login-email" type="email" placeholder="jane@uark.edu" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input id="login-password" type="password" placeholder="••••••••" />
+            </div>
+            <button class="btn-primary" style="width:100%" onclick="login()">Log In</button>
+            <div id="login-msg" class="msg"></div>
+            <div class="form-link">Don't have an account? <a onclick="showPage('register')">Sign up</a></div>
+        </div>
+    </div>
 
-    <input id="loginEmail" placeholder="Email" /><br /><br />
-    <input id="loginPassword" type="password" placeholder="Password" /><br /><br />
+    <!-- ══════════════════════════════════════
+         PAGE: SEARCH LISTINGS (Kaden)
+    ══════════════════════════════════════ -->
+    <div id="page-search" class="page">
+        <div class="page-header">
+            <h2>Find Parking</h2>
+            <p>Browse available spots near your event.</p>
+        </div>
+        <div class="filters">
+            <div class="form-group">
+                <label>Location</label>
+                <input id="search-location" placeholder="Fayetteville, AR..." />
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input id="search-date" type="date" />
+            </div>
+            <div class="form-group">
+                <label>Max Price / hr</label>
+                <input id="search-price" type="number" placeholder="$50" />
+            </div>
+            <div class="form-group">
+                <label>Availability</label>
+                <select id="search-availability">
+                    <option value="">Any</option>
+                    <option value="true">Available Only</option>
+                </select>
+            </div>
+            <button class="btn-primary" onclick="searchListings()">Search</button>
+        </div>
+        <div id="search-results">
+            <div class="empty">
+                <div class="empty-icon">🅿️</div>
+                <p>Use the filters above to find parking near you.</p>
+            </div>
+        </div>
+    </div>
 
-    <button onclick="login()">Login</button>
+    <!-- ══════════════════════════════════════
+         PAGE: LISTING DETAIL + RESERVE (Carter)
+    ══════════════════════════════════════ -->
+    <div id="page-listing" class="page">
+        <button class="btn-ghost" onclick="showPage('search')" style="margin-bottom:24px">← Back to Search</button>
+        <div id="listing-detail-content">
+            <div class="loading">Loading listing...</div>
+        </div>
+    </div>
 
-    <h3 id="message"></h3>
+    <!-- ══════════════════════════════════════
+         PAGE: HOST DASHBOARD (Shietsu)
+    ══════════════════════════════════════ -->
+    <div id="page-host" class="page">
+        <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+                <h2>My Listings</h2>
+                <p>Manage your parking spaces.</p>
+            </div>
+            <button class="btn-primary" onclick="showPage('create-listing')">+ New Listing</button>
+        </div>
+        <div id="host-listings">
+            <div class="loading">Loading your listings...</div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PAGE: CREATE LISTING (Shietsu)
+    ══════════════════════════════════════ -->
+    <div id="page-create-listing" class="page">
+        <button class="btn-ghost" onclick="showPage('host')" style="margin-bottom:24px">← Back to Dashboard</button>
+        <div class="form-card" style="max-width:600px">
+            <div class="card-top">
+                <div class="form-title">New Listing</div>
+                <div class="form-subtitle">Add a parking space to rent out on game days.</div>
+            </div>
+            <div class="form-group">
+                <label>Title</label>
+                <input id="cl-title" placeholder="e.g. Driveway near Razorback Stadium" />
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="cl-desc" rows="3" placeholder="Any details about your space..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Location / Address</label>
+                <input id="cl-location" placeholder="123 Dickson St, Fayetteville, AR" />
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Price per Hour ($)</label>
+                    <input id="cl-price" type="number" placeholder="10" />
+                </div>
+                <div class="form-group">
+                    <label>Latitude (optional)</label>
+                    <input id="cl-lat" type="number" placeholder="36.0822" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Available From</label>
+                    <input id="cl-from" type="datetime-local" />
+                </div>
+                <div class="form-group">
+                    <label>Available To</label>
+                    <input id="cl-to" type="datetime-local" />
+                </div>
+            </div>
+            <button class="btn-primary" style="width:100%;margin-top:8px" onclick="createListing()">Create Listing</button>
+            <div id="cl-msg" class="msg"></div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PAGE: MY RESERVATIONS + CANCEL (Ryleigh)
+    ══════════════════════════════════════ -->
+    <div id="page-my-reservations" class="page">
+        <div class="page-header">
+            <h2>My Reservations</h2>
+            <p>View and manage your parking bookings.</p>
+        </div>
+        <div id="reservations-list">
+            <div class="loading">Loading reservations...</div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PAGE: PAYMENT (Ryleigh)
+    ══════════════════════════════════════ -->
+    <div id="page-payment" class="page">
+        <button class="btn-ghost" onclick="showPage('my-reservations')" style="margin-bottom:24px">← Back to Reservations</button>
+        <div class="form-card">
+            <div class="card-top">
+                <div class="form-title">Confirm Payment</div>
+                <div class="form-subtitle">Complete your reservation payment.</div>
+            </div>
+            <div id="payment-summary" style="margin-bottom:24px"></div>
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select id="pay-method">
+                    <option value="Venmo">Venmo</option>
+                    <option value="InAppCredit">In-App Credit</option>
+                </select>
+            </div>
+            <button class="btn-primary" style="width:100%" onclick="confirmPayment()">Confirm Payment</button>
+            <div id="pay-msg" class="msg"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-logo">🐗 RazorParked</div>
+        <div>University of Arkansas &nbsp;·&nbsp; Fayetteville, AR &nbsp;·&nbsp; <span>Go Hogs!</span></div>
+    </footer>
 
     <script>
-async function register() {
-    const response = await fetch('/api/Auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            fullName: document.getElementById('regName').value,
-            email: document.getElementById('regEmail').value,
-            password: document.getElementById('regPassword').value,
-            roleName: document.getElementById('regRole').value
-        })
-    });
+        // ══════════════════════════════════════
+        // STATE
+        // ══════════════════════════════════════
+        let currentUser = JSON.parse(localStorage.getItem('rp_user') || 'null');
+        let selectedListingId = null;
+        let selectedReservationId = null;
+        let selectedPaymentAmount = 0;
 
-    const data = await response.json();
-    document.getElementById('message').innerText = data.message;
-}
+        // ══════════════════════════════════════
+        // NAVIGATION
+        // ══════════════════════════════════════
+        function showPage(name) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + name).classList.add('active');
+            if (name === 'host' && currentUser) loadHostListings();
+            if (name === 'my-reservations' && currentUser) loadMyReservations();
+            window.scrollTo(0, 0);
+        }
 
-async function login() {
-    const response = await fetch('/api/Auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            email: document.getElementById('loginEmail').value,
-            password: document.getElementById('loginPassword').value
-        })
-    });
+        function updateNav() {
+            const guest = document.getElementById('nav-guest');
+            const user = document.getElementById('nav-user');
+            const hostBtn = document.getElementById('nav-host-btn');
+            const nameEl = document.getElementById('nav-name');
+            if (currentUser) {
+                guest.style.display = 'none';
+                user.style.display = 'flex';
+                nameEl.textContent = currentUser.fullName;
+                if (currentUser.role === 'Host') hostBtn.style.display = 'inline-block';
+            } else {
+                guest.style.display = 'flex';
+                user.style.display = 'none';
+            }
+        }
 
-    const data = await response.json();
-    document.getElementById('message').innerText = data.message;
-}
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('rp_user');
+            updateNav();
+            showPage('home');
+        }
+
+        // ══════════════════════════════════════
+        // AUTH — Samantha
+        // ══════════════════════════════════════
+        async function register() {
+            const msg = document.getElementById('reg-msg');
+            msg.className = 'msg';
+            try {
+                const res = await fetch('/api/Auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: document.getElementById('reg-name').value,
+                        email: document.getElementById('reg-email').value,
+                        password: document.getElementById('reg-password').value,
+                        roleName: document.getElementById('reg-role').value
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    msg.className = 'msg success';
+                    msg.textContent = 'Account created! Redirecting to login...';
+                    setTimeout(() => showPage('login'), 1500);
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = data.message || 'Registration failed.';
+                }
+            } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+        }
+
+        async function login() {
+            const msg = document.getElementById('login-msg');
+            msg.className = 'msg';
+            try {
+                const res = await fetch('/api/Auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: document.getElementById('login-email').value,
+                        password: document.getElementById('login-password').value
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    currentUser = { userId: data.userId, fullName: data.fullName, email: data.email, role: data.role || 'Customer' };
+                    localStorage.setItem('rp_user', JSON.stringify(currentUser));
+                    updateNav();
+                    showPage('home');
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = data.message || 'Invalid credentials.';
+                }
+            } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+        }
+
+        // ══════════════════════════════════════
+        // SEARCH LISTINGS — Kaden
+        // ══════════════════════════════════════
+        async function searchListings() {
+            const location = document.getElementById('search-location').value;
+            const date = document.getElementById('search-date').value;
+            const price = document.getElementById('search-price').value;
+            const availability = document.getElementById('search-availability').value;
+
+            let url = '/api/Listings?';
+            if (location) url += `location=${encodeURIComponent(location)}&`;
+            if (date) url += `date=${date}&`;
+            if (price) url += `maxPrice=${price}&`;
+            if (availability) url += `availability=${availability}&`;
+
+            const container = document.getElementById('search-results');
+            container.innerHTML = '<div class="loading">Searching...</div>';
+            try {
+                const res = await fetch(url);
+                const listings = await res.json();
+                if (!listings.length) {
+                    container.innerHTML = '<div class="empty"><div class="empty-icon">🅿️</div><p>No listings found. Try different filters.</p></div>';
+                    return;
+                }
+                container.innerHTML = `<div class="listings-grid">${listings.map(l => `
+              <div class="listing-card" onclick="viewListing(${l.listingID})">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                  <h3>${l.title}</h3>
+                  <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Taken'}</span>
+                </div>
+                <div class="location">📍 ${l.location}</div>
+                <div class="price">$${l.pricePerHour}<span>/hr</span></div>
+              </div>`).join('')}</div>`;
+            } catch { container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>'; }
+        }
+
+        // ══════════════════════════════════════
+        // LISTING DETAIL + RESERVE — Carter
+        // ══════════════════════════════════════
+        async function viewListing(id) {
+            selectedListingId = id;
+            showPage('listing');
+            const container = document.getElementById('listing-detail-content');
+            container.innerHTML = '<div class="loading">Loading...</div>';
+            try {
+                const res = await fetch(`/api/Listings/${id}`);
+                const l = await res.json();
+                container.innerHTML = `
+              <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
+              <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}" style="margin-bottom:20px;display:inline-block">${l.isAvailable ? 'Available' : 'Unavailable'}</span>
+              <div class="detail-grid">
+                <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation}</span></div>
+                <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
+                <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
+                <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
+              </div>
+              ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
+              ${l.isAvailable && currentUser ? `
+                <div class="form-card" style="margin-top:24px;max-width:100%">
+                  <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
+                  <div class="form-row">
+                    <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
+                    <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
+                  </div>
+                  <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
+                  <div id="res-msg" class="msg"></div>
+                </div>` :
+                        (!currentUser
+                            ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
+                            : `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`)}`;
+            } catch { container.innerHTML = '<div class="empty"><p>Error loading listing.</p></div>'; }
+        }
+
+        async function makeReservation() {
+            const msg = document.getElementById('res-msg');
+            msg.className = 'msg';
+            try {
+                const res = await fetch('/api/Reservations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        listingID: selectedListingId,
+                        driverUserID: currentUser.userId,
+                        reservationStart: document.getElementById('res-start').value,
+                        reservationEnd: document.getElementById('res-end').value
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    msg.className = 'msg success';
+                    msg.textContent = `Reserved! Your spot: ${data.assignedSpotNumber}. Redirecting to payment...`;
+                    selectedReservationId = data.reservationId;
+                    setTimeout(() => showPaymentPage(data.reservationId), 2000);
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = data.message || 'Reservation failed.';
+                }
+            } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+        }
+
+        // ══════════════════════════════════════
+        // HOST DASHBOARD — Shietsu
+        // ══════════════════════════════════════
+        async function loadHostListings() {
+            if (!currentUser) return;
+            const container = document.getElementById('host-listings');
+            container.innerHTML = '<div class="loading">Loading...</div>';
+            try {
+                const res = await fetch(`/api/Listings/host/${currentUser.userId}`);
+                const listings = await res.json();
+                if (!listings.length) {
+                    container.innerHTML = '<div class="empty"><div class="empty-icon">🏠</div><p>No listings yet. Create your first one!</p></div>';
+                    return;
+                }
+                container.innerHTML = `<div class="listings-grid">${listings.map(l => `
+              <div class="listing-card">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                  <h3>${l.title}</h3>
+                  <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
+                </div>
+                <div class="location">📍 ${l.location}</div>
+                <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
+                <button class="btn-secondary" style="width:100%;padding:8px;font-size:13px" onclick="deleteListing(${l.listingID})">Delete</button>
+              </div>`).join('')}</div>`;
+            } catch { container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>'; }
+        }
+
+        async function createListing() {
+            const msg = document.getElementById('cl-msg');
+            msg.className = 'msg';
+            try {
+                const res = await fetch('/api/Listings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        hostUserID: currentUser.userId,
+                        title: document.getElementById('cl-title').value,
+                        description: document.getElementById('cl-desc').value,
+                        location: document.getElementById('cl-location').value,
+                        pricePerHour: parseFloat(document.getElementById('cl-price').value),
+                        availableFrom: document.getElementById('cl-from').value,
+                        availableTo: document.getElementById('cl-to').value,
+                        latitude: parseFloat(document.getElementById('cl-lat').value) || null
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    msg.className = 'msg success';
+                    msg.textContent = 'Listing created successfully!';
+                    setTimeout(() => showPage('host'), 1500);
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = data.message || 'Failed to create listing.';
+                }
+            } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+        }
+
+        async function deleteListing(id) {
+            if (!confirm('Delete this listing?')) return;
+            try {
+                const res = await fetch(`/api/Listings/${id}?hostUserId=${currentUser.userId}`, { method: 'DELETE' });
+                if (res.ok) loadHostListings();
+            } catch { alert('Error deleting listing.'); }
+        }
+
+        // ══════════════════════════════════════
+        // RESERVATIONS + CANCEL — Ryleigh
+        // ══════════════════════════════════════
+        async function loadMyReservations() {
+            if (!currentUser) { showPage('login'); return; }
+            const container = document.getElementById('reservations-list');
+            container.innerHTML = '<div class="loading">Loading...</div>';
+            try {
+                const res = await fetch(`/api/Reservations/user/${currentUser.userId}`);
+                const reservations = await res.json();
+                if (!reservations.length) {
+                    container.innerHTML = '<div class="empty"><div class="empty-icon">🎫</div><p>No reservations yet. Find parking to get started!</p></div>';
+                    return;
+                }
+                container.innerHTML = `<div class="listings-grid">${reservations.map(r => `
+              <div class="listing-card">
+                <h3>${r.title}</h3>
+                <div class="location">📍 ${r.fullAddress}</div>
+                <div style="margin:10px 0">
+                  <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
+                </div>
+                <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong></div>
+                <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+                  ${new Date(r.reservationStart).toLocaleString()} → ${new Date(r.reservationEnd).toLocaleString()}
+                </div>
+                ${r.status === 'Confirmed' ? `
+                  <div style="display:flex;gap:8px">
+                    <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="showPaymentPage(${r.reservationID}, ${r.pricePerHour})">Pay</button>
+                    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID})">Cancel</button>
+                  </div>` : ''}
+              </div>`).join('')}</div>`;
+            } catch { container.innerHTML = '<div class="empty"><p>Error loading reservations.</p></div>'; }
+        }
+
+        function showPaymentPage(reservationId, amount) {
+            selectedReservationId = reservationId;
+            selectedPaymentAmount = amount || 0;
+            document.getElementById('payment-summary').innerHTML = `
+            <div class="detail-item"><label>Reservation ID</label><span>#${reservationId}</span></div>`;
+            showPage('payment');
+        }
+
+        async function confirmPayment() {
+            const msg = document.getElementById('pay-msg');
+            msg.className = 'msg';
+            try {
+                const res = await fetch('/api/Payments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        reservationID: selectedReservationId,
+                        driverUserID: currentUser.userId,
+                        amount: selectedPaymentAmount,
+                        paymentMethod: document.getElementById('pay-method').value
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    msg.className = 'msg success';
+                    msg.textContent = 'Payment confirmed! Redirecting...';
+                    setTimeout(() => showPage('my-reservations'), 2000);
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = data.message || 'Payment failed.';
+                }
+            } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+        }
+
+        async function cancelReservation(id) {
+            if (!confirm('Cancel this reservation?')) return;
+            try {
+                const res = await fetch(`/api/Reservations/${id}/cancel?driverUserId=${currentUser.userId}`, { method: 'PATCH' });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.freeCancellation ? 'Cancelled — no charge!' : 'Cancelled. Note: cancellation fee may apply.');
+                    loadMyReservations();
+                } else { alert(data.message || 'Cancellation failed.'); }
+            } catch { alert('Connection error.'); }
+        }
+
+        // ══════════════════════════════════════
+        // INIT
+        // ══════════════════════════════════════
+        updateNav();
     </script>
-
 </body>
 </html>
