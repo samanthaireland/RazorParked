@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RazorParked</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Serif+4:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <!-- Leaflet.js — Task 10: Map View (no API key needed) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
             --bg: #ffffff;
@@ -35,13 +38,11 @@
             min-height: 100vh;
         }
 
-        /* ── UA TOP STRIPE ── */
         .ua-stripe {
             height: 5px;
             background: linear-gradient(90deg, var(--red) 0%, var(--gold) 50%, var(--red) 100%);
         }
 
-        /* ── NAVBAR ── */
         nav {
             display: flex;
             align-items: center;
@@ -134,7 +135,6 @@
                 color: #fff;
             }
 
-        /* ── PAGES ── */
         .page {
             display: none;
             padding: 48px 40px;
@@ -252,7 +252,6 @@
                 background: var(--border);
             }
 
-        /* ── FEATURE CARDS ── */
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -412,9 +411,7 @@
                 letter-spacing: 1px;
             }
 
-            .form-group input,
-            .form-group select,
-            .form-group textarea {
+            .form-group input, .form-group select, .form-group textarea {
                 width: 100%;
                 background: var(--surface);
                 border: 1.5px solid var(--border);
@@ -427,9 +424,7 @@
                 transition: border-color 0.2s;
             }
 
-                .form-group input:focus,
-                .form-group select:focus,
-                .form-group textarea:focus {
+                .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
                     border-color: var(--red);
                 }
 
@@ -574,7 +569,7 @@
                 border: 1px solid #e8b4bc;
             }
 
-        /* ── FILTERS ── */
+        /* ── FILTERS — Task 9 / Criteria 8 ── */
         .filters {
             background: var(--surface);
             border: 1.5px solid var(--border);
@@ -590,6 +585,168 @@
                 margin-bottom: 0;
                 flex: 1;
                 min-width: 150px;
+            }
+
+        .results-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .results-count {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+            .results-count strong {
+                color: var(--text);
+            }
+
+        /* ── VIEW TOGGLE — Task 10 / Criteria 9 ── */
+        .view-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .view-toggle-btn {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+            .view-toggle-btn:hover {
+                border-color: var(--red);
+                color: var(--red);
+            }
+
+            .view-toggle-btn.active {
+                background: var(--red);
+                border-color: var(--red);
+                color: #fff;
+            }
+
+        /* ── MAP CONTAINER — Task 10 / Criteria 9 ── */
+        #map-container {
+            display: none;
+            margin-top: 20px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1.5px solid var(--border);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+            #map-container.visible {
+                display: block;
+                animation: fadeUp 0.3s ease;
+            }
+
+        #leaflet-map {
+            height: 500px;
+            width: 100%;
+        }
+
+        /* Leaflet popup custom styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 10px !important;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.14) !important;
+            border: 1.5px solid var(--border);
+            padding: 0 !important;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0 !important;
+            width: 210px !important;
+        }
+
+        .map-popup {
+            padding: 16px;
+        }
+
+        .map-popup-title {
+            font-family: 'Source Serif 4', serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text);
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .map-popup-location {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .map-popup-price {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            color: var(--red);
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+            .map-popup-price span {
+                font-family: 'DM Sans', sans-serif;
+                font-size: 12px;
+                color: var(--muted);
+                font-weight: 400;
+                letter-spacing: 0;
+            }
+
+        .map-popup-badge {
+            margin-bottom: 12px;
+        }
+
+        .map-popup-btn {
+            display: block;
+            width: 100%;
+            background: var(--red);
+            color: #fff;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 9px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.2s;
+        }
+
+            .map-popup-btn:hover {
+                background: var(--red-dark);
+            }
+
+        .map-notice {
+            background: var(--gold-light);
+            border: 1px solid var(--gold);
+            color: #7a5a10;
+            font-size: 13px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+
+            .map-notice.visible {
+                display: block;
             }
 
         /* ── DETAIL GRID ── */
@@ -623,7 +780,7 @@
                 color: var(--text);
             }
 
-        /* ── EMPTY STATE ── */
+        /* ── EMPTY / LOADING ── */
         .empty {
             text-align: center;
             padding: 64px 20px;
@@ -786,25 +943,32 @@
     </div>
 
     <!-- ══════════════════════════════════════
-         PAGE: SEARCH LISTINGS (Kaden)
+         PAGE: SEARCH LISTINGS
+         KADEN — Task 9 (Criteria 8) + Task 10 (Criteria 9)
     ══════════════════════════════════════ -->
     <div id="page-search" class="page">
         <div class="page-header">
             <h2>Find Parking</h2>
             <p>Browse available spots near your event.</p>
         </div>
+
+        <!--
+            TASK 9 / CRITERIA 8:
+            Calls GET /api/Listings with query params:
+            ?location=  &date=  &maxPrice=  &availability=
+        -->
         <div class="filters">
             <div class="form-group">
-                <label>Location</label>
-                <input id="search-location" placeholder="Fayetteville, AR..." />
+                <label>Event / Location</label>
+                <input id="search-location" placeholder="Razorback Stadium, Dickson St..." />
             </div>
             <div class="form-group">
                 <label>Date</label>
                 <input id="search-date" type="date" />
             </div>
             <div class="form-group">
-                <label>Max Price / hr</label>
-                <input id="search-price" type="number" placeholder="$50" />
+                <label>Max Price / hr ($)</label>
+                <input id="search-price" type="number" min="0" placeholder="50" />
             </div>
             <div class="form-group">
                 <label>Availability</label>
@@ -815,6 +979,31 @@
             </div>
             <button class="btn-primary" onclick="searchListings()">Search</button>
         </div>
+
+        <!--
+            TASK 10 / CRITERIA 9:
+            Toggle between List View and Map View.
+        -->
+        <div class="view-toggle">
+            <button class="view-toggle-btn active" id="btn-list-view" onclick="setView('list')">
+                ☰ List View
+            </button>
+            <button class="view-toggle-btn" id="btn-map-view" onclick="setView('map')">
+                🗺 Map View
+            </button>
+        </div>
+
+        <!-- Warning shown when some listings have no coordinates -->
+        <div class="map-notice" id="map-notice">
+            ⚠️ Some listings don't have coordinates and won't appear on the map. Switch to List View to see all results.
+        </div>
+
+        <!-- Leaflet map — hidden until Map View is selected -->
+        <div id="map-container">
+            <div id="leaflet-map"></div>
+        </div>
+
+        <!-- List view results — shown by default -->
         <div id="search-results">
             <div class="empty">
                 <div class="empty-icon">🅿️</div>
@@ -946,6 +1135,11 @@
         let selectedReservationId = null;
         let selectedPaymentAmount = 0;
 
+        // Task 10 map state
+        let leafletMap = null;
+        let currentView = 'list';
+        let mapMarkers = [];
+
         // ══════════════════════════════════════
         // NAVIGATION
         // ══════════════════════════════════════
@@ -954,6 +1148,10 @@
             document.getElementById('page-' + name).classList.add('active');
             if (name === 'host' && currentUser) loadHostListings();
             if (name === 'my-reservations' && currentUser) loadMyReservations();
+            // Task 10: force map to recalculate size when returning to search
+            if (name === 'search' && currentView === 'map' && leafletMap) {
+                setTimeout(() => leafletMap.invalidateSize(), 150);
+            }
             window.scrollTo(0, 0);
         }
 
@@ -1035,39 +1233,215 @@
         }
 
         // ══════════════════════════════════════
-        // SEARCH LISTINGS — Kaden
+        // TASK 9 — SEARCH LISTINGS
+        // Criteria 8: drivers can filter listings via
+        // GET /api/Listings?location=&date=&maxPrice=&availability=
         // ══════════════════════════════════════
         async function searchListings() {
-            const location = document.getElementById('search-location').value;
+            const location = document.getElementById('search-location').value.trim();
             const date = document.getElementById('search-date').value;
             const price = document.getElementById('search-price').value;
             const availability = document.getElementById('search-availability').value;
 
-            let url = '/api/Listings?';
-            if (location) url += `location=${encodeURIComponent(location)}&`;
-            if (date) url += `date=${date}&`;
-            if (price) url += `maxPrice=${price}&`;
-            if (availability) url += `availability=${availability}&`;
+            // Build query string — only append params that have values
+            const params = new URLSearchParams();
+            if (location) params.append('location', location);
+            if (date) params.append('date', date);
+            if (price) params.append('maxPrice', price);
+            if (availability) params.append('availability', availability);
+
+            const url = '/api/Listings' + (params.toString() ? '?' + params.toString() : '');
 
             const container = document.getElementById('search-results');
-            container.innerHTML = '<div class="loading">Searching...</div>';
+            container.innerHTML = '<div class="loading">Searching for parking...</div>';
+
             try {
                 const res = await fetch(url);
+                if (!res.ok) throw new Error('API error');
                 const listings = await res.json();
-                if (!listings.length) {
-                    container.innerHTML = '<div class="empty"><div class="empty-icon">🅿️</div><p>No listings found. Try different filters.</p></div>';
+
+                if (!listings || listings.length === 0) {
+                    container.innerHTML = `
+                            <div class="empty">
+                                <div class="empty-icon">🅿️</div>
+                                <p>No listings found. Try adjusting your filters.</p>
+                            </div>`;
+                    if (currentView === 'map') clearMapMarkers();
                     return;
                 }
-                container.innerHTML = `<div class="listings-grid">${listings.map(l => `
-              <div class="listing-card" onclick="viewListing(${l.listingID})">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                  <h3>${l.title}</h3>
-                  <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Taken'}</span>
-                </div>
-                <div class="location">📍 ${l.location}</div>
-                <div class="price">$${l.pricePerHour}<span>/hr</span></div>
-              </div>`).join('')}</div>`;
-            } catch { container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>'; }
+
+                // Show result count + card grid
+                container.innerHTML = `
+                        <div class="results-meta">
+                            <span class="results-count">
+                                <strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found
+                            </span>
+                        </div>
+                        <div class="listings-grid">
+                            ${listings.map(l => `
+                                <div class="listing-card" onclick="viewListing(${l.listingID})">
+                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                        <h3>${l.title}</h3>
+                                        <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">
+                                            ${l.isAvailable ? 'Available' : 'Taken'}
+                                        </span>
+                                    </div>
+                                    <div class="location">📍 ${l.location || l.approximateLocation || 'Fayetteville, AR'}</div>
+                                    <div class="price">$${l.pricePerHour}<span>/hr</span></div>
+                                </div>
+                            `).join('')}
+                        </div>`;
+
+                // If map view is already active, refresh the map with new results
+                if (currentView === 'map') {
+                    await loadMapView();
+                }
+
+            } catch (err) {
+                container.innerHTML = `
+                        <div class="empty">
+                            <div class="empty-icon">⚠️</div>
+                            <p>Error loading listings. Make sure the API is running.</p>
+                        </div>`;
+            }
+        }
+
+        // ══════════════════════════════════════
+        // TASK 10 — MAP VIEW
+        // Criteria 9: display parking listings on a
+        // Leaflet.js map using coordinates from
+        // GET /api/Listings/locations
+        // Clicking a pin opens a popup with a
+        // "View & Reserve" button.
+        // ══════════════════════════════════════
+
+        // Switch between List and Map view
+        function setView(view) {
+            currentView = view;
+            const mapContainer = document.getElementById('map-container');
+            const searchResults = document.getElementById('search-results');
+            const btnList = document.getElementById('btn-list-view');
+            const btnMap = document.getElementById('btn-map-view');
+
+            if (view === 'map') {
+                btnMap.classList.add('active');
+                btnList.classList.remove('active');
+                mapContainer.classList.add('visible');
+                searchResults.style.display = 'none';
+                loadMapView();
+            } else {
+                btnList.classList.add('active');
+                btnMap.classList.remove('active');
+                mapContainer.classList.remove('visible');
+                searchResults.style.display = 'block';
+                document.getElementById('map-notice').classList.remove('visible');
+            }
+        }
+
+        // Initialize Leaflet map and plot pins from GET /api/Listings/locations
+        async function loadMapView() {
+            const FAYETTEVILLE_LAT = 36.0682;
+            const FAYETTEVILLE_LNG = -94.1719;
+
+            // Create the map only once — subsequent calls just refresh markers
+            if (!leafletMap) {
+                leafletMap = L.map('leaflet-map').setView([FAYETTEVILLE_LAT, FAYETTEVILLE_LNG], 14);
+
+                // OpenStreetMap tile layer — free, no API key required
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                    maxZoom: 19
+                }).addTo(leafletMap);
+            }
+
+            // Remove old markers before adding fresh ones
+            clearMapMarkers();
+
+            try {
+                // Criteria 9: fetch coordinates from /api/Listings/locations
+                const res = await fetch('/api/Listings/locations');
+                if (!res.ok) throw new Error('Could not load locations');
+                const locations = await res.json();
+
+                if (!locations || locations.length === 0) return;
+
+                // Custom teardrop marker styled in Razorback red
+                const redIcon = L.divIcon({
+                    className: '',
+                    html: `<div style="
+                            width:28px; height:28px;
+                            background:#9d2235;
+                            border:3px solid #fff;
+                            border-radius:50% 50% 50% 0;
+                            transform:rotate(-45deg);
+                            box-shadow:0 3px 10px rgba(157,34,53,0.45);
+                        "></div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 28],
+                    popupAnchor: [0, -30]
+                });
+
+                let hasNoCoords = false;
+                const boundsPoints = [];
+
+                locations.forEach(listing => {
+                    // Skip listings with no coordinates
+                    if (listing.latitude == null || listing.longitude == null) {
+                        hasNoCoords = true;
+                        return;
+                    }
+                    const lat = parseFloat(listing.latitude);
+                    const lng = parseFloat(listing.longitude);
+                    if (isNaN(lat) || isNaN(lng)) { hasNoCoords = true; return; }
+
+                    boundsPoints.push([lat, lng]);
+
+                    const marker = L.marker([lat, lng], { icon: redIcon }).addTo(leafletMap);
+
+                    // Popup card with listing info and link to detail page
+                    marker.bindPopup(`
+                            <div class="map-popup">
+                                <div class="map-popup-title">${listing.title}</div>
+                                <div class="map-popup-location">📍 ${listing.location || listing.approximateLocation || 'Fayetteville, AR'}</div>
+                                <div class="map-popup-price">$${listing.pricePerHour}<span>/hr</span></div>
+                                <div class="map-popup-badge">
+                                    <span class="badge ${listing.isAvailable ? 'available' : 'unavailable'}">
+                                        ${listing.isAvailable ? 'Available' : 'Taken'}
+                                    </span>
+                                </div>
+                                <button class="map-popup-btn" onclick="viewListing(${listing.listingID})">
+                                    View &amp; Reserve
+                                </button>
+                            </div>`, { maxWidth: 230 });
+
+                    mapMarkers.push(marker);
+                });
+
+                // Show notice if any listings were missing coordinates
+                const notice = document.getElementById('map-notice');
+                notice.classList.toggle('visible', hasNoCoords);
+
+                // Zoom/pan map to fit all visible markers
+                if (boundsPoints.length === 1) {
+                    leafletMap.setView(boundsPoints[0], 16);
+                } else if (boundsPoints.length > 1) {
+                    leafletMap.fitBounds(boundsPoints, { padding: [40, 40] });
+                }
+
+                // Fix rendering glitch when map container was hidden during init
+                setTimeout(() => leafletMap.invalidateSize(), 100);
+
+            } catch (err) {
+                console.error('Map load error:', err);
+                // Map stays visible but empty — page won't crash
+            }
+        }
+
+        // Remove all marker layers from the map
+        function clearMapMarkers() {
+            if (!leafletMap) return;
+            mapMarkers.forEach(m => leafletMap.removeLayer(m));
+            mapMarkers = [];
         }
 
         // ══════════════════════════════════════
@@ -1082,28 +1456,31 @@
                 const res = await fetch(`/api/Listings/${id}`);
                 const l = await res.json();
                 container.innerHTML = `
-              <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
-              <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}" style="margin-bottom:20px;display:inline-block">${l.isAvailable ? 'Available' : 'Unavailable'}</span>
-              <div class="detail-grid">
-                <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation}</span></div>
-                <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
-                <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
-                <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
-              </div>
-              ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
-              ${l.isAvailable && currentUser ? `
-                <div class="form-card" style="margin-top:24px;max-width:100%">
-                  <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
-                  <div class="form-row">
-                    <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
-                    <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
-                  </div>
-                  <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
-                  <div id="res-msg" class="msg"></div>
-                </div>` :
-                        (!currentUser
+                        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
+                        <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}" style="margin-bottom:20px;display:inline-block">
+                            ${l.isAvailable ? 'Available' : 'Unavailable'}
+                        </span>
+                        <div class="detail-grid">
+                            <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
+                            <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
+                            <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
+                            <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
+                        </div>
+                        ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
+                        ${l.isAvailable && currentUser ? `
+                            <div class="form-card" style="margin-top:24px;max-width:100%">
+                                <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
+                                    <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
+                                </div>
+                                <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
+                                <div id="res-msg" class="msg"></div>
+                            </div>`
+                        : (!currentUser
                             ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
-                            : `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`)}`;
+                            : `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`
+                        )}`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listing.</p></div>'; }
         }
 
@@ -1149,15 +1526,15 @@
                     return;
                 }
                 container.innerHTML = `<div class="listings-grid">${listings.map(l => `
-              <div class="listing-card">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                  <h3>${l.title}</h3>
-                  <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
-                </div>
-                <div class="location">📍 ${l.location}</div>
-                <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
-                <button class="btn-secondary" style="width:100%;padding:8px;font-size:13px" onclick="deleteListing(${l.listingID})">Delete</button>
-              </div>`).join('')}</div>`;
+                        <div class="listing-card">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                <h3>${l.title}</h3>
+                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
+                            </div>
+                            <div class="location">📍 ${l.location}</div>
+                            <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
+                            <button class="btn-secondary" style="width:100%;padding:8px;font-size:13px" onclick="deleteListing(${l.listingID})">Delete</button>
+                        </div>`).join('')}</div>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>'; }
         }
 
@@ -1214,22 +1591,22 @@
                     return;
                 }
                 container.innerHTML = `<div class="listings-grid">${reservations.map(r => `
-              <div class="listing-card">
-                <h3>${r.title}</h3>
-                <div class="location">📍 ${r.fullAddress}</div>
-                <div style="margin:10px 0">
-                  <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
-                </div>
-                <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong></div>
-                <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
-                  ${new Date(r.reservationStart).toLocaleString()} → ${new Date(r.reservationEnd).toLocaleString()}
-                </div>
-                ${r.status === 'Confirmed' ? `
-                  <div style="display:flex;gap:8px">
-                    <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="showPaymentPage(${r.reservationID}, ${r.pricePerHour})">Pay</button>
-                    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID})">Cancel</button>
-                  </div>` : ''}
-              </div>`).join('')}</div>`;
+                        <div class="listing-card">
+                            <h3>${r.title}</h3>
+                            <div class="location">📍 ${r.fullAddress}</div>
+                            <div style="margin:10px 0">
+                                <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
+                            </div>
+                            <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong></div>
+                            <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+                                ${new Date(r.reservationStart).toLocaleString()} → ${new Date(r.reservationEnd).toLocaleString()}
+                            </div>
+                            ${r.status === 'Confirmed' ? `
+                                <div style="display:flex;gap:8px">
+                                    <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="showPaymentPage(${r.reservationID}, ${r.pricePerHour})">Pay</button>
+                                    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID})">Cancel</button>
+                                </div>` : ''}
+                        </div>`).join('')}</div>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reservations.</p></div>'; }
         }
 
@@ -1237,7 +1614,7 @@
             selectedReservationId = reservationId;
             selectedPaymentAmount = amount || 0;
             document.getElementById('payment-summary').innerHTML = `
-            <div class="detail-item"><label>Reservation ID</label><span>#${reservationId}</span></div>`;
+                    <div class="detail-item"><label>Reservation ID</label><span>#${reservationId}</span></div>`;
             showPage('payment');
         }
 
