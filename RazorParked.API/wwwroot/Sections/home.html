@@ -1,0 +1,188 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: HOME (Hero)
+     Owner: (shared / index maintainer)
+     Deps: none
+     API:  none
+═══════════════════════════════════════════════════════ -->
+<style>
+    .hero {
+        padding: 72px 40px 80px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(157,34,53,0.05) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(192,137,42,0.04) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+    .woo-pig {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 11px;
+        letter-spacing: 5px;
+        color: var(--red);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+        .woo-pig::before, .woo-pig::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 1px;
+            background: var(--red);
+            opacity: 0.35;
+        }
+
+    .hero h1 {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(56px, 8vw, 96px);
+        letter-spacing: 3px;
+        line-height: 0.95;
+        color: var(--text);
+        margin-bottom: 24px;
+    }
+
+        .hero h1 em {
+            font-style: normal;
+            color: var(--red);
+            display: block;
+        }
+
+    .hero p {
+        font-family: 'Source Serif 4', serif;
+        font-size: 19px;
+        color: var(--muted);
+        max-width: 440px;
+        margin: 0 auto 40px;
+        line-height: 1.65;
+        font-weight: 300;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .section-divider {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 48px 0 32px;
+    }
+
+        .section-divider span {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 13px;
+            letter-spacing: 3px;
+            color: var(--muted2);
+        }
+
+        .section-divider::before, .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+        margin-top: 56px;
+    }
+
+    .feature-card {
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 28px 24px;
+        cursor: pointer;
+        transition: all 0.22s;
+        position: relative;
+        overflow: hidden;
+        text-align: left;
+    }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--red);
+            transform: scaleX(0);
+            transition: transform 0.22s;
+            transform-origin: left;
+        }
+
+        .feature-card:hover {
+            border-color: var(--red);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(157,34,53,0.1);
+        }
+
+            .feature-card:hover::after {
+                transform: scaleX(1);
+            }
+
+    .feature-icon {
+        font-size: 26px;
+        margin-bottom: 14px;
+    }
+
+    .feature-card h3 {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 20px;
+        letter-spacing: 1px;
+        color: var(--text);
+        margin-bottom: 8px;
+    }
+
+    .feature-card p {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.55;
+    }
+</style>
+
+<div class="hero">
+    <div class="woo-pig">🐗 Woo Pig Sooie 🐗</div>
+    <h1>Park Smart.<br /><em>Ride With The Hogs.</em></h1>
+    <p>Find and reserve private parking near Fayetteville events — listed by fellow Razorback fans.</p>
+    <div class="hero-actions">
+        <button class="btn-primary" onclick="showPage('search')">Find Parking</button>
+        <button class="btn-secondary" onclick="showPage('register')">List Your Space</button>
+    </div>
+    <div class="section-divider"><span>What We Offer</span></div>
+    <div class="feature-grid">
+        <div class="feature-card" onclick="showPage('search')">
+            <div class="feature-icon">🔍</div>
+            <h3>Search Listings</h3>
+            <p>Browse available spots near your event by location, date, and price.</p>
+        </div>
+        <div class="feature-card" onclick="showPage('register')">
+            <div class="feature-icon">🏠</div>
+            <h3>Host Your Space</h3>
+            <p>Have a driveway near Razorback Stadium? List it and earn on game days.</p>
+        </div>
+        <div class="feature-card" onclick="showPage('my-reservations')">
+            <div class="feature-icon">🎫</div>
+            <h3>My Reservations</h3>
+            <p>View and manage your upcoming parking reservations in one place.</p>
+        </div>
+    </div>
+</div>

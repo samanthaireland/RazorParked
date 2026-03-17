@@ -1,0 +1,74 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: HOST DASHBOARD
+     Owner:   Shietsu
+     API:     GET    /api/Listings/host/:userId
+              DELETE /api/Listings/:id
+     To edit: only touch this file!
+═══════════════════════════════════════════════════════ -->
+
+<div class="page-section active">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+            <h2>My Listings</h2>
+            <p>Manage your parking spaces.</p>
+        </div>
+        <button class="btn-primary" onclick="showPage('create-listing')">+ New Listing</button>
+    </div>
+    <div id="host-listings">
+        <div class="loading">Loading your listings...</div>
+    </div>
+</div>
+
+<script>
+    // ── GET /api/Listings/host/:userId ──
+    async function loadHostListings() {
+        if (!window.currentUser) return;
+        const container = document.getElementById('host-listings');
+        container.innerHTML = '<div class="loading">Loading...</div>';
+        try {
+            const res      = await fetch(`/api/Listings/host/${window.currentUser.userId}`);
+            const listings = await res.json();
+
+            if (!listings.length) {
+                container.innerHTML = '<div class="empty"><div class="empty-icon">🏠</div><p>No listings yet. Create your first one!</p></div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="listings-grid">
+                    ${listings.map(l => `
+                        <div class="listing-card">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                <h3>${l.title}</h3>
+                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
+                            </div>
+                            <div class="location">📍 ${l.location}</div>
+                            <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
+                            <button class="btn-secondary" style="width:100%;padding:8px;font-size:13px"
+                                onclick="deleteListing(${l.listingID})">Delete</button>
+                        </div>
+                    `).join('')}
+                </div>`;
+
+        } catch {
+            container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>';
+        }
+    }
+
+    // ── DELETE /api/Listings/:id ──
+    async function deleteListing(id) {
+        if (!confirm('Delete this listing?')) return;
+        try {
+            const res = await fetch(`/api/Listings/${id}?hostUserId=${window.currentUser.userId}`, { method: 'DELETE' });
+            if (res.ok) loadHostListings();
+        } catch {
+            alert('Error deleting listing.');
+        }
+    }
+
+    // Called by index.html router on page load
+    window.loadHostListings = loadHostListings;
+
+    // Run on first load
+    loadHostListings();
+</script>
