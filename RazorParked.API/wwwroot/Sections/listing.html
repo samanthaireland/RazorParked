@@ -1,0 +1,107 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: LISTING DETAIL + RESERVE
+     Owner:   Carter
+     API:     GET  /api/Listings/:id
+              POST /api/Reservations
+     To edit: only touch this file!
+═══════════════════════════════════════════════════════ -->
+
+<div class="page-section active">
+    <button class="btn-ghost" onclick="showPage('search')" style="margin-bottom:24px">← Back to Search</button>
+    <div id="listing-detail-content">
+        <div class="loading">Loading listing...</div>
+    </div>
+</div>
+
+<script>
+    // Auto-load whichever listing was selected before navigating here
+    (function init() {
+        if (window.selectedListingId) {
+            viewListing(window.selectedListingId);
+        }
+    })();
+
+    // ── GET /api/Listings/:id ──
+    async function viewListing(id) {
+        window.selectedListingId = id;
+        const container = document.getElementById('listing-detail-content');
+        container.innerHTML = '<div class="loading">Loading...</div>';
+
+        try {
+            const res = await fetch(`/api/Listings/${id}`);
+            const l   = await res.json();
+
+            container.innerHTML = `
+                <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
+                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}" style="margin-bottom:20px;display:inline-block">
+                    ${l.isAvailable ? 'Available' : 'Unavailable'}
+                </span>
+                <div class="detail-grid">
+                    <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
+                    <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
+                    <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
+                    <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
+                </div>
+                ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
+                ${l.isAvailable && window.currentUser ? `
+                    <div class="form-card" style="margin-top:24px;max-width:100%">
+                        <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
+                            <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
+                        </div>
+                        <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
+                        <div id="res-msg" class="msg"></div>
+                    </div>`
+                : (!window.currentUser
+                    ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
+                    : `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`
+                )}`;
+
+        } catch {
+            container.innerHTML = '<div class="empty"><p>Error loading listing.</p></div>';
+        }
+    }
+
+    // ── POST /api/Reservations ──
+    async function makeReservation() {
+        const msg = document.getElementById('res-msg');
+        msg.className = 'msg';
+        try {
+            const res = await fetch('/api/Reservations', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    listingID        : window.selectedListingId,
+                    driverUserID     : window.currentUser.userId,
+                    reservationStart : document.getElementById('res-start').value,
+                    reservationEnd   : document.getElementById('res-end').value
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                msg.className   = 'msg success';
+                msg.textContent = `Reserved! Your spot: ${data.assignedSpotNumber}. Redirecting to payment...`;
+                window.selectedReservationId = data.reservationId;
+                setTimeout(() => showPaymentPage(data.reservationId), 2000);
+            } else {
+                msg.className   = 'msg error';
+                msg.textContent = data.message || 'Reservation failed.';
+            }
+        } catch {
+            msg.className   = 'msg error';
+            msg.textContent = 'Connection error.';
+        }
+    }
+
+    // Navigate to payment — also called from my-reservations.html
+    function showPaymentPage(reservationId, amount) {
+        window.selectedReservationId  = reservationId;
+        window.selectedPaymentAmount  = amount || 0;
+        showPage('payment');
+    }
+
+    // Expose so search.html map popups can navigate here
+    window.viewListing     = viewListing;
+    window.showPaymentPage = showPaymentPage;
+</script>

@@ -1,0 +1,95 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: MY RESERVATIONS + CANCEL
+     Owner:   Ryleigh
+     API:     GET   /api/Reservations/user/:userId
+              PATCH /api/Reservations/:id/cancel
+     To edit: only touch this file!
+═══════════════════════════════════════════════════════ -->
+
+<div class="page-section active">
+    <div class="page-header">
+        <h2>My Reservations</h2>
+        <p>View and manage your parking bookings.</p>
+    </div>
+    <div id="reservations-list">
+        <div class="loading">Loading reservations...</div>
+    </div>
+</div>
+
+<script>
+    // ── GET /api/Reservations/user/:userId ──
+    async function loadMyReservations() {
+        if (!window.currentUser) { showPage('login'); return; }
+        const container = document.getElementById('reservations-list');
+        container.innerHTML = '<div class="loading">Loading...</div>';
+        try {
+            const res          = await fetch(`/api/Reservations/user/${window.currentUser.userId}`);
+            const reservations = await res.json();
+
+            if (!reservations.length) {
+                container.innerHTML = '<div class="empty"><div class="empty-icon">🎫</div><p>No reservations yet. Find parking to get started!</p></div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="listings-grid">
+                    ${reservations.map(r => `
+                        <div class="listing-card">
+                            <h3>${r.title}</h3>
+                            <div class="location">📍 ${r.fullAddress}</div>
+                            <div style="margin:10px 0">
+                                <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
+                            </div>
+                            <div style="font-size:13px;color:var(--muted);margin-bottom:4px">
+                                Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong>
+                            </div>
+                            <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+                                ${new Date(r.reservationStart).toLocaleString()} → ${new Date(r.reservationEnd).toLocaleString()}
+                            </div>
+                            ${r.status === 'Confirmed' ? `
+                                <div style="display:flex;gap:8px">
+                                    <button class="btn-primary"   style="flex:1;padding:8px;font-size:13px"
+                                        onclick="showPaymentPage(${r.reservationID}, ${r.pricePerHour})">Pay</button>
+                                    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
+                                        onclick="cancelReservation(${r.reservationID})">Cancel</button>
+                                </div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>`;
+
+        } catch {
+            container.innerHTML = '<div class="empty"><p>Error loading reservations.</p></div>';
+        }
+    }
+
+    // ── PATCH /api/Reservations/:id/cancel ──
+    async function cancelReservation(id) {
+        if (!confirm('Cancel this reservation?')) return;
+        try {
+            const res  = await fetch(`/api/Reservations/${id}/cancel?driverUserId=${window.currentUser.userId}`, { method: 'PATCH' });
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.freeCancellation ? 'Cancelled — no charge!' : 'Cancelled. Note: cancellation fee may apply.');
+                loadMyReservations();
+            } else {
+                alert(data.message || 'Cancellation failed.');
+            }
+        } catch {
+            alert('Connection error.');
+        }
+    }
+
+    // Navigate to payment page — uses global helper from listing.html
+    function showPaymentPage(reservationId, amount) {
+        window.selectedReservationId = reservationId;
+        window.selectedPaymentAmount = amount || 0;
+        showPage('payment');
+    }
+
+    // Exposed so index.html router lifecycle hook can call it
+    window.loadMyReservations = loadMyReservations;
+    window.cancelReservation  = cancelReservation;
+
+    // Run on first load
+    loadMyReservations();
+</script>

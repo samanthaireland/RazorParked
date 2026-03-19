@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using RazorParked.API.Models;
@@ -11,7 +10,6 @@ namespace RazorParked.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IConfiguration _config;
-
     public AuthController(IConfiguration config)
     {
         _config = config;
@@ -22,18 +20,17 @@ public class AuthController : ControllerBase
     // ===============================
     [HttpPost("register")]
     public async Task<IActionResult> Register(
-    [FromBody] RazorParked.API.Models.RegisterRequest request)
+        [FromBody] RazorParked.API.Models.RegisterRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.FullName) ||
             string.IsNullOrWhiteSpace(request.Email) ||
             string.IsNullOrWhiteSpace(request.Password) ||
-            string.IsNullOrWhiteSpace(request.RoleName))
+            request.RoleNames == null || request.RoleNames.Count == 0)
         {
             return BadRequest(new { message = "All fields are required." });
         }
 
         var connectionString = _config.GetConnectionString("DefaultConnection");
-
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
 
@@ -43,30 +40,59 @@ public class AuthController : ControllerBase
             new { request.Email });
 
         if (existingUser != null)
-            return Conflict(new { message = "Email already exists." });
+        {
+            // Email exists — just ADD the new roles to the existing account
+            foreach (var roleName in request.RoleNames)
+            {
+                var roleId = await connection.QueryFirstOrDefaultAsync<int?>(
+                    "SELECT RoleID FROM dbo.Roles WHERE RoleName = @RoleName",
+                    new { RoleName = roleName });
 
-        // Get RoleID
-        var roleId = await connection.QueryFirstOrDefaultAsync<int?>(
-            "SELECT RoleID FROM dbo.Roles WHERE RoleName = @RoleName",
-            new { request.RoleName });
+                if (roleId == null) continue;
 
-        if (roleId == null)
-            return BadRequest(new { message = "Invalid role." });
+                // Insert only if not already assigned
+                await connection.ExecuteAsync(@"
+                    IF NOT EXISTS (
+                        SELECT 1 FROM dbo.UserRoles 
+                        WHERE UserID = @UserID AND RoleID = @RoleID
+                    )
+                    INSERT INTO dbo.UserRoles (UserID, RoleID) 
+                    VALUES (@UserID, @RoleID)",
+                    new { UserID = existingUser, RoleID = roleId });
+            }
 
-        // Hash password using BCrypt
+            return Ok(new { message = "Role added to existing account." });
+        }
+
+        // Hash password
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-        // Insert user
-        await connection.ExecuteAsync(@"
-            INSERT INTO dbo.Users (FullName, Email, PasswordHash, RoleID)
-            VALUES (@FullName, @Email, @PasswordHash, @RoleID)",
+        // Insert new user
+        var newUserId = await connection.QuerySingleAsync<int>(@"
+            INSERT INTO dbo.Users (FullName, Email, PasswordHash)
+            OUTPUT INSERTED.UserID
+            VALUES (@FullName, @Email, @PasswordHash)",
             new
             {
                 request.FullName,
                 request.Email,
-                PasswordHash = passwordHash,
-                RoleID = roleId
+                PasswordHash = passwordHash
             });
+
+        // Insert all selected roles into UserRoles
+        foreach (var roleName in request.RoleNames)
+        {
+            var roleId = await connection.QueryFirstOrDefaultAsync<int?>(
+                "SELECT RoleID FROM dbo.Roles WHERE RoleName = @RoleName",
+                new { RoleName = roleName });
+
+            if (roleId == null) continue;
+
+            await connection.ExecuteAsync(@"
+                INSERT INTO dbo.UserRoles (UserID, RoleID) 
+                VALUES (@UserID, @RoleID)",
+                new { UserID = newUserId, RoleID = roleId });
+        }
 
         return StatusCode(201, new { message = "Account created successfully." });
     }
@@ -76,7 +102,7 @@ public class AuthController : ControllerBase
     // ===============================
     [HttpPost("login")]
     public async Task<IActionResult> Login(
-    [FromBody] RazorParked.API.Models.LoginRequest request)
+        [FromBody] RazorParked.API.Models.LoginRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Email) ||
             string.IsNullOrWhiteSpace(request.Password))
@@ -85,7 +111,6 @@ public class AuthController : ControllerBase
         }
 
         var connectionString = _config.GetConnectionString("DefaultConnection");
-
         using var connection = new SqlConnection(connectionString);
         await connection.OpenAsync();
 
@@ -98,21 +123,31 @@ public class AuthController : ControllerBase
         if (user == null)
             return Unauthorized(new { message = "Invalid email or password." });
 
-        // BCrypt password verification (Criteria 3)
         bool isValidPassword = BCrypt.Net.BCrypt.Verify(
             request.Password,
-            (string)user.PasswordHash
-        );
+            (string)user.PasswordHash);
 
         if (!isValidPassword)
             return Unauthorized(new { message = "Invalid email or password." });
+
+        // Fetch all roles for this user
+        var roles = await connection.QueryAsync<string>(
+            @"SELECT r.RoleName 
+              FROM dbo.UserRoles ur
+              JOIN dbo.Roles r ON ur.RoleID = r.RoleID
+              WHERE ur.UserID = @UserID",
+            new { UserID = user.UserID });
+
+        var roleList = roles.ToList();
 
         return Ok(new
         {
             message = "Login successful.",
             userId = user.UserID,
             fullName = user.FullName,
-            email = user.Email
+            email = user.Email,
+            roles = roleList,                          // e.g. ["Customer", "Host"]
+            role = roleList.Contains("Host") ? "Host" : "Customer"  // primary role
         });
     }
 }
