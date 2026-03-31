@@ -233,5 +233,94 @@ namespace RazorParked.Controllers
 
             return Ok(new { message = "Listing deleted successfully." });
         }
-    }
+        // ===============================
+        // POST /api/Listings/{id}/dates
+        // Save selected dates for a listing
+        // ===============================
+        [HttpPost("{id}/dates")]
+        public async Task<IActionResult> AddListingDates(int id, [FromBody] CreateListingDateRequest request)
+        {
+            if (id <= 0 || request.HostUserID <= 0 || request.Dates == null || !request.Dates.Any())
+                return BadRequest(new { message = "Invalid date data." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            // Verify listing belongs to this host
+            var ownerId = await connection.QuerySingleOrDefaultAsync<int?>(@"
+        SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
+                new { ListingID = id });
+
+            if (ownerId == null) return NotFound(new { message = "Listing not found." });
+            if (ownerId != request.HostUserID) return Forbid();
+
+            foreach (var date in request.Dates)
+            {
+                await connection.ExecuteAsync(@"
+            INSERT INTO dbo.ListingDates (ListingID, ListedDate, Label, CreatedAt)
+            VALUES (@ListingID, @ListedDate, @Label, GETUTCDATE())",
+                    new { ListingID = id, date.ListedDate, date.Label });
+            }
+
+            return StatusCode(201, new { message = "Dates saved successfully." });
+        }
+
+        // ===============================
+        // GET /api/Listings/{id}/dates
+        // Get all listed dates for a listing
+        // ===============================
+        [HttpGet("{id}/dates")]
+        public async Task<IActionResult> GetListingDates(int id)
+        {
+            if (id <= 0)
+                return BadRequest(new { message = "Invalid listing ID." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            var dates = await connection.QueryAsync<dynamic>(@"
+        SELECT DateID, ListingID, ListedDate, Label, CreatedAt
+        FROM dbo.ListingDates
+        WHERE ListingID = @ListingID
+        ORDER BY ListedDate ASC",
+                new { ListingID = id });
+
+            return Ok(dates);
+        }
+
+        // ===============================
+        // DELETE /api/Listings/{id}/dates/{dateId}
+        // Remove a specific listed date
+        // ===============================
+        [HttpDelete("{id}/dates/{dateId}")]
+        public async Task<IActionResult> DeleteListingDate(int id, int dateId, [FromQuery] int hostUserId)
+        {
+            if (id <= 0 || dateId <= 0 || hostUserId <= 0)
+                return BadRequest(new { message = "Invalid request." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            // Verify listing belongs to this host
+            var ownerId = await connection.QuerySingleOrDefaultAsync<int?>(@"
+        SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
+                new { ListingID = id });
+
+            if (ownerId == null) return NotFound(new { message = "Listing not found." });
+            if (ownerId != hostUserId) return Forbid();
+
+            var affected = await connection.ExecuteAsync(@"
+        DELETE FROM dbo.ListingDates
+        WHERE DateID = @DateID AND ListingID = @ListingID",
+                new { DateID = dateId, ListingID = id });
+
+            if (affected == 0)
+                return NotFound(new { message = "Date not found." });
+
+            return Ok(new { message = "Date removed successfully." });
+        }
+    } 
 }
