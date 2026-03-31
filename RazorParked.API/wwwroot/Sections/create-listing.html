@@ -1,0 +1,87 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: CREATE LISTING
+     Owner:   Shietsu
+     API:     POST /api/Listings
+     To edit: only touch this file!
+═══════════════════════════════════════════════════════ -->
+
+<div class="page-section active">
+    <button class="btn-ghost" onclick="showPage('host')" style="margin-bottom:24px">← Back to Dashboard</button>
+    <div class="form-card" style="max-width:600px">
+        <div class="card-top">
+            <div class="form-title">New Listing</div>
+            <div class="form-subtitle">Add a parking space to rent out on game days.</div>
+        </div>
+        <div class="form-group">
+            <label>Title</label>
+            <input id="cl-title" placeholder="e.g. Driveway near Razorback Stadium" />
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="cl-desc" rows="3" placeholder="Any details about your space..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Location / Address</label>
+            <input id="cl-location" placeholder="123 Dickson St, Fayetteville, AR" />
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Price per Hour ($)</label>
+                <input id="cl-price" type="number" placeholder="10" />
+            </div>
+            <div class="form-group">
+                <label>Latitude (optional)</label>
+                <input id="cl-lat" type="number" placeholder="36.0822" />
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Available From</label>
+                <input id="cl-from" type="datetime-local" />
+            </div>
+            <div class="form-group">
+                <label>Available To</label>
+                <input id="cl-to" type="datetime-local" />
+            </div>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:8px" onclick="createListing()">Create Listing</button>
+        <div id="cl-msg" class="msg"></div>
+    </div>
+</div>
+
+<script>
+    // ── POST /api/Listings ──
+    //Working changes
+    async function createListing() {
+        const msg = document.getElementById('cl-msg');
+        msg.className = 'msg';
+        try {
+            const res = await fetch('/api/Listings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    hostUserID   : window.currentUser.userId,
+                    title        : document.getElementById('cl-title').value,
+                    description  : document.getElementById('cl-desc').value,
+                    location     : document.getElementById('cl-location').value,
+                    pricePerHour : parseFloat(document.getElementById('cl-price').value),
+                    availableFrom: document.getElementById('cl-from').value,
+                    availableTo  : document.getElementById('cl-to').value,
+                    latitude     : parseFloat(document.getElementById('cl-lat').value) || null
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                msg.className   = 'msg success';
+                msg.textContent = 'Listing created successfully!';
+                setTimeout(() => showPage('host'), 1500);
+            } else {
+                msg.className   = 'msg error';
+                msg.textContent = data.message || 'Failed to create listing.';
+            }
+        } catch {
+            msg.className   = 'msg error';
+            msg.textContent = 'Connection error.';
+        }
+    }
+</script>

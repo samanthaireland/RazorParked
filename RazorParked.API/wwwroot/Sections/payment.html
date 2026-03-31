@@ -1,0 +1,70 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: PAYMENT
+     Owner:   Ryleigh
+     API:     POST /api/Payments
+     To edit: only touch this file!
+═══════════════════════════════════════════════════════ -->
+
+<div class="page-section active">
+    <button class="btn-ghost" onclick="showPage('my-reservations')" style="margin-bottom:24px">← Back to Reservations</button>
+    <div class="form-card">
+        <div class="card-top">
+            <div class="form-title">Confirm Payment</div>
+            <div class="form-subtitle">Complete your reservation payment.</div>
+        </div>
+        <div id="payment-summary" style="margin-bottom:24px"></div>
+        <div class="form-group">
+            <label>Payment Method</label>
+            <select id="pay-method">
+                <option value="Venmo">Venmo</option>
+                <option value="InAppCredit">In-App Credit</option>
+            </select>
+        </div>
+        <button class="btn-primary" style="width:100%" onclick="confirmPayment()">Confirm Payment</button>
+        <div id="pay-msg" class="msg"></div>
+    </div>
+</div>
+
+<script>
+    // Populate summary from global state set before navigating here
+    (function init() {
+        const summary = document.getElementById('payment-summary');
+        if (window.selectedReservationId) {
+            summary.innerHTML = `
+                <div class="detail-item">
+                    <label>Reservation ID</label>
+                    <span>#${window.selectedReservationId}</span>
+                </div>`;
+        }
+    })();
+
+    // ── POST /api/Payments ──
+    async function confirmPayment() {
+        const msg = document.getElementById('pay-msg');
+        msg.className = 'msg';
+        try {
+            const res = await fetch('/api/Payments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    reservationID : window.selectedReservationId,
+                    driverUserID  : window.currentUser.userId,
+                    amount        : window.selectedPaymentAmount,
+                    paymentMethod : document.getElementById('pay-method').value
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                msg.className   = 'msg success';
+                msg.textContent = 'Payment confirmed! Redirecting...';
+                setTimeout(() => showPage('my-reservations'), 2000);
+            } else {
+                msg.className   = 'msg error';
+                msg.textContent = data.message || 'Payment failed.';
+            }
+        } catch {
+            msg.className   = 'msg error';
+            msg.textContent = 'Connection error.';
+        }
+    }
+</script>
