@@ -1636,7 +1636,7 @@
                 const data = await res.json();
                 if (res.ok) {
                     msg.className = 'msg success';
-                    msg.textContent = 'Payment confirmed! Redirecting...';
+                    msg.textContent = 'Payment confirmed!! Redirecting...';
                     setTimeout(() => showPage('my-reservations'), 2000);
                 } else {
                     msg.className = 'msg error';
