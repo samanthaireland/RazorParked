@@ -1,107 +1,357 @@
 ﻿<!-- ═══════════════════════════════════════════════════════
-     SECTION: LISTING DETAIL + RESERVE
-     Owner:   Carter
-     API:     GET  /api/Listings/:id
-              POST /api/Reservations
-     To edit: only touch this file!
+     SECTION: HOST DASHBOARD + CREATE + EDIT + DELETE
+     API: GET    /api/Listings/host/{hostId}
+          POST   /api/Listings
+          PUT    /api/Listings/{id}
+          DELETE /api/Listings/{id}?hostUserId={hostId}
 ═══════════════════════════════════════════════════════ -->
 
 <div class="page-section active">
-    <button class="btn-ghost" onclick="showPage('search')" style="margin-bottom:24px">← Back to Search</button>
-    <div id="listing-detail-content">
-        <div class="loading">Loading listing...</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <h2 style="margin:0;font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px">My Listings</h2>
+        <button class="btn-primary" onclick="openCreateListingForm()">+ Create Listing</button>
+    </div>
+
+    <div id="host-listings-message" class="msg"></div>
+    <div id="host-listings-container">
+        <div class="loading">Loading your listings...</div>
+    </div>
+
+    <!-- Create/Edit Form -->
+    <div id="listing-form-card" class="form-card" style="display:none;margin-top:32px;max-width:100%">
+        <div class="card-top">
+            <div id="listing-form-title" class="form-title" style="font-size:24px">Create Listing</div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Title</label>
+                <input id="listing-title" type="text" />
+            </div>
+            <div class="form-group">
+                <label>Location</label>
+                <input id="listing-location" type="text" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="listing-description" rows="4"></textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Price Per Hour</label>
+                <input id="listing-price" type="number" step="0.01" min="0" />
+            </div>
+            <div class="form-group">
+                <label>Available</label>
+                <select id="listing-available">
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Available From</label>
+                <input id="listing-available-from" type="datetime-local" />
+            </div>
+            <div class="form-group">
+                <label>Available To</label>
+                <input id="listing-available-to" type="datetime-local" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Latitude</label>
+                <input id="listing-latitude" type="number" step="any" />
+            </div>
+            <div class="form-group">
+                <label>Longitude</label>
+                <input id="listing-longitude" type="number" step="any" />
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:20px">
+            <button id="listing-save-btn" class="btn-primary" onclick="saveListing()">Save Listing</button>
+            <button class="btn-ghost" onclick="cancelListingForm()">Cancel</button>
+        </div>
+
+        <div id="listing-form-message" class="msg"></div>
     </div>
 </div>
 
 <script>
-    // Auto-load whichever listing was selected before navigating here
-    (function init() {
-        if (window.selectedListingId) {
-            viewListing(window.selectedListingId);
-        }
-    })();
+    let hostListings = [];
+    let editingListingId = null;
 
-    // ── GET /api/Listings/:id ──
-    async function viewListing(id) {
-        window.selectedListingId = id;
-        const container = document.getElementById('listing-detail-content');
-        container.innerHTML = '<div class="loading">Loading...</div>';
+    async function loadHostListings() {
+        const container = document.getElementById('host-listings-container');
+        const msg = document.getElementById('host-listings-message');
+
+        msg.className = 'msg';
+        msg.textContent = '';
+
+        if (!window.currentUser || !window.currentUser.userId) {
+            container.innerHTML = `
+                <div class="empty">
+                    <p>Please log in as a host to manage your listings.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = '<div class="loading">Loading your listings...</div>';
 
         try {
-            const res = await fetch(`/api/Listings/${id}`);
-            const l   = await res.json();
+            const hostId = window.currentUser.userId;
+            const res = await fetch(`/api/Listings/host/${hostId}`);
+
+            if (!res.ok) {
+                throw new Error('Failed to load host listings.');
+            }
+
+            hostListings = await res.json();
+
+            if (!hostListings || hostListings.length === 0) {
+                container.innerHTML = `
+                    <div class="empty">
+                        <p>You do not have any listings yet.</p>
+                    </div>`;
+                return;
+            }
 
             container.innerHTML = `
-                <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
-                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}" style="margin-bottom:20px;display:inline-block">
-                    ${l.isAvailable ? 'Available' : 'Unavailable'}
-                </span>
-                <div class="detail-grid">
-                    <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
-                    <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
-                    <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
-                    <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
-                </div>
-                ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
-                ${l.isAvailable && window.currentUser ? `
-                    <div class="form-card" style="margin-top:24px;max-width:100%">
-                        <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
-                            <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
-                        </div>
-                        <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
-                        <div id="res-msg" class="msg"></div>
-                    </div>`
-                : (!window.currentUser
-                    ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
-                    : `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`
-                )}`;
-
-        } catch {
-            container.innerHTML = '<div class="empty"><p>Error loading listing.</p></div>';
+                <table class="data-table" style="width:100%;border-collapse:collapse">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;padding:12px;border-bottom:1px solid #ddd">Title</th>
+                            <th style="text-align:left;padding:12px;border-bottom:1px solid #ddd">Location</th>
+                            <th style="text-align:left;padding:12px;border-bottom:1px solid #ddd">Price</th>
+                            <th style="text-align:left;padding:12px;border-bottom:1px solid #ddd">Available</th>
+                            <th style="text-align:left;padding:12px;border-bottom:1px solid #ddd">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${hostListings.map(l => `
+                            <tr>
+                                <td style="padding:12px;border-bottom:1px solid #eee">${escapeHtml(l.title || '')}</td>
+                                <td style="padding:12px;border-bottom:1px solid #eee">${escapeHtml(l.location || '')}</td>
+                                <td style="padding:12px;border-bottom:1px solid #eee">$${l.pricePerHour ?? 0}/hr</td>
+                                <td style="padding:12px;border-bottom:1px solid #eee">${l.isAvailable ? 'Yes' : 'No'}</td>
+                                <td style="padding:12px;border-bottom:1px solid #eee;display:flex;gap:8px">
+                                    <button class="btn-ghost" onclick="openEditListingForm(${l.listingID})">Edit</button>
+                                    <button class="btn-ghost" style="color:#b00020;border-color:#b00020" onclick="deleteListing(${l.listingID})">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
+        } catch (error) {
+            container.innerHTML = `
+                <div class="empty">
+                    <p>Error loading your listings.</p>
+                </div>`;
         }
     }
 
-    // ── POST /api/Reservations ──
-    async function makeReservation() {
-        const msg = document.getElementById('res-msg');
+    function openCreateListingForm() {
+        editingListingId = null;
+        document.getElementById('listing-form-title').textContent = 'Create Listing';
+        document.getElementById('listing-save-btn').textContent = 'Create Listing';
+        clearListingForm();
+        showListingForm();
+    }
+
+    function openEditListingForm(listingId) {
+        const listing = hostListings.find(l => l.listingID === listingId);
+        if (!listing) return;
+
+        editingListingId = listingId;
+        document.getElementById('listing-form-title').textContent = 'Edit Listing';
+        document.getElementById('listing-save-btn').textContent = 'Update Listing';
+
+        document.getElementById('listing-title').value = listing.title || '';
+        document.getElementById('listing-location').value = listing.location || '';
+        document.getElementById('listing-description').value = listing.description || '';
+        document.getElementById('listing-price').value = listing.pricePerHour ?? '';
+        document.getElementById('listing-available').value = String(listing.isAvailable);
+        document.getElementById('listing-available-from').value = toDateTimeLocalValue(listing.availableFrom);
+        document.getElementById('listing-available-to').value = toDateTimeLocalValue(listing.availableTo);
+        document.getElementById('listing-latitude').value = listing.latitude ?? '';
+        document.getElementById('listing-longitude').value = listing.longitude ?? '';
+
+        showListingForm();
+    }
+
+    function showListingForm() {
+        document.getElementById('listing-form-card').style.display = 'block';
+        document.getElementById('listing-form-message').className = 'msg';
+        document.getElementById('listing-form-message').textContent = '';
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    function cancelListingForm() {
+        editingListingId = null;
+        clearListingForm();
+        document.getElementById('listing-form-card').style.display = 'none';
+        document.getElementById('listing-form-message').className = 'msg';
+        document.getElementById('listing-form-message').textContent = '';
+    }
+
+    function clearListingForm() {
+        document.getElementById('listing-title').value = '';
+        document.getElementById('listing-location').value = '';
+        document.getElementById('listing-description').value = '';
+        document.getElementById('listing-price').value = '';
+        document.getElementById('listing-available').value = 'true';
+        document.getElementById('listing-available-from').value = '';
+        document.getElementById('listing-available-to').value = '';
+        document.getElementById('listing-latitude').value = '';
+        document.getElementById('listing-longitude').value = '';
+    }
+
+    async function saveListing() {
+        const msg = document.getElementById('listing-form-message');
         msg.className = 'msg';
+        msg.textContent = '';
+
+        if (!window.currentUser || !window.currentUser.userId) {
+            msg.className = 'msg error';
+            msg.textContent = 'You must be logged in.';
+            return;
+        }
+
+        const title = document.getElementById('listing-title').value.trim();
+        const location = document.getElementById('listing-location').value.trim();
+        const description = document.getElementById('listing-description').value.trim();
+        const price = document.getElementById('listing-price').value;
+        const isAvailable = document.getElementById('listing-available').value === 'true';
+        const availableFrom = document.getElementById('listing-available-from').value;
+        const availableTo = document.getElementById('listing-available-to').value;
+        const latitude = document.getElementById('listing-latitude').value;
+        const longitude = document.getElementById('listing-longitude').value;
+
+        if (!title || !location || !price) {
+            msg.className = 'msg error';
+            msg.textContent = 'Please fill in title, location, and price.';
+            return;
+        }
+
+        const payload = {
+            hostUserID: window.currentUser.userId,
+            title: title,
+            description: description || null,
+            location: location,
+            pricePerHour: parseFloat(price),
+            isAvailable: isAvailable,
+            availableFrom: availableFrom || null,
+            availableTo: availableTo || null,
+            latitude: latitude ? parseFloat(latitude) : null,
+            longitude: longitude ? parseFloat(longitude) : null
+        };
+
         try {
-            const res = await fetch('/api/Reservations', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    listingID        : window.selectedListingId,
-                    driverUserID     : window.currentUser.userId,
-                    reservationStart : document.getElementById('res-start').value,
-                    reservationEnd   : document.getElementById('res-end').value
-                })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                msg.className   = 'msg success';
-                msg.textContent = `Reserved! Your spot: ${data.assignedSpotNumber}. Redirecting to payment...`;
-                window.selectedReservationId = data.reservationId;
-                setTimeout(() => showPaymentPage(data.reservationId), 2000);
+            let res;
+
+            if (editingListingId) {
+                payload.listingID = editingListingId;
+
+                res = await fetch(`/api/Listings/${editingListingId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
             } else {
-                msg.className   = 'msg error';
-                msg.textContent = data.message || 'Reservation failed.';
+                res = await fetch('/api/Listings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
             }
-        } catch {
-            msg.className   = 'msg error';
+
+            const data = await res.json().catch(() => ({}));
+
+            if (res.ok) {
+                msg.className = 'msg success';
+                msg.textContent = editingListingId
+                    ? 'Listing updated successfully.'
+                    : 'Listing created successfully.';
+
+                cancelListingForm();
+                await loadHostListings();
+            } else {
+                msg.className = 'msg error';
+                msg.textContent = data.message || 'Failed to save listing.';
+            }
+        } catch (error) {
+            msg.className = 'msg error';
             msg.textContent = 'Connection error.';
         }
     }
 
-    // Navigate to payment — also called from my-reservations.html
-    function showPaymentPage(reservationId, amount) {
-        window.selectedReservationId  = reservationId;
-        window.selectedPaymentAmount  = amount || 0;
-        showPage('payment');
+    async function deleteListing(listingId) {
+        if (!window.currentUser || !window.currentUser.userId) {
+            alert('You must be logged in.');
+            return;
+        }
+
+        const confirmed = confirm('Are you sure you want to delete this listing?');
+        if (!confirmed) return;
+
+        const hostId = window.currentUser.userId;
+        const msg = document.getElementById('host-listings-message');
+        msg.className = 'msg';
+        msg.textContent = '';
+
+        try {
+            const res = await fetch(`/api/Listings/${listingId}?hostUserId=${hostId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (res.ok) {
+                msg.className = 'msg success';
+                msg.textContent = 'Listing deleted successfully.';
+                await loadHostListings();
+            } else {
+                msg.className = 'msg error';
+                msg.textContent = data.message || 'Failed to delete listing.';
+            }
+        } catch (error) {
+            msg.className = 'msg error';
+            msg.textContent = 'Connection error.';
+        }
     }
 
-    // Expose so search.html map popups can navigate here
-    window.viewListing     = viewListing;
-    window.showPaymentPage = showPaymentPage;
+    function toDateTimeLocalValue(value) {
+        if (!value) return '';
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return '';
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - offset * 60000);
+        return localDate.toISOString().slice(0, 16);
+    }
+
+    function escapeHtml(str) {
+        return str
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    // Auto-load host listings when this page is shown
+    (function initHostDashboard() {
+        loadHostListings();
+    })();
+
+    window.loadHostListings = loadHostListings;
+    window.openCreateListingForm = openCreateListingForm;
+    window.openEditListingForm = openEditListingForm;
+    window.deleteListing = deleteListing;
 </script>
