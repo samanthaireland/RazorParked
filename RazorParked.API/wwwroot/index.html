@@ -1135,6 +1135,7 @@
         let selectedListingId = null;
         let selectedReservationId = null;
         let selectedPaymentAmount = 0;
+        let selectedListingPrice = 0;
 
         // Task 10 map state
         let leafletMap = null;
@@ -1456,6 +1457,7 @@
             try {
                 const res = await fetch(`/api/Listings/${id}`);
                 const l = await res.json();
+                selectedListingPrice = l.pricePerHour || 0;
                 container.innerHTML = `
                         <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
                         <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}" style="margin-bottom:20px;display:inline-block">
@@ -1504,7 +1506,12 @@
                     msg.className = 'msg success';
                     msg.textContent = `Reserved! Your spot: ${data.assignedSpotNumber}. Redirecting to payment...`;
                     selectedReservationId = data.reservationId;
-                    setTimeout(() => showPaymentPage(data.reservationId), 2000);
+                    // Calculate total: pricePerHour × hours reserved
+                    const start = new Date(document.getElementById('res-start').value);
+                    const end = new Date(document.getElementById('res-end').value);
+                    const hours = Math.max(1, Math.ceil((end - start) / 3600000));
+                    const total = selectedListingPrice * hours;
+                    setTimeout(() => showPaymentPage(data.reservationId, total), 2000);
                 } else {
                     msg.className = 'msg error';
                     msg.textContent = data.message || 'Reservation failed.';
