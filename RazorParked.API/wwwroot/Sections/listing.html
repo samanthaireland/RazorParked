@@ -106,8 +106,9 @@
         container.innerHTML = '<div class="loading">Loading your listings...</div>';
 
         try {
-            const hostId = window.currentUser.userId;
-            const res = await fetch(`/api/Listings/host/${hostId}`);
+            const res = await fetch(`/api/Listings/${id}`);
+            const l   = await res.json();
+            window.selectedListingPrice = l.pricePerHour || 0;
 
             if (!res.ok) {
                 throw new Error('Failed to load host listings.');
@@ -314,6 +315,15 @@
             const data = await res.json().catch(() => ({}));
 
             if (res.ok) {
+                msg.className   = 'msg success';
+                msg.textContent = `Reserved! Your spot: ${data.assignedSpotNumber}. Redirecting to payment...`;
+                window.selectedReservationId = data.reservationId;
+                // Calculate total: pricePerHour × hours reserved
+                const start = new Date(document.getElementById('res-start').value);
+                const end = new Date(document.getElementById('res-end').value);
+                const hours = Math.max(1, Math.ceil((end - start) / 3600000));
+                const total = (window.selectedListingPrice || 0) * hours;
+                setTimeout(() => showPaymentPage(data.reservationId, total), 2000);
                 msg.className = 'msg success';
                 msg.textContent = 'Listing deleted successfully.';
                 await loadHostListings();
