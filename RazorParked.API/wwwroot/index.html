@@ -1122,6 +1122,88 @@
         </div>
     </div>
 
+    <!-- ══════════════════════════════════════
+         PAGE: ENFORCEMENT (Carter — Sprint 4)
+         Task 13: Zone lookup — GET /api/Enforcement/zones
+         Task 14: Violation notify — POST /api/Enforcement/notify
+         Task 15: Status panel — GET /api/Enforcement/status/{id}
+    ══════════════════════════════════════ -->
+    <div id="page-enforcement" class="page">
+        <button class="btn-ghost" onclick="showPage('my-reservations')" style="margin-bottom:24px">← Back to Reservations</button>
+
+        <div class="page-header">
+            <h2>Parking Enforcement</h2>
+            <p>View enforcement zones, check reservation status, and report violations.</p>
+        </div>
+
+        <!-- ── ENFORCEMENT STATUS PANEL (Task 15 / Criteria 12) ── -->
+        <div id="enforcement-status-panel" style="display:none">
+            <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:32px">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+                    <div>
+                        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Enforcement Status</div>
+                        <div id="enf-title" style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px"></div>
+                    </div>
+                    <span id="enf-status-badge" class="badge"></span>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item"><label>Spot Number</label><span id="enf-spot"></span></div>
+                    <div class="detail-item"><label>Reservation Status</label><span id="enf-res-status"></span></div>
+                    <div class="detail-item"><label>Location</label><span id="enf-location"></span></div>
+                    <div class="detail-item"><label>Notifications</label><span id="enf-notification-count"></span></div>
+                </div>
+                <div id="enf-notifications-list" style="margin-top:16px"></div>
+            </div>
+        </div>
+
+        <!-- ── ENFORCEMENT ZONES (Task 13 / Criteria 10) ── -->
+        <div class="section-divider" style="margin-top:0"><span>Enforcement Zones</span></div>
+        <p style="font-size:14px;color:var(--muted);margin-bottom:16px">
+            Fayetteville parking enforcement zones near the University of Arkansas campus. Zones with <strong>High</strong> enforcement are strictly monitored on game days.
+        </p>
+        <div class="filters" style="margin-bottom:8px">
+            <div class="form-group">
+                <label>Filter Zones</label>
+                <input id="zone-filter" placeholder="e.g. Stadium, Dickson, Residential..." />
+            </div>
+            <button class="btn-primary" onclick="loadEnforcementZones()">Search Zones</button>
+        </div>
+        <div id="enforcement-zones" style="margin-top:20px">
+            <div class="loading">Loading enforcement zones...</div>
+        </div>
+
+        <!-- ── REPORT VIOLATION (Task 14 / Criteria 11) ── -->
+        <div class="section-divider"><span>Report a Violation</span></div>
+        <div class="form-card" style="max-width:600px">
+            <div class="card-top">
+                <div class="form-title" style="font-size:24px">Report Parking Violation</div>
+                <div class="form-subtitle">Notify enforcement of a potential violation on your listing.</div>
+            </div>
+            <div class="form-group">
+                <label>Reservation ID</label>
+                <input id="enf-res-id" type="number" placeholder="e.g. 17" />
+            </div>
+            <div class="form-group">
+                <label>Violation Type</label>
+                <select id="enf-violation-type">
+                    <option value="">Select a violation</option>
+                    <option value="Unauthorized Vehicle">Unauthorized Vehicle</option>
+                    <option value="Expired Reservation">Expired Reservation</option>
+                    <option value="Wrong Spot">Parked in Wrong Spot</option>
+                    <option value="Blocking Access">Blocking Driveway/Access</option>
+                    <option value="No Permit Displayed">No Permit Displayed</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Description (optional)</label>
+                <textarea id="enf-description" rows="3" placeholder="Describe the violation..."></textarea>
+            </div>
+            <button class="btn-primary" style="width:100%" onclick="submitViolationReport()">Submit Report</button>
+            <div id="enf-notify-msg" class="msg"></div>
+        </div>
+    </div>
+
     <footer>
         <div class="footer-logo">🐗 RazorParked</div>
         <div>University of Arkansas &nbsp;·&nbsp; Fayetteville, AR &nbsp;·&nbsp; <span>Go Hogs!</span></div>
@@ -1150,6 +1232,7 @@
             document.getElementById('page-' + name).classList.add('active');
             if (name === 'host' && currentUser) loadHostListings();
             if (name === 'my-reservations' && currentUser) loadMyReservations();
+            if (name === 'enforcement') loadEnforcementZones();
             // Task 10: force map to recalculate size when returning to search
             if (name === 'search' && currentView === 'map' && leafletMap) {
                 setTimeout(() => leafletMap.invalidateSize(), 150);
@@ -1614,6 +1697,7 @@
                                     <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="showPaymentPage(${r.reservationID}, ${r.pricePerHour})">Pay</button>
                                     <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID})">Cancel</button>
                                 </div>` : ''}
+                            <button class="btn-ghost" style="width:100%;text-align:center;margin-top:8px;font-size:12px" onclick="loadEnforcementStatus(${r.reservationID})">🛡️ Enforcement Status</button>
                         </div>`).join('')}</div>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reservations.</p></div>'; }
         }
@@ -1662,6 +1746,179 @@
                     loadMyReservations();
                 } else { alert(data.message || 'Cancellation failed.'); }
             } catch { alert('Connection error.'); }
+        }
+
+        // ══════════════════════════════════════
+        // ENFORCEMENT — Carter (Sprint 4)
+        // Task 13: Zone lookup
+        // Task 14: Violation notification
+        // Task 15: Status panel
+        // ══════════════════════════════════════
+
+        // ── Task 13 / Criteria 10: Load enforcement zones ──
+        async function loadEnforcementZones() {
+            const filter = document.getElementById('zone-filter').value.trim();
+            const container = document.getElementById('enforcement-zones');
+            container.innerHTML = '<div class="loading">Loading enforcement zones...</div>';
+
+            const params = new URLSearchParams();
+            if (filter) params.append('location', filter);
+            const url = '/api/Enforcement/zones' + (params.toString() ? '?' + params.toString() : '');
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('API error');
+                const zones = await res.json();
+
+                if (!zones || zones.length === 0) {
+                    container.innerHTML = '<div class="empty"><div class="empty-icon">🚧</div><p>No enforcement zones found for that filter.</p></div>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="results-meta">
+                        <span class="results-count"><strong>${zones.length}</strong> zone${zones.length !== 1 ? 's' : ''} found</span>
+                    </div>
+                    <div class="listings-grid">
+                        ${zones.map(z => `
+                            <div class="listing-card" style="cursor:default">
+                                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                    <h3>${z.zoneName}</h3>
+                                    <span class="badge ${z.enforcementLevel === 'High' ? 'unavailable' : z.enforcementLevel === 'Medium' ? 'available' : 'available'}"
+                                          style="${z.enforcementLevel === 'Medium' ? 'background:#fdf6e8;color:#7a5a10;border-color:#c0892a' : ''}">
+                                        ${z.enforcementLevel}
+                                    </span>
+                                </div>
+                                <p style="font-size:14px;color:var(--muted);margin-bottom:10px">${z.description}</p>
+                                <div style="font-size:13px;color:var(--muted)">
+                                    🕐 ${z.enforcementHours}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>`;
+            } catch {
+                container.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><p>Error loading enforcement zones.</p></div>';
+            }
+        }
+
+        // ── Task 14 / Criteria 11: Submit violation report ──
+        async function submitViolationReport() {
+            const msg = document.getElementById('enf-notify-msg');
+            msg.className = 'msg';
+
+            const reservationId = parseInt(document.getElementById('enf-res-id').value);
+            const violationType = document.getElementById('enf-violation-type').value;
+            const description = document.getElementById('enf-description').value.trim();
+
+            if (!reservationId || reservationId <= 0) {
+                msg.className = 'msg error';
+                msg.textContent = 'Please enter a valid reservation ID.';
+                return;
+            }
+            if (!violationType) {
+                msg.className = 'msg error';
+                msg.textContent = 'Please select a violation type.';
+                return;
+            }
+            if (!currentUser) {
+                msg.className = 'msg error';
+                msg.textContent = 'You must be logged in to report a violation.';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/Enforcement/notify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        reservationID: reservationId,
+                        reporterUserID: currentUser.userId,
+                        violationType: violationType,
+                        description: description || null
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    msg.className = 'msg success';
+                    msg.textContent = `Violation reported successfully! Notification #${data.notificationId} is now ${data.status}.`;
+                    // Clear form
+                    document.getElementById('enf-violation-type').value = '';
+                    document.getElementById('enf-description').value = '';
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = data.message || 'Failed to submit report.';
+                }
+            } catch {
+                msg.className = 'msg error';
+                msg.textContent = 'Connection error.';
+            }
+        }
+
+        // ── Task 15 / Criteria 12: Load enforcement status for a reservation ──
+        async function loadEnforcementStatus(reservationId) {
+            showPage('enforcement');
+            const panel = document.getElementById('enforcement-status-panel');
+            panel.style.display = 'block';
+
+            // Pre-fill the reservation ID in the report form
+            document.getElementById('enf-res-id').value = reservationId;
+
+            try {
+                const res = await fetch(`/api/Enforcement/status/${reservationId}`);
+                if (!res.ok) throw new Error('API error');
+                const data = await res.json();
+
+                document.getElementById('enf-title').textContent = data.title;
+                document.getElementById('enf-spot').textContent = data.assignedSpotNumber;
+                document.getElementById('enf-res-status').textContent = data.reservationStatus;
+                document.getElementById('enf-location').textContent = '📍 ' + data.location;
+
+                const badge = document.getElementById('enf-status-badge');
+                if (data.enforcementStatus === 'Clear') {
+                    badge.className = 'badge available';
+                    badge.textContent = '✓ Clear';
+                } else if (data.enforcementStatus === 'Under Review') {
+                    badge.className = 'badge';
+                    badge.style.cssText = 'background:#fdf6e8;color:#7a5a10;border:1px solid #c0892a';
+                    badge.textContent = '⚠ Under Review';
+                } else {
+                    badge.className = 'badge available';
+                    badge.textContent = '✓ Resolved';
+                }
+
+                const countEl = document.getElementById('enf-notification-count');
+                countEl.textContent = data.totalNotifications === 0
+                    ? 'None — all clear'
+                    : `${data.totalNotifications} total (${data.pendingNotifications} pending)`;
+
+                // Show notification history
+                const listEl = document.getElementById('enf-notifications-list');
+                if (data.notifications && data.notifications.length > 0) {
+                    listEl.innerHTML = `
+                        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Notification History</div>
+                        ${data.notifications.map(n => `
+                            <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+                                <div>
+                                    <strong style="font-size:14px">${n.violationType}</strong>
+                                    ${n.description ? `<div style="font-size:13px;color:var(--muted);margin-top:2px">${n.description}</div>` : ''}
+                                    <div style="font-size:12px;color:var(--muted2);margin-top:4px">${new Date(n.createdAt).toLocaleString()}</div>
+                                </div>
+                                <span class="badge ${n.status === 'Pending' ? '' : 'available'}"
+                                      style="${n.status === 'Pending' ? 'background:#fdf6e8;color:#7a5a10;border:1px solid #c0892a' : ''}">
+                                    ${n.status}
+                                </span>
+                            </div>
+                        `).join('')}`;
+                } else {
+                    listEl.innerHTML = '';
+                }
+
+            } catch {
+                panel.innerHTML = '<div class="msg error" style="display:block">Could not load enforcement status.</div>';
+            }
+
+            // Also load zones below
+            loadEnforcementZones();
         }
 
         // ══════════════════════════════════════
