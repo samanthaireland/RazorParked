@@ -322,5 +322,127 @@ namespace RazorParked.Controllers
 
             return Ok(new { message = "Date removed successfully." });
         }
+        // ===============================
+        // POST /api/Listings/bulk
+        // Create multiple listings at once
+        // ===============================
+        [HttpPost("bulk")]
+        public async Task<IActionResult> CreateBulkListings([FromBody] BulkListingRequest request)
+        {
+            if (request.HostUserID <= 0 || request.Listings == null || !request.Listings.Any())
+                return BadRequest(new { message = "Invalid bulk listing data." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            // Verify host exists
+            var hostExists = await connection.QueryFirstOrDefaultAsync<int?>(
+                "SELECT UserID FROM dbo.Users WHERE UserID = @HostUserID",
+                new { request.HostUserID });
+
+            if (hostExists == null)
+                return NotFound(new { message = "Host user not found." });
+
+            var createdIds = new List<int>();
+
+            foreach (var listing in request.Listings)
+            {
+                var newId = await connection.QuerySingleAsync<int>(@"
+            INSERT INTO dbo.ParkingListings 
+                (HostUserID, Title, Description, Location, PricePerHour, IsAvailable, AvailableFrom, AvailableTo)
+            VALUES 
+                (@HostUserID, @Title, @Description, @Location, @PricePerHour, 1, @AvailableFrom, @AvailableTo);
+            SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                    new
+                    {
+                        HostUserID = request.HostUserID,
+                        listing.Title,
+                        listing.Description,
+                        listing.Location,
+                        listing.PricePerHour,
+                        listing.AvailableFrom,
+                        listing.AvailableTo
+                    });
+
+                createdIds.Add(newId);
+            }
+
+            return StatusCode(201, new
+            {
+                message = $"{createdIds.Count} listings created successfully.",
+                listingIds = createdIds
+            });
+        }
+
+        // ===============================
+        // PATCH /api/Listings/{id}/businessHours
+        // Set business hours for a listing
+        // ===============================
+        [HttpPatch("{id}/businessHours")]
+        public async Task<IActionResult> SetBusinessHours(int id, [FromBody] BusinessHoursRequest request)
+        {
+            if (id <= 0 || request.HostUserID <= 0 || request.Hours == null || !request.Hours.Any())
+                return BadRequest(new { message = "Invalid business hours data." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            // Verify listing belongs to this host
+            var ownerId = await connection.QuerySingleOrDefaultAsync<int?>(@"
+        SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
+                new { ListingID = id });
+
+            if (ownerId == null) return NotFound(new { message = "Listing not found." });
+            if (ownerId != request.HostUserID) return Forbid();
+
+            // Clear existing hours and replace
+            await connection.ExecuteAsync(@"
+        DELETE FROM dbo.BusinessHours WHERE ListingID = @ListingID",
+                new { ListingID = id });
+
+            foreach (var hour in request.Hours)
+            {
+                await connection.ExecuteAsync(@"
+            INSERT INTO dbo.BusinessHours (ListingID, DayOfWeek, OpenTime, CloseTime, CreatedAt)
+            VALUES (@ListingID, @DayOfWeek, @OpenTime, @CloseTime, GETUTCDATE())",
+                    new { ListingID = id, hour.DayOfWeek, hour.OpenTime, hour.CloseTime });
+            }
+
+            return Ok(new { message = "Business hours updated successfully." });
+        }
+
+        // ===============================
+        // PATCH /api/Listings/{id}/disable
+        // Temporarily disable or enable a listing
+        // ===============================
+        [HttpPatch("{id}/disable")]
+        public async Task<IActionResult> DisableListing(int id, [FromBody] DisableListingRequest request)
+        {
+            if (id <= 0 || request.HostUserID <= 0)
+                return BadRequest(new { message = "Invalid request." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            // Verify listing belongs to this host
+            var ownerId = await connection.QuerySingleOrDefaultAsync<int?>(@"
+        SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
+                new { ListingID = id });
+
+            if (ownerId == null) return NotFound(new { message = "Listing not found." });
+            if (ownerId != request.HostUserID) return Forbid();
+
+            await connection.ExecuteAsync(@"
+        UPDATE dbo.ParkingListings
+        SET IsDisabled = @IsDisabled
+        WHERE ListingID = @ListingID",
+                new { ListingID = id, request.IsDisabled });
+
+            var status = request.IsDisabled ? "disabled" : "enabled";
+            return Ok(new { message = $"Listing {status} successfully.", isDisabled = request.IsDisabled });
+        }
     } 
 }
