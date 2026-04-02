@@ -9,5 +9,6 @@ namespace RazorParked.API.Models
         public string PaymentMethod { get; set; } = ""; // Venmo, InAppCredit
         public string Status { get; set; } = "Pending"; // Pending, Confirmed
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public Reservation Reservation { get; set; }
     }
 }

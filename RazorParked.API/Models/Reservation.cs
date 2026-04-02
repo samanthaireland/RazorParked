@@ -10,5 +10,6 @@ namespace RazorParked.API.Models
         public DateTime ReservationEnd { get; set; }
         public string Status { get; set; } = "Confirmed"; // Confirmed, Cancelled
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public ParkingListing Listing { get; set; }
     }
 }
