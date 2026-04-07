@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Host Reports</title>
+</head>
+<body>
+
+    <h1>Host Reports</h1>
+
+    <h2>Total Earnings</h2>
+    <div id="earnings"></div>
+
+    <h2>Reservations</h2>
+    <ul id="reservations"></ul>
+
+    <h2>Usage</h2>
+    <div id="usage"></div>
+
+    <script>
+const hostId = 1;
+
+// Earnings
+fetch(`/api/Reports/host/${hostId}/earnings`)
+.then(res => res.json())
+.then(data => {
+    document.getElementById("earnings").innerHTML =
+        "Total: $" + data.totalEarnings;
+
+    data.breakdown.forEach(item => {
+        const p = document.createElement("p");
+        p.textContent = item.listing + ": $" + item.total;
+        document.getElementById("earnings").appendChild(p);
+    });
+});
+
+// Reservations
+fetch(`/api/Reports/host/${hostId}/reservations`)
+.then(res => res.json())
+.then(data => {
+    data.forEach(r => {
+        const li = document.createElement("li");
+        li.textContent = `${r.listing} | ${r.status}`;
+        document.getElementById("reservations").appendChild(li);
+    });
+});
+
+// Usage
+fetch(`/api/Reports/host/${hostId}/usage`)
+.then(res => res.json())
+.then(data => {
+    document.getElementById("usage").innerHTML =
+        "Total: " + data.totalReservations +
+        "<br>Confirmed: " + data.confirmed +
+        "<br>Cancelled: " + data.cancelled;
+});
+    </script>
+
+</body>
+</html>

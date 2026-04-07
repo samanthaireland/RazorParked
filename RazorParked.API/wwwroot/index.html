@@ -1036,11 +1036,23 @@
                 <button class="btn-secondary" onclick="showPage('bulk-listing')">+ Bulk Listing</button>
                 <button class="btn-secondary" onclick="showPage('business-hours')">🕐 Business Hours</button>
                 <button class="btn-secondary" onclick="showPage('disable-listing')">🚫 Disable Space</button>
+                <button class="btn-secondary" onclick="showPage('host-reports')">📊 Reports</button>
             </div>
         </div>
         <div id="host-listings">
             <div class="loading">Loading your listings...</div>
         </div>
+    </div>
+    </div>   <!-- page-host ends -->
+    <!-- ✅ ADD HERE -->
+    <div id="page-host-reports" class="page">
+        <button onclick="showPage('host')">← Back</button>
+
+        <h2>Host Reports</h2>
+
+        <div id="earnings-report">Loading earnings...</div>
+        <div id="reservations-report">Loading reservations...</div>
+        <div id="usage-report">Loading usage...</div>
     </div>
 
     <!-- ══════════════════════════════════════
@@ -1340,6 +1352,7 @@
             if (name === 'host' && currentUser) loadHostListings();
             if (name === 'my-reservations' && currentUser) loadMyReservations();
             if (name === 'enforcement') loadEnforcementZones();
+            if (name === 'host-reports' && currentUser) loadHostReports();
             // Task 10: force map to recalculate size when returning to search
             if (name === 'search' && currentView === 'map' && leafletMap) {
                 setTimeout(() => leafletMap.invalidateSize(), 150);
@@ -1454,35 +1467,35 @@
 
                 if (!listings || listings.length === 0) {
                     container.innerHTML = `
-                                <div class="empty">
-                                    <div class="empty-icon">🅿️</div>
-                                    <p>No listings found. Try adjusting your filters.</p>
-                                </div>`;
+                                    <div class="empty">
+                                        <div class="empty-icon">🅿️</div>
+                                        <p>No listings found. Try adjusting your filters.</p>
+                                    </div>`;
                     if (currentView === 'map') clearMapMarkers();
                     return;
                 }
 
                 // Show result count + card grid
                 container.innerHTML = `
-                            <div class="results-meta">
-                                <span class="results-count">
-                                    <strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found
-                                </span>
-                            </div>
-                            <div class="listings-grid">
-                                ${listings.map(l => `
-                                    <div class="listing-card" onclick="viewListing(${l.listingID})">
-                                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                            <h3>${l.title}</h3>
-                                            <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">
-                                                ${l.isAvailable ? 'Available' : 'Taken'}
-                                            </span>
+                                <div class="results-meta">
+                                    <span class="results-count">
+                                        <strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found
+                                    </span>
+                                </div>
+                                <div class="listings-grid">
+                                    ${listings.map(l => `
+                                        <div class="listing-card" onclick="viewListing(${l.listingID})">
+                                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                                <h3>${l.title}</h3>
+                                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">
+                                                    ${l.isAvailable ? 'Available' : 'Taken'}
+                                                </span>
+                                            </div>
+                                            <div class="location">📍 ${l.location || l.approximateLocation || 'Fayetteville, AR'}</div>
+                                            <div class="price">$${l.pricePerHour}<span>/hr</span></div>
                                         </div>
-                                        <div class="location">📍 ${l.location || l.approximateLocation || 'Fayetteville, AR'}</div>
-                                        <div class="price">$${l.pricePerHour}<span>/hr</span></div>
-                                    </div>
-                                `).join('')}
-                            </div>`;
+                                    `).join('')}
+                                </div>`;
 
                 // If map view is already active, refresh the map with new results
                 if (currentView === 'map') {
@@ -1491,10 +1504,10 @@
 
             } catch (err) {
                 container.innerHTML = `
-                            <div class="empty">
-                                <div class="empty-icon">⚠️</div>
-                                <p>Error loading listings. Make sure the API is running.</p>
-                            </div>`;
+                                <div class="empty">
+                                    <div class="empty-icon">⚠️</div>
+                                    <p>Error loading listings. Make sure the API is running.</p>
+                                </div>`;
             }
         }
 
@@ -1561,13 +1574,13 @@
                 const redIcon = L.divIcon({
                     className: '',
                     html: `<div style="
-                                width:28px; height:28px;
-                                background:#9d2235;
-                                border:3px solid #fff;
-                                border-radius:50% 50% 50% 0;
-                                transform:rotate(-45deg);
-                                box-shadow:0 3px 10px rgba(157,34,53,0.45);
-                            "></div>`,
+                                    width:28px; height:28px;
+                                    background:#9d2235;
+                                    border:3px solid #fff;
+                                    border-radius:50% 50% 50% 0;
+                                    transform:rotate(-45deg);
+                                    box-shadow:0 3px 10px rgba(157,34,53,0.45);
+                                "></div>`,
                     iconSize: [28, 28],
                     iconAnchor: [14, 28],
                     popupAnchor: [0, -30]
@@ -1592,19 +1605,19 @@
 
                     // Popup card with listing info and link to detail page
                     marker.bindPopup(`
-                                <div class="map-popup">
-                                    <div class="map-popup-title">${listing.title}</div>
-                                    <div class="map-popup-location">📍 ${listing.location || listing.approximateLocation || 'Fayetteville, AR'}</div>
-                                    <div class="map-popup-price">$${listing.pricePerHour}<span>/hr</span></div>
-                                    <div class="map-popup-badge">
-                                        <span class="badge ${listing.isAvailable ? 'available' : 'unavailable'}">
-                                            ${listing.isAvailable ? 'Available' : 'Taken'}
-                                        </span>
-                                    </div>
-                                    <button class="map-popup-btn" onclick="viewListing(${listing.listingID})">
-                                        View &amp; Reserve
-                                    </button>
-                                </div>`, { maxWidth: 230 });
+                                    <div class="map-popup">
+                                        <div class="map-popup-title">${listing.title}</div>
+                                        <div class="map-popup-location">📍 ${listing.location || listing.approximateLocation || 'Fayetteville, AR'}</div>
+                                        <div class="map-popup-price">$${listing.pricePerHour}<span>/hr</span></div>
+                                        <div class="map-popup-badge">
+                                            <span class="badge ${listing.isAvailable ? 'available' : 'unavailable'}">
+                                                ${listing.isAvailable ? 'Available' : 'Taken'}
+                                            </span>
+                                        </div>
+                                        <button class="map-popup-btn" onclick="viewListing(${listing.listingID})">
+                                            View &amp; Reserve
+                                        </button>
+                                    </div>`, { maxWidth: 230 });
 
                     mapMarkers.push(marker);
                 });
@@ -1649,27 +1662,27 @@
                 const l = await res.json();
                 selectedListingPrice = l.pricePerHour || 0;
                 container.innerHTML = `
-                            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
-                            <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}" style="margin-bottom:20px;display:inline-block">
-                                ${l.isAvailable ? 'Available' : 'Unavailable'}
-                            </span>
-                            <div class="detail-grid">
-                                <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
-                                <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
-                                <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
-                                <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
-                            </div>
-                            ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
-                            ${l.isAvailable && currentUser ? `
-                                <div class="form-card" style="margin-top:24px;max-width:100%">
-                                    <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
-                                    <div class="form-row">
-                                        <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
-                                        <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
-                                    </div>
-                                    <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
-                                    <div id="res-msg" class="msg"></div>
-                                </div>`
+                                <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
+                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}" style="margin-bottom:20px;display:inline-block">
+                                    ${l.isAvailable ? 'Available' : 'Unavailable'}
+                                </span>
+                                <div class="detail-grid">
+                                    <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
+                                    <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
+                                    <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
+                                    <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
+                                </div>
+                                ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
+                                ${l.isAvailable && currentUser ? `
+                                    <div class="form-card" style="margin-top:24px;max-width:100%">
+                                        <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
+                                        <div class="form-row">
+                                            <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
+                                            <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
+                                        </div>
+                                        <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
+                                        <div id="res-msg" class="msg"></div>
+                                    </div>`
                         : (!currentUser
                             ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
                             : `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`
@@ -1724,15 +1737,15 @@
                     return;
                 }
                 container.innerHTML = `<div class="listings-grid">${listings.map(l => `
-                            <div class="listing-card">
-                                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                    <h3>${l.title}</h3>
-                                    <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
-                                </div>
-                                <div class="location">📍 ${l.location}</div>
-                                <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
-                                <button class="btn-secondary" style="width:100%;padding:8px;font-size:13px" onclick="deleteListing(${l.listingID})">Delete</button>
-                            </div>`).join('')}</div>`;
+                                <div class="listing-card">
+                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                        <h3>${l.title}</h3>
+                                        <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
+                                    </div>
+                                    <div class="location">📍 ${l.location}</div>
+                                    <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
+                                    <button class="btn-secondary" style="width:100%;padding:8px;font-size:13px" onclick="deleteListing(${l.listingID})">Delete</button>
+                                </div>`).join('')}</div>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>'; }
         }
 
@@ -1789,23 +1802,23 @@
                     return;
                 }
                 container.innerHTML = `<div class="listings-grid">${reservations.map(r => `
-                            <div class="listing-card">
-                                <h3>${r.title}</h3>
-                                <div class="location">📍 ${r.fullAddress}</div>
-                                <div style="margin:10px 0">
-                                    <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
-                                </div>
-                                <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong></div>
-                                <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
-                                    ${new Date(r.reservationStart).toLocaleString()} → ${new Date(r.reservationEnd).toLocaleString()}
-                                </div>
-                                ${r.status === 'Confirmed' ? `
-                                    <div style="display:flex;gap:8px">
-                                        <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="showPaymentPage(${r.reservationID}, ${r.pricePerHour})">Pay</button>
-                                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID})">Cancel</button>
-                                    </div>` : ''}
-                                <button class="btn-ghost" style="width:100%;text-align:center;margin-top:8px;font-size:12px" onclick="loadEnforcementStatus(${r.reservationID})">🛡️ Enforcement Status</button>
-                            </div>`).join('')}</div>`;
+                                <div class="listing-card">
+                                    <h3>${r.title}</h3>
+                                    <div class="location">📍 ${r.fullAddress}</div>
+                                    <div style="margin:10px 0">
+                                        <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
+                                    </div>
+                                    <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong></div>
+                                    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+                                        ${new Date(r.reservationStart).toLocaleString()} → ${new Date(r.reservationEnd).toLocaleString()}
+                                    </div>
+                                    ${r.status === 'Confirmed' ? `
+                                        <div style="display:flex;gap:8px">
+                                            <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="showPaymentPage(${r.reservationID}, ${r.pricePerHour})">Pay</button>
+                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID})">Cancel</button>
+                                        </div>` : ''}
+                                    <button class="btn-ghost" style="width:100%;text-align:center;margin-top:8px;font-size:12px" onclick="loadEnforcementStatus(${r.reservationID})">🛡️ Enforcement Status</button>
+                                </div>`).join('')}</div>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reservations.</p></div>'; }
         }
 
@@ -1813,7 +1826,7 @@
             selectedReservationId = reservationId;
             selectedPaymentAmount = amount || 0;
             document.getElementById('payment-summary').innerHTML = `
-                        <div class="detail-item"><label>Reservation ID</label><span>#${reservationId}</span></div>`;
+                            <div class="detail-item"><label>Reservation ID</label><span>#${reservationId}</span></div>`;
             showPage('payment');
         }
 
@@ -1883,26 +1896,26 @@
                 }
 
                 container.innerHTML = `
-                        <div class="results-meta">
-                            <span class="results-count"><strong>${zones.length}</strong> zone${zones.length !== 1 ? 's' : ''} found</span>
-                        </div>
-                        <div class="listings-grid">
-                            ${zones.map(z => `
-                                <div class="listing-card" style="cursor:default">
-                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                        <h3>${z.zoneName}</h3>
-                                        <span class="badge ${z.enforcementLevel === 'High' ? 'unavailable' : z.enforcementLevel === 'Medium' ? 'available' : 'available'}"
-                                              style="${z.enforcementLevel === 'Medium' ? 'background:#fdf6e8;color:#7a5a10;border-color:#c0892a' : ''}">
-                                            ${z.enforcementLevel}
-                                        </span>
+                            <div class="results-meta">
+                                <span class="results-count"><strong>${zones.length}</strong> zone${zones.length !== 1 ? 's' : ''} found</span>
+                            </div>
+                            <div class="listings-grid">
+                                ${zones.map(z => `
+                                    <div class="listing-card" style="cursor:default">
+                                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                            <h3>${z.zoneName}</h3>
+                                            <span class="badge ${z.enforcementLevel === 'High' ? 'unavailable' : z.enforcementLevel === 'Medium' ? 'available' : 'available'}"
+                                                  style="${z.enforcementLevel === 'Medium' ? 'background:#fdf6e8;color:#7a5a10;border-color:#c0892a' : ''}">
+                                                ${z.enforcementLevel}
+                                            </span>
+                                        </div>
+                                        <p style="font-size:14px;color:var(--muted);margin-bottom:10px">${z.description}</p>
+                                        <div style="font-size:13px;color:var(--muted)">
+                                            🕐 ${z.enforcementHours}
+                                        </div>
                                     </div>
-                                    <p style="font-size:14px;color:var(--muted);margin-bottom:10px">${z.description}</p>
-                                    <div style="font-size:13px;color:var(--muted)">
-                                        🕐 ${z.enforcementHours}
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>`;
+                                `).join('')}
+                            </div>`;
             } catch {
                 container.innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><p>Error loading enforcement zones.</p></div>';
             }
@@ -2002,20 +2015,20 @@
                 const listEl = document.getElementById('enf-notifications-list');
                 if (data.notifications && data.notifications.length > 0) {
                     listEl.innerHTML = `
-                            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Notification History</div>
-                            ${data.notifications.map(n => `
-                                <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-                                    <div>
-                                        <strong style="font-size:14px">${n.violationType}</strong>
-                                        ${n.description ? `<div style="font-size:13px;color:var(--muted);margin-top:2px">${n.description}</div>` : ''}
-                                        <div style="font-size:12px;color:var(--muted2);margin-top:4px">${new Date(n.createdAt).toLocaleString()}</div>
+                                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Notification History</div>
+                                ${data.notifications.map(n => `
+                                    <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+                                        <div>
+                                            <strong style="font-size:14px">${n.violationType}</strong>
+                                            ${n.description ? `<div style="font-size:13px;color:var(--muted);margin-top:2px">${n.description}</div>` : ''}
+                                            <div style="font-size:12px;color:var(--muted2);margin-top:4px">${new Date(n.createdAt).toLocaleString()}</div>
+                                        </div>
+                                        <span class="badge ${n.status === 'Pending' ? '' : 'available'}"
+                                              style="${n.status === 'Pending' ? 'background:#fdf6e8;color:#7a5a10;border:1px solid #c0892a' : ''}">
+                                            ${n.status}
+                                        </span>
                                     </div>
-                                    <span class="badge ${n.status === 'Pending' ? '' : 'available'}"
-                                          style="${n.status === 'Pending' ? 'background:#fdf6e8;color:#7a5a10;border:1px solid #c0892a' : ''}">
-                                        ${n.status}
-                                    </span>
-                                </div>
-                            `).join('')}`;
+                                `).join('')}`;
                 } else {
                     listEl.innerHTML = '';
                 }
@@ -2043,18 +2056,18 @@
             div.className = 'spot-block';
             div.style.cssText = 'background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px';
             div.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--red)">Space ${bulkSpotCount}</div>
-            <button onclick="this.closest('.spot-block').remove()" style="background:none;border:1.5px solid #e8b4bc;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer">Remove</button>
-        </div>
-        <div class="form-group"><label>Title</label><input class="bulk-title" placeholder="e.g. Business Lot Space ${bulkSpotCount}" /></div>
-        <div class="form-group"><label>Description</label><input class="bulk-desc" placeholder="Details about this space..." /></div>
-        <div class="form-group"><label>Location / Address</label><input class="bulk-location" placeholder="123 Dickson St, Fayetteville, AR" /></div>
-        <div class="form-row">
-            <div class="form-group"><label>Price / hr ($)</label><input class="bulk-price" type="number" placeholder="10" /></div>
-            <div class="form-group"><label>Available From</label><input class="bulk-from" type="datetime-local" /></div>
-        </div>
-        <div class="form-group"><label>Available To</label><input class="bulk-to" type="datetime-local" /></div>`;
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--red)">Space ${bulkSpotCount}</div>
+                <button onclick="this.closest('.spot-block').remove()" style="background:none;border:1.5px solid #e8b4bc;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer">Remove</button>
+            </div>
+            <div class="form-group"><label>Title</label><input class="bulk-title" placeholder="e.g. Business Lot Space ${bulkSpotCount}" /></div>
+            <div class="form-group"><label>Description</label><input class="bulk-desc" placeholder="Details about this space..." /></div>
+            <div class="form-group"><label>Location / Address</label><input class="bulk-location" placeholder="123 Dickson St, Fayetteville, AR" /></div>
+            <div class="form-row">
+                <div class="form-group"><label>Price / hr ($)</label><input class="bulk-price" type="number" placeholder="10" /></div>
+                <div class="form-group"><label>Available From</label><input class="bulk-from" type="datetime-local" /></div>
+            </div>
+            <div class="form-group"><label>Available To</label><input class="bulk-to" type="datetime-local" /></div>`;
             container.appendChild(div);
         }
 
@@ -2099,32 +2112,32 @@
             div.className = 'bh-row';
             div.style.cssText = 'background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:16px;margin-bottom:10px';
             div.innerHTML = `
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-            <div style="font-size:13px;font-weight:600;color:var(--text)">Additional Day</div>
-            <button onclick="this.closest('.bh-row').remove()" style="background:none;border:1.5px solid #e8b4bc;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer">Remove</button>
-        </div>
-        <div class="form-row">
-            <div class="form-group" style="margin-bottom:0">
-                <label>Day of Week</label>
-                <select class="bh-day">
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
-                </select>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="font-size:13px;font-weight:600;color:var(--text)">Additional Day</div>
+                <button onclick="this.closest('.bh-row').remove()" style="background:none;border:1.5px solid #e8b4bc;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer">Remove</button>
             </div>
-            <div class="form-group" style="margin-bottom:0">
-                <label>Open Time</label>
-                <input class="bh-open" type="time" value="09:00" />
+            <div class="form-row">
+                <div class="form-group" style="margin-bottom:0">
+                    <label>Day of Week</label>
+                    <select class="bh-day">
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                    <label>Open Time</label>
+                    <input class="bh-open" type="time" value="09:00" />
+                </div>
             </div>
-        </div>
-        <div class="form-group" style="margin-top:14px;margin-bottom:0">
-            <label>Close Time</label>
-            <input class="bh-close" type="time" value="17:00" />
-        </div>`;
+            <div class="form-group" style="margin-top:14px;margin-bottom:0">
+                <label>Close Time</label>
+                <input class="bh-close" type="time" value="17:00" />
+            </div>`;
             container.appendChild(div);
         }
 
@@ -2193,6 +2206,29 @@
             } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
         }
         updateNav();
+        async function loadHostReports() {
+            const hostId = currentUser.userId;
+
+            try {
+                const earnings = await fetch(`/api/Reports/host/${hostId}/earnings`).then(r => r.json());
+                document.getElementById('earnings-report').innerHTML =
+                    `Total: $${earnings.totalEarnings}<br>` +
+                    earnings.breakdown.map(x => `${x.listing}: $${x.total}`).join('<br>');
+
+                const reservations = await fetch(`/api/Reports/host/${hostId}/reservations`).then(r => r.json());
+                document.getElementById('reservations-report').innerHTML =
+                    reservations.map(r => `${r.listing} | ${r.status}`).join('<br>');
+
+                const usage = await fetch(`/api/Reports/host/${hostId}/usage`).then(r => r.json());
+                document.getElementById('usage-report').innerHTML =
+                    `Total: ${usage.totalReservations}<br>Confirmed: ${usage.confirmed}<br>Cancelled: ${usage.cancelled}`;
+            } catch (err) {
+                document.getElementById('earnings-report').innerHTML = 'Error loading earnings';
+                document.getElementById('reservations-report').innerHTML = 'Error loading reservations';
+                document.getElementById('usage-report').innerHTML = 'Error loading usage';
+                console.error(err);
+            }
+        }
     </script>
 </body>
 </html>
