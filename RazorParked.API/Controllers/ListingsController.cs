@@ -444,5 +444,5 @@ namespace RazorParked.Controllers
             var status = request.IsDisabled ? "disabled" : "enabled";
             return Ok(new { message = $"Listing {status} successfully.", isDisabled = request.IsDisabled });
         }
-    } 
+    }
 }
