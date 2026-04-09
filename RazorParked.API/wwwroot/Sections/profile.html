@@ -1,0 +1,181 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: PROFILE
+     Owner:   Samantha
+     API:     GET/PUT /api/Users/:userId
+     To edit: only touch this file!
+═══════════════════════════════════════════════════════ -->
+
+<div class="page-header">
+    <h2>My Profile</h2>
+    <p>Manage your account information.</p>
+</div>
+
+<div style="display:grid;grid-template-columns:240px 1fr;gap:24px;align-items:start">
+
+    <!-- LEFT: Avatar + side nav -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+        <!-- Avatar card -->
+        <div class="form-card" style="text-align:center;padding:28px 20px">
+            <div id="profile-avatar" style="width:90px;height:90px;border-radius:50%;background:var(--red);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;overflow:hidden">🐗</div>
+            <div id="profile-display-name" style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--text)">Loading...</div>
+            <div id="profile-display-role" style="font-size:12px;color:var(--muted);margin-top:4px"></div>
+            <div id="profile-display-bio" style="font-size:13px;color:var(--muted);font-style:italic;margin-top:8px;line-height:1.4"></div>
+        </div>
+
+        <!-- Side nav -->
+        <div class="form-card" style="padding:8px">
+            <button onclick="switchProfileTab('info')" id="tab-btn-info"
+                    style="width:100%;text-align:left;background:var(--red);color:#fff;border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:4px;transition:all 0.2s">
+                👤 Account Info
+            </button>
+            <button onclick="switchProfileTab('edit')" id="tab-btn-edit"
+                    style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:4px;transition:all 0.2s">
+                ✏️ Edit Profile
+            </button>
+            <button onclick="switchProfileTab('password')" id="tab-btn-password"
+                    style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:4px;transition:all 0.2s">
+                🔒 Change Password
+
+            </button>
+            <button onclick="switchProfileTab('email')" id="tab-btn-email"
+                        style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:4px;transition:all 0.2s">
+                    📧 Change Email
+           
+            </button>
+            <button onclick="switchProfileTab('picture')" id="tab-btn-picture"
+                    style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s">
+                🖼️ Profile Picture
+            </button>
+        </div>
+    </div>
+
+    <!-- RIGHT: Tab content -->
+    <div>
+
+        <!-- TAB: Account Info (read only) -->
+        <div id="profile-tab-info" class="form-card" style="max-width:100%">
+            <div class="card-top">
+                <div class="form-title" style="font-size:22px">Account Info</div>
+                <div class="form-subtitle">Your current saved information.</div>
+            </div>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Full Name</label>
+                    <span id="info-name">—</span>
+                </div>
+                <div class="detail-item">
+                    <label>Email</label>
+                    <span id="info-email">—</span>
+                </div>
+                <div class="detail-item">
+                    <label>Role(s)</label>
+                    <span id="info-roles">—</span>
+                </div>
+                <div class="detail-item">
+                    <label>Bio</label>
+                    <span id="info-bio" style="font-size:14px;font-weight:400;font-style:italic;color:var(--muted)">No bio yet.</span>
+                </div>
+            </div>
+            <button class="btn-secondary" style="margin-top:16px;font-size:13px;padding:8px 20px" onclick="switchProfileTab('edit')">✏️ Edit Profile</button>
+        </div>
+
+        <!-- TAB: Edit Profile -->
+        <div id="profile-tab-edit" class="form-card" style="max-width:100%;display:none">
+            <div class="card-top">
+                <div class="form-title" style="font-size:22px">Edit Profile</div>
+                <div class="form-subtitle">Update your account details.</div>
+            </div>
+            <div class="form-group">
+                <label>Full Name</label>
+                <input id="profile-name" placeholder="Jane Smith" />
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input id="profile-email" type="email" placeholder="jane@uark.edu" />
+            </div>
+            <div class="form-group">
+                <label>Bio</label>
+                <textarea id="profile-bio" rows="3" placeholder="Tell us about yourself..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <div style="display:flex;gap:16px;margin-top:4px">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer">
+                        <input type="checkbox" id="profile-role-customer" style="width:auto;accent-color:var(--red)" /> Driver
+                    </label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text);cursor:pointer">
+                        <input type="checkbox" id="profile-role-host" style="width:auto;accent-color:var(--red)" /> Host
+                    </label>
+                </div>
+            </div>
+            <button class="btn-primary" style="width:100%" onclick="saveProfile()">Save Changes</button>
+            <div id="profile-msg" class="msg"></div>
+        </div>
+
+        <!-- TAB: Change Password -->
+        <div id="profile-tab-password" class="form-card" style="max-width:100%;display:none">
+            <div class="card-top">
+                <div class="form-title" style="font-size:22px">Change Password</div>
+                <div class="form-subtitle">Update your login password.</div>
+            </div>
+            <div class="form-group">
+                <label>Current Password</label>
+                <input id="profile-current-pw" type="password" placeholder="••••••••" />
+            </div>
+            <div class="form-group">
+                <label>New Password</label>
+                <input id="profile-new-pw" type="password" placeholder="••••••••" />
+            </div>
+            <div class="form-group">
+                <label>Confirm New Password</label>
+                <input id="profile-confirm-pw" type="password" placeholder="••••••••" />
+            </div>
+            <button class="btn-primary" style="width:100%" onclick="changePassword()">Update Password</button>
+            <div id="pw-msg" class="msg"></div>
+
+
+        </div>
+
+        <!-- TAB: Change Email -->
+<div id="profile-tab-email" class="form-card" style="max-width:100%;display:none">
+    <div class="card-top">
+        <div class="form-title" style="font-size:22px">Change Email</div>
+        <div class="form-subtitle">Update your login email address.</div>
+    </div>
+    <div class="form-group">
+        <label>Current Email</label>
+        <input id="profile-current-email" type="email" disabled
+            style="background:var(--surface2);cursor:not-allowed" />
+    </div>
+    <div class="form-group">
+        <label>New Email</label>
+        <input id="profile-new-email" type="email" placeholder="new@uark.edu" />
+    </div>
+    <div class="form-group">
+        <label>Confirm Password</label>
+        <input id="email-confirm-pw" type="password" placeholder="••••••••" />
+    </div>
+    <button class="btn-primary" style="width:100%" onclick="changeEmail()">Update Email</button>
+    <div id="email-msg" class="msg"></div>
+</div>
+
+        <!-- TAB: Profile Picture -->
+        <div id="profile-tab-picture" class="form-card" style="max-width:100%;display:none">
+            <div class="card-top">
+                <div class="form-title" style="font-size:22px">Profile Picture</div>
+                <div class="form-subtitle">Update your avatar.</div>
+            </div>
+            <div style="text-align:center;margin-bottom:24px">
+                <div id="profile-avatar-preview" style="width:120px;height:120px;border-radius:50%;background:var(--red);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:40px;color:#fff;overflow:hidden">🐗</div>
+            </div>
+            <div class="form-group">
+                <label>Profile Picture URL</label>
+                <input id="profile-pic-url" placeholder="https://..." />
+            </div>
+            <button class="btn-primary" style="width:100%" onclick="updateProfilePic()">Update Picture</button>
+            <div id="pic-msg" class="msg"></div>
+        </div>
+
+    </div>
+</div>
