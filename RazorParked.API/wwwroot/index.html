@@ -8,7 +8,7 @@
     <!-- Leaflet.js — Task 10: Map View (no API key needed) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/profile.js"></script>
+    <script src="profile.js"></script>
     <style>
         :root {
             --bg: #ffffff;
@@ -1005,7 +1005,7 @@
             <p>Find and reserve private parking near Fayetteville events — listed by fellow Razorback fans.</p>
             <div class="hero-actions">
                 <button class="btn-primary" onclick="showPage('search')">Find Parking</button>
-                <button class="btn-secondary" onclick="showPage('register')">List Your Space</button>
+                <button class="btn-secondary" onclick="currentUser ? showPage('create-listing') : showPage('register')">List Your Space</button>
             </div>
             <div class="section-divider"><span>What We Offer</span></div>
             <div class="feature-grid">
@@ -1014,7 +1014,7 @@
                     <h3>Search Listings</h3>
                     <p>Browse available spots near your event by location, date, and price.</p>
                 </div>
-                <div class="feature-card" onclick="showPage('register')">
+                <div class="feature-card" onclick="currentUser ? showPage('create-listing') : showPage('register')">
                     <div class="feature-icon">🏠</div>
                     <h3>Host Your Space</h3>
                     <p>Have a driveway near Razorback Stadium? List it and earn on game days.</p>
@@ -1290,6 +1290,8 @@
             if (name === 'my-reservations' && currentUser) loadMyReservations();
             if (name === 'history' && currentUser) loadReservationHistory();
             if (name === 'profile' && currentUser) setTimeout(() => loadProfile(), 100);
+            if (name === 'register') clearRegisterForm();
+            if (name === 'login') clearLoginForm();
             // Task 10: force map to recalculate size when returning to search
             if (name === 'search' && currentView === 'map' && leafletMap) {
                 setTimeout(() => leafletMap.invalidateSize(), 150);
@@ -1323,10 +1325,21 @@
         // ══════════════════════════════════════
         // AUTH — Samantha
         // ══════════════════════════════════════
+       
         async function register() {
             const msg = document.getElementById('reg-msg');
             msg.className = 'msg';
             try {
+                const roles = [];
+                if (document.getElementById('role-customer').checked) roles.push('Customer');
+                if (document.getElementById('role-host').checked) roles.push('Host');
+
+                if (roles.length === 0) {
+                    msg.className = 'msg error';
+                    msg.textContent = 'Please select at least one role.';
+                    return;
+                }
+
                 const res = await fetch('/api/Auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1334,7 +1347,7 @@
                         fullName: document.getElementById('reg-name').value,
                         email: document.getElementById('reg-email').value,
                         password: document.getElementById('reg-password').value,
-                        roleName: document.getElementById('reg-role').value
+                        roleNames: roles
                     })
                 });
                 const data = await res.json();
@@ -1347,6 +1360,19 @@
                     msg.textContent = data.message || 'Registration failed.';
                 }
             } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+        }
+
+        function clearRegisterForm() {
+            ['reg-name', 'reg-email', 'reg-password'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const c = document.getElementById('role-customer');
+            const h = document.getElementById('role-host');
+            if (c) c.checked = false;
+            if (h) h.checked = false;
+            const msg = document.getElementById('reg-msg');
+            if (msg) msg.className = 'msg';
         }
 
         async function login() {
@@ -1372,6 +1398,15 @@
                     msg.textContent = data.message || 'Invalid credentials.';
                 }
             } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+        }
+
+        function clearLoginForm() {
+            ['login-email', 'login-password'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const msg = document.getElementById('login-msg');
+            if (msg) msg.className = 'msg';
         }
 
         // ══════════════════════════════════════
