@@ -982,6 +982,7 @@
             <button class="nav-btn" onclick="showPage('search')">Find Parking</button>
             <button class="nav-btn" id="nav-host-btn" onclick="showPage('host')" style="display:none">My Listings</button>
             <button class="nav-btn" onclick="showPage('my-reservations')">My Reservations</button>
+            <button class="nav-btn" onclick="showPage('favorites')">❤️ Favorites</button>
             <button class="nav-btn" onclick="showPage('history')">History</button>
 
             <div class="notif-wrapper">
@@ -1380,6 +1381,7 @@
             if (name === 'register') clearRegisterForm();
             if (name === 'login') clearLoginForm();
             if (name === 'messages' && currentUser) setTimeout(() => window.loadMessages && window.loadMessages(), 300);
+            if (name === 'favorites' && currentUser) setTimeout(() => window.loadFavorites && window.loadFavorites(), 300);
             // Task 10: force map to recalculate size when returning to search
             if (name === 'search' && currentView === 'map' && leafletMap) {
                 setTimeout(() => leafletMap.invalidateSize(), 150);
@@ -1751,31 +1753,73 @@
                 const res = await fetch(`/api/Listings/${id}`);
                 const l = await res.json();
                 container.innerHTML = `
-                                                <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
-                                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}" style="margin-bottom:20px;display:inline-block">
-                                                    ${l.isAvailable ? 'Available' : 'Unavailable'}
-                                                </span>
-                                                <div class="detail-grid">
-                                                    <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
-                                                    <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
-                                                    <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
-                                                    <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
-                                                </div>
-                                                ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
-                                                ${l.isAvailable && currentUser ? `
-                                                    <div class="form-card" style="margin-top:24px;max-width:100%">
-                                                        <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
-                                                        <div class="form-row">
-                                                            <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
-                                                            <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
-                                                        </div>
-                                                        <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
-                                                        <div id="res-msg" class="msg"></div>
-                                                    </div>`
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+            <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">
+                ${l.isAvailable ? 'Available' : 'Unavailable'}
+            </span>
+            ${currentUser ? `
+            <button id="fav-btn" onclick="toggleFavorite(${l.listingID})"
+                style="background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s">
+                ♡ Save to Favorites
+            </button>` : ''}
+        </div>
+        <div class="detail-grid">
+            <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
+            <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
+            <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
+            <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
+        </div>
+        ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
+        ${l.isAvailable && currentUser ? `
+            <div class="form-card" style="margin-top:24px;max-width:100%">
+                <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
+                    <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
+                </div>
+                <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
+                <div id="res-msg" class="msg"></div>
+            </div>`
                         : (!currentUser
                             ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
                             : `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`
-                        )}`;
+                        )}
+
+        <!-- REVIEWS SECTION -->
+        <div style="margin-top:40px">
+            <div class="section-divider"><span>Reviews</span></div>
+            <div id="reviews-container"><div class="loading">Loading reviews...</div></div>
+
+            ${currentUser ? `
+            <div class="form-card" style="margin-top:24px;max-width:100%">
+                <div class="card-top"><div class="form-title" style="font-size:22px">Leave a Review</div></div>
+                <div class="form-group">
+                    <label>Star Rating</label>
+                    <select id="review-rating">
+                        <option value="">Select rating</option>
+                        <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                        <option value="4">⭐⭐⭐⭐ 4 - Good</option>
+                        <option value="3">⭐⭐⭐ 3 - Average</option>
+                        <option value="2">⭐⭐ 2 - Poor</option>
+                        <option value="1">⭐ 1 - Terrible</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Comment (optional)</label>
+                    <textarea id="review-comment" rows="3" placeholder="Share your experience..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Reservation ID</label>
+                    <input id="review-reservation-id" type="number" placeholder="Enter your reservation ID for this listing" />
+                </div>
+                <button class="btn-primary" style="width:100%" onclick="submitReview(${l.listingID})">Submit Review</button>
+                <div id="review-msg" class="msg"></div>
+            </div>` : ''}
+        </div>`;
+
+                loadReviews(id);
+                if (currentUser) checkIfFavorited(id);
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listing.</p></div>'; }
         }
 
@@ -2065,7 +2109,7 @@
         // ══════════════════════════════════════
         async function loadAllSections() {
             const sections = ['register', 'login', 'search', 'listing', 'host',
-                'create-listing', 'my-reservations', 'payment', 'history', 'messages', 'profile'];
+                'create-listing', 'my-reservations', 'payment', 'history', 'messages', 'profile', 'favorites'];
             for (const name of sections) {
                 try {
                     const el = document.getElementById('page-' + name);
@@ -2076,7 +2120,127 @@
                 } catch (e) { console.warn('Could not load section: ' + name); }
             }
         }
+        // ══════════════════════════════════════
+        // REVIEWS — Ryleigh (Sprint 6)
+        // ══════════════════════════════════════
+        async function loadReviews(listingId) {
+            const container = document.getElementById('reviews-container');
+            if (!container) return;
+            try {
+                const res = await fetch(`/api/Reviews/listing/${listingId}`);
+                const data = await res.json();
+                if (!data.reviews || data.reviews.length === 0) {
+                    container.innerHTML = '<div class="empty"><p>No reviews yet. Be the first to review!</p></div>';
+                    return;
+                }
+                const stars = (n) => '⭐'.repeat(n);
+                container.innerHTML = `
+                <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:flex;gap:24px;align-items:center">
+                    <div style="text-align:center">
+                        <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--red);line-height:1">${data.averageRating}</div>
+                        <div style="font-size:13px;color:var(--muted)">${data.totalReviews} review${data.totalReviews !== 1 ? 's' : ''}</div>
+                    </div>
+                </div>
+                ${data.reviews.map(r => `
+                    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                            <div>
+                                <strong style="font-size:14px">${r.reviewerName}</strong>
+                                <div style="font-size:18px;margin-top:2px">${stars(r.starRating)}</div>
+                            </div>
+                            <div style="font-size:12px;color:var(--muted2)">${new Date(r.createdAt).toLocaleDateString()}</div>
+                        </div>
+                        ${r.comment ? `<p style="font-size:14px;color:var(--muted);font-family:'Source Serif 4',serif">${r.comment}</p>` : ''}
+                    </div>`).join('')}`;
+            } catch {
+                container.innerHTML = '<div class="empty"><p>Error loading reviews.</p></div>';
+            }
+        }
 
+        async function submitReview(listingId) {
+            const msg = document.getElementById('review-msg');
+            msg.className = 'msg';
+            const rating = document.getElementById('review-rating').value;
+            const comment = document.getElementById('review-comment').value;
+            const reservationId = parseInt(document.getElementById('review-reservation-id').value);
+            if (!rating) { msg.className = 'msg error'; msg.textContent = 'Please select a star rating.'; return; }
+            if (!reservationId || reservationId <= 0) { msg.className = 'msg error'; msg.textContent = 'Please enter a valid reservation ID.'; return; }
+            try {
+                const res = await fetch('/api/Reviews', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        listingID: listingId,
+                        userID: currentUser.userId,
+                        reservationID: reservationId,
+                        starRating: parseInt(rating),
+                        comment: comment || null
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    msg.className = 'msg success';
+                    msg.textContent = '✅ Review submitted successfully!';
+                    loadReviews(listingId);
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = data.message || 'Failed to submit review.';
+                }
+            } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+        }
+
+        // ══════════════════════════════════════
+        // FAVORITES — Ryleigh (Sprint 6)
+        // ══════════════════════════════════════
+        async function checkIfFavorited(listingId) {
+            try {
+                const res = await fetch(`/api/Favorites/user/${currentUser.userId}`);
+                const favorites = await res.json();
+                const fav = favorites.find(f => f.listingID === listingId);
+                const btn = document.getElementById('fav-btn');
+                if (!btn) return;
+                if (fav) {
+                    btn.textContent = '♥ Saved to Favorites';
+                    btn.style.color = 'var(--red)';
+                    btn.style.borderColor = 'var(--red)';
+                    btn.dataset.favoriteId = fav.favoriteID;
+                }
+            } catch { }
+        }
+
+        async function toggleFavorite(listingId) {
+            const btn = document.getElementById('fav-btn');
+            if (!btn) return;
+            const existingFavId = btn.dataset.favoriteId;
+            if (existingFavId) {
+                // Remove from favorites
+                try {
+                    const res = await fetch(`/api/Favorites/${existingFavId}?userId=${currentUser.userId}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        btn.textContent = '♡ Save to Favorites';
+                        btn.style.color = 'var(--muted)';
+                        btn.style.borderColor = 'var(--border)';
+                        delete btn.dataset.favoriteId;
+                    }
+                } catch { }
+            } else {
+                // Add to favorites
+                try {
+                    const res = await fetch('/api/Favorites', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userID: currentUser.userId, listingID: listingId })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        btn.textContent = '♥ Saved to Favorites';
+                        btn.style.color = 'var(--red)';
+                        btn.style.borderColor = 'var(--red)';
+                        btn.dataset.favoriteId = data.favoriteId;
+                    }
+                } catch { }
+            }
+        }
         updateNav();
         if (currentUser) updateNotifBadge();
         loadAllSections();
@@ -2161,7 +2325,9 @@
             return isNaN(d) ? 'N/A' : d.toLocaleDateString();
         }
     </script>
-
+    
+    <!-- PAGE: FAVORITES -->
+    <div id="page-favorites" class="page"></div>
     <!-- PAGE: MESSAGES -->
     <div id="page-messages" class="page"></div>
 
