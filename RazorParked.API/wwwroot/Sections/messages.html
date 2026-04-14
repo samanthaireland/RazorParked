@@ -1,0 +1,56 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: MESSAGES
+     Owner: Carter/Team
+═══════════════════════════════════════════════════════ -->
+
+<div class="page-header">
+    <h2>Messages</h2>
+    <p>Your conversations with hosts and drivers.</p>
+</div>
+
+<!-- Tabs -->
+<div style="display:flex;gap:8px;margin-bottom:24px">
+    <button id="tab-btn-driver" class="btn-primary" onclick="switchMsgTab('driver')">
+        🚗 As a Driver
+    </button>
+    <button id="tab-btn-host" class="btn-secondary" onclick="switchMsgTab('host')">
+        🏠 As a Host
+    </button>
+</div>
+
+<!-- DRIVER TAB -->
+<div id="msg-tab-driver">
+    <p style="font-size:14px;color:var(--muted);margin-bottom:16px">
+        Contact the host of a space you reserved.
+    </p>
+    <div id="driver-reservations">
+        <div class="loading">Loading your reservations...</div>
+    </div>
+</div>
+
+<!-- HOST TAB -->
+<div id="msg-tab-host" style="display:none">
+    <p style="font-size:14px;color:var(--muted);margin-bottom:16px">
+        Reply to drivers who reserved your spaces.
+    </p>
+    <div id="host-conversations">
+        <div class="loading">Loading conversations...</div>
+    </div>
+</div>
+
+<!-- MESSAGE THREAD PANEL -->
+<div id="msg-thread-panel" style="display:none;margin-top:24px">
+    <div class="form-card" style="max-width:100%">
+        <div id="msg-thread-header" style="border-bottom:2px solid var(--border);padding-bottom:16px;margin-bottom:16px">
+        </div>
+        <div id="msg-thread-messages" style="max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:16px">
+            <div class="form-group" style="margin-bottom:8px">
+                <textarea id="msg-reply-body" rows="3" placeholder="Type your message..."></textarea>
+            </div>
+            <button class="btn-primary" onclick="sendMsgReply()" style="width:100%">Send Message</button>
+            <div id="msg-reply-status" class="msg"></div>
+        </div>
+    </div>
+</div>
