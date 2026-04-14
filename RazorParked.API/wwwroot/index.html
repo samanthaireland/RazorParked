@@ -1174,8 +1174,8 @@
     </div>
 
     <!-- ══════════════════════════════════════
-         PAGE: CREATE
-        LISTING (Shietsu)
+         PAGE: CREATE LISTING (Shietsu)
+         CHANGED: Added longitude field + Auto-fill geocode button
     ══════════════════════════════════════ -->
     <div id="page-create-listing" class="page">
         <button class="btn-ghost" onclick="showPage('host')" style="margin-bottom:24px">← Back to Dashboard</button>
@@ -1201,9 +1201,21 @@
                     <label>Price per Hour ($)</label>
                     <input id="cl-price" type="number" placeholder="10" />
                 </div>
+                <!-- CHANGED: Replaced single lat field with lat + lng + auto-fill button -->
+                <div class="form-group">
+                    <label>Longitude (optional)</label>
+                    <input id="cl-lng" type="number" placeholder="-94.1719" />
+                </div>
+            </div>
+            <div class="form-row">
                 <div class="form-group">
                     <label>Latitude (optional)</label>
                     <input id="cl-lat" type="number" placeholder="36.0822" />
+                </div>
+                <div class="form-group" style="display:flex;align-items:flex-end">
+                    <button class="btn-secondary" style="width:100%;padding:11px" onclick="geocodeAddress()">
+                        📍 Auto-fill from Address
+                    </button>
                 </div>
             </div>
             <div class="form-row">
@@ -1633,6 +1645,36 @@
         }
 
         // ══════════════════════════════════════
+        // GEOCODING — Nominatim (free, no API key)
+        // CHANGED: New function — converts the address
+        // typed in cl-location into lat/lng and fills
+        // both cl-lat and cl-lng form fields automatically.
+        // ══════════════════════════════════════
+        async function geocodeAddress() {
+            const address = document.getElementById('cl-location').value.trim();
+            if (!address) {
+                alert('Please enter a location/address first.');
+                return;
+            }
+            try {
+                const encoded = encodeURIComponent(address);
+                const res = await fetch(
+                    `https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`,
+                    { headers: { 'Accept-Language': 'en' } }
+                );
+                const results = await res.json();
+                if (!results || results.length === 0) {
+                    alert('Address not found. Try being more specific (e.g. "123 Dickson St, Fayetteville, AR").');
+                    return;
+                }
+                document.getElementById('cl-lat').value = parseFloat(results[0].lat).toFixed(6);
+                document.getElementById('cl-lng').value = parseFloat(results[0].lon).toFixed(6);
+            } catch {
+                alert('Geocoding failed. Check your connection and try again.');
+            }
+        }
+
+        // ══════════════════════════════════════
         // LISTING DETAIL + RESERVE — Carter
         // ══════════════════════════════════════
         async function viewListing(id) {
@@ -1726,6 +1768,10 @@
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>'; }
         }
 
+        // ══════════════════════════════════════
+        // CREATE LISTING — Shietsu
+        // CHANGED: Now sends longitude alongside latitude
+        // ══════════════════════════════════════
         async function createListing() {
             const msg = document.getElementById('cl-msg');
             msg.className = 'msg';
@@ -1741,7 +1787,8 @@
                         pricePerHour: parseFloat(document.getElementById('cl-price').value),
                         availableFrom: document.getElementById('cl-from').value,
                         availableTo: document.getElementById('cl-to').value,
-                        latitude: parseFloat(document.getElementById('cl-lat').value) || null
+                        latitude: parseFloat(document.getElementById('cl-lat').value) || null,
+                        longitude: parseFloat(document.getElementById('cl-lng').value) || null
                     })
                 });
                 const data = await res.json();

@@ -123,6 +123,7 @@ namespace RazorParked.Controllers
         // ===============================
         // POST /api/Listings
         // Create a new listing
+        // CHANGED: Added Latitude and Longitude to INSERT query and parameters
         // ===============================
         [HttpPost]
         public async Task<IActionResult> CreateListing([FromBody] CreateListingRequest request)
@@ -147,9 +148,9 @@ namespace RazorParked.Controllers
 
             var newId = await connection.QuerySingleAsync<int>(@"
                 INSERT INTO dbo.ParkingListings 
-                    (HostUserID, Title, Description, Location, PricePerHour, IsAvailable, AvailableFrom, AvailableTo)
+                    (HostUserID, Title, Description, Location, PricePerHour, IsAvailable, AvailableFrom, AvailableTo, Latitude, Longitude)
                 VALUES 
-                    (@HostUserID, @Title, @Description, @Location, @PricePerHour, 1, @AvailableFrom, @AvailableTo);
+                    (@HostUserID, @Title, @Description, @Location, @PricePerHour, 1, @AvailableFrom, @AvailableTo, @Latitude, @Longitude);
                 SELECT CAST(SCOPE_IDENTITY() AS INT);",
                 new
                 {
@@ -159,7 +160,9 @@ namespace RazorParked.Controllers
                     request.Location,
                     request.PricePerHour,
                     AvailableFrom = request.AvailableFrom,
-                    AvailableTo = request.AvailableTo
+                    AvailableTo = request.AvailableTo,
+                    request.Latitude,
+                    request.Longitude
                 });
 
             return StatusCode(201, new { message = "Listing created successfully.", listingId = newId });
@@ -233,6 +236,7 @@ namespace RazorParked.Controllers
 
             return Ok(new { message = "Listing deleted successfully." });
         }
+
         // ===============================
         // POST /api/Listings/{id}/dates
         // Save selected dates for a listing
@@ -322,6 +326,7 @@ namespace RazorParked.Controllers
 
             return Ok(new { message = "Date removed successfully." });
         }
+
         // ===============================
         // POST /api/Listings/bulk
         // Create multiple listings at once
