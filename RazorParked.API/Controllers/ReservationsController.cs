@@ -93,6 +93,18 @@ namespace RazorParked.API.Controllers
                     request.ReservationEnd
                 });
 
+            // Carter: Auto-create notification for driver on reservation
+            await connection.ExecuteAsync(@"
+                INSERT INTO dbo.Notifications (UserID, ReservationID, Type, Message, IsRead, CreatedAt)
+                VALUES (@UserID, @ReservationID, 'ReservationConfirmed', 
+                    @Message, 0, GETUTCDATE());",
+                new
+                {
+                    UserID = request.DriverUserID,
+                    ReservationID = newId,
+                    Message = $"Your reservation has been confirmed! Spot {assignedSpot} is ready."
+                });
+
             return StatusCode(201, new
             {
                 message = "Reservation created successfully.",
