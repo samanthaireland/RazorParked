@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RazorParked — Business Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Serif+4:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #ffffff;
+            --surface: #faf9f7;
+            --surface2: #f3f0ec;
+            --border: #e5e0d8;
+            --red: #9d2235;
+            --red-dark: #7a1a28;
+            --red-light: #f5e8eb;
+            --text: #1a1208;
+            --muted: #7a6e62;
+            --muted2: #a8a09a;
+            --gold: #c0892a;
+            --gold-light: #fdf6e8;
+            --radius: 10px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .ua-stripe {
+            height: 5px;
+            background: linear-gradient(90deg, var(--red) 0%, var(--gold) 50%, var(--red) 100%);
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            height: 64px;
+            background: var(--red);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(157,34,53,0.25);
+        }
+
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 2px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo span { color: var(--gold); }
+        .nav-links { display: flex; gap: 4px; align-items: center; }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.8);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+        .page {
+            display: none;
+            padding: 48px 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeUp 0.3s ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        .page-header h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 40px;
+            letter-spacing: 1.5px;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .page-header p { font-size: 15px; color: var(--muted); }
+
+        .form-card {
+            background: #fff;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 700px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+
+        .form-card .card-top {
+            border-bottom: 3px solid var(--red);
+            padding-bottom: 20px;
+            margin-bottom: 28px;
+        }
+
+        .form-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 1.5px;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .form-subtitle { font-size: 14px; color: var(--muted); }
+        .form-group { margin-bottom: 18px; }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 7px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            padding: 11px 14px;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus { border-color: var(--red); }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        .btn-primary {
+            background: var(--red);
+            color: #fff;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 13px 28px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover { background: var(--red-dark); transform: translateY(-1px); }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--text);
+            border: 1.5px solid var(--border);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 13px 28px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover { border-color: var(--red); color: var(--red); }
+
+        .msg {
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 14px;
+            display: none;
+        }
+
+        .msg.success { background: #edf7f0; border: 1px solid #6abf8a; color: #2d7a4f; display: block; }
+        .msg.error { background: var(--red-light); border: 1px solid var(--red); color: var(--red-dark); display: block; }
+
+        .spot-block {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .hours-row {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 10px;
+        }
+
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 32px 0 24px;
+        }
+
+        .section-divider span {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 13px;
+            letter-spacing: 3px;
+            color: var(--muted2);
+        }
+
+        .section-divider::before,
+        .section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+        footer {
+            margin-top: 80px;
+            background: var(--red);
+            padding: 24px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        footer .footer-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        footer span { color: var(--gold); }
+    </style>
+</head>
+<body>
+
+<div class="ua-stripe"></div>
+
+<nav>
+    <a class="nav-logo" href="../index.html">🐗 Razor<span>Parked</span></a>
+    <div class="nav-links">
+        <button class="nav-btn" onclick="showPage('bulk-listing')">+ Bulk Listing</button>
+        <button class="nav-btn" onclick="showPage('business-hours')">🕐 Business Hours</button>
+        <button class="nav-btn" onclick="showPage('disable-listing')">🚫 Disable Space</button>
+        <button class="nav-btn" onclick="window.location.href='../index.html'">← My Listings</button>
+    </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     PAGE: BULK LISTING
+     Task 2: POST /api/Listings/bulk
+══════════════════════════════════════ -->
+<div id="page-bulk-listing" class="page active">
+    <div class="page-header">
+        <h2>Bulk Listing</h2>
+        <p>Add multiple parking spaces at once for your business lot.</p>
+    </div>
+    <div class="form-card">
+        <div class="card-top">
+            <div class="form-title">Create Multiple Spaces</div>
+            <div class="form-subtitle">All spaces submitted together via POST /api/Listings/bulk</div>
+        </div>
+        <div id="bulk-spots-container">
+            <div class="spot-block">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--red);margin-bottom:16px">Space 1</div>
+                <div class="form-group"><label>Title</label><input class="bulk-title" placeholder="e.g. Business Lot Space 1" /></div>
+                <div class="form-group"><label>Description</label><input class="bulk-desc" placeholder="Details about this space..." /></div>
+                <div class="form-group"><label>Location / Address</label><input class="bulk-location" placeholder="123 Dickson St, Fayetteville, AR" /></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Price / hr ($)</label><input class="bulk-price" type="number" placeholder="10" /></div>
+                    <div class="form-group"><label>Available From</label><input class="bulk-from" type="datetime-local" /></div>
+                </div>
+                <div class="form-group"><label>Available To</label><input class="bulk-to" type="datetime-local" /></div>
+            </div>
+        </div>
+        <button class="btn-secondary" style="width:100%;margin-bottom:12px" onclick="addBulkSpot()">+ Add Another Space</button>
+        <button class="btn-primary" style="width:100%" onclick="submitBulkListing()">Submit All Spaces</button>
+        <div id="bulk-msg" class="msg"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: BUSINESS HOURS
+     Task 4: PATCH /api/Listings/{id}/businessHours
+══════════════════════════════════════ -->
+<div id="page-business-hours" class="page">
+    <div class="page-header">
+        <h2>Business Hours</h2>
+        <p>Set operating hours — parking only available outside these times.</p>
+    </div>
+    <div class="form-card">
+        <div class="card-top">
+            <div class="form-title">Configure Hours</div>
+            <div class="form-subtitle">Calls PATCH /api/Listings/{id}/businessHours</div>
+        </div>
+        <div class="form-group">
+            <label>Listing ID</label>
+            <input id="bh-listing-id" type="number" placeholder="Enter the listing ID to configure" />
+        </div>
+        <div class="section-divider"><span>Operating Hours</span></div>
+        <div id="bh-hours-container">
+            <div class="hours-row">
+                <div class="form-row">
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Day of Week</label>
+                        <select class="bh-day">
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label>Open Time</label>
+                        <input class="bh-open" type="time" value="09:00" />
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:14px;margin-bottom:0">
+                    <label>Close Time</label>
+                    <input class="bh-close" type="time" value="17:00" />
+                </div>
+            </div>
+        </div>
+        <button class="btn-secondary" style="width:100%;margin:16px 0 12px" onclick="addHoursRow()">+ Add Another Day</button>
+        <button class="btn-primary" style="width:100%" onclick="submitBusinessHours()">Save Business Hours</button>
+        <div id="bh-msg" class="msg"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: DISABLE LISTING
+     Task 5: PATCH /api/Listings/{id}/disable
+══════════════════════════════════════ -->
+<div id="page-disable-listing" class="page">
+    <div class="page-header">
+        <h2>Disable Listing</h2>
+        <p>Temporarily block bookings without deleting your listing.</p>
+    </div>
+    <div class="form-card">
+        <div class="card-top">
+            <div class="form-title">Toggle Availability</div>
+            <div class="form-subtitle">Listing stays in database and can be re-enabled anytime.</div>
+        </div>
+        <div class="form-group">
+            <label>Listing ID</label>
+            <input id="dl-listing-id" type="number" placeholder="Enter the listing ID" />
+        </div>
+        <div class="form-group">
+            <label>Action</label>
+            <select id="dl-action">
+                <option value="true">Disable (block new bookings)</option>
+                <option value="false">Re-enable (allow bookings again)</option>
+            </select>
+        </div>
+        <button class="btn-primary" style="width:100%" onclick="submitDisableListing()">Apply Change</button>
+        <div id="dl-msg" class="msg"></div>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-logo">🐗 RazorParked</div>
+    <div>University of Arkansas &nbsp;·&nbsp; Fayetteville, AR &nbsp;·&nbsp; <span>Go Hogs!</span></div>
+</footer>
+
+<script>
+    // ══════════════════════════════════════
+    // NAVIGATION
+    // ══════════════════════════════════════
+    function showPage(name) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + name).classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    // Auto-navigate based on URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const startPage = urlParams.get('page');
+    if (startPage) showPage(startPage);
+
+    // Get current user from localStorage (shared with index.html)
+    const currentUser = JSON.parse(localStorage.getItem('rp_user') || 'null');
+
+    // ══════════════════════════════════════
+    // BULK LISTING — Task 2
+    // ══════════════════════════════════════
+    let bulkSpotCount = 1;
+
+    function addBulkSpot() {
+        bulkSpotCount++;
+        const container = document.getElementById('bulk-spots-container');
+        const div = document.createElement('div');
+        div.className = 'spot-block';
+        div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:var(--red)">Space ${bulkSpotCount}</div>
+                <button onclick="this.closest('.spot-block').remove()" style="background:none;border:1.5px solid #e8b4bc;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer">Remove</button>
+            </div>
+            <div class="form-group"><label>Title</label><input class="bulk-title" placeholder="e.g. Business Lot Space ${bulkSpotCount}" /></div>
+            <div class="form-group"><label>Description</label><input class="bulk-desc" placeholder="Details about this space..." /></div>
+            <div class="form-group"><label>Location / Address</label><input class="bulk-location" placeholder="123 Dickson St, Fayetteville, AR" /></div>
+            <div class="form-row">
+                <div class="form-group"><label>Price / hr ($)</label><input class="bulk-price" type="number" placeholder="10" /></div>
+                <div class="form-group"><label>Available From</label><input class="bulk-from" type="datetime-local" /></div>
+            </div>
+            <div class="form-group"><label>Available To</label><input class="bulk-to" type="datetime-local" /></div>`;
+        container.appendChild(div);
+    }
+
+    async function submitBulkListing() {
+        const msg = document.getElementById('bulk-msg');
+        msg.className = 'msg';
+        if (!currentUser) { msg.className = 'msg error'; msg.textContent = 'Please log in first.'; return; }
+        const spots = document.querySelectorAll('.spot-block');
+        const listings = [];
+        spots.forEach(spot => {
+            listings.push({
+                title: spot.querySelector('.bulk-title').value,
+                description: spot.querySelector('.bulk-desc').value,
+                location: spot.querySelector('.bulk-location').value,
+                pricePerHour: parseFloat(spot.querySelector('.bulk-price').value) || 0,
+                availableFrom: spot.querySelector('.bulk-from').value,
+                availableTo: spot.querySelector('.bulk-to').value
+            });
+        });
+        try {
+            const res = await fetch('/api/Listings/bulk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hostUserID: currentUser.userId, listings })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                msg.className = 'msg success';
+                msg.textContent = `✅ ${data.message} (IDs: ${data.listingIds.join(', ')})`;
+            } else {
+                msg.className = 'msg error';
+                msg.textContent = data.message || 'Failed to create listings.';
+            }
+        } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+    }
+
+    // ══════════════════════════════════════
+    // BUSINESS HOURS — Task 4
+    // ══════════════════════════════════════
+    function addHoursRow() {
+        const container = document.getElementById('bh-hours-container');
+        const div = document.createElement('div');
+        div.className = 'hours-row';
+        div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <div style="font-size:13px;font-weight:600;color:var(--text)">Additional Day</div>
+                <button onclick="this.closest('.hours-row').remove()" style="background:none;border:1.5px solid #e8b4bc;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer">Remove</button>
+            </div>
+            <div class="form-row">
+                <div class="form-group" style="margin-bottom:0">
+                    <label>Day of Week</label>
+                    <select class="bh-day">
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                    <label>Open Time</label>
+                    <input class="bh-open" type="time" value="09:00" />
+                </div>
+            </div>
+            <div class="form-group" style="margin-top:14px;margin-bottom:0">
+                <label>Close Time</label>
+                <input class="bh-close" type="time" value="17:00" />
+            </div>`;
+        container.appendChild(div);
+    }
+
+    async function submitBusinessHours() {
+        const msg = document.getElementById('bh-msg');
+        msg.className = 'msg';
+        if (!currentUser) { msg.className = 'msg error'; msg.textContent = 'Please log in first.'; return; }
+        const listingId = parseInt(document.getElementById('bh-listing-id').value);
+        if (!listingId || listingId <= 0) { msg.className = 'msg error'; msg.textContent = 'Please enter a valid Listing ID.'; return; }
+        const rows = document.querySelectorAll('.hours-row');
+        const hours = [];
+        rows.forEach(row => {
+            hours.push({
+                dayOfWeek: row.querySelector('.bh-day').value,
+                openTime: row.querySelector('.bh-open').value + ':00',
+                closeTime: row.querySelector('.bh-close').value + ':00'
+            });
+        });
+        try {
+            const res = await fetch(`/api/Listings/${listingId}/businessHours`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hostUserID: currentUser.userId, hours })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                msg.className = 'msg success';
+                msg.textContent = `✅ ${data.message}`;
+            } else {
+                msg.className = 'msg error';
+                msg.textContent = data.message || 'Failed to save business hours.';
+            }
+        } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+    }
+
+    // ══════════════════════════════════════
+    // DISABLE LISTING — Task 5
+    // ══════════════════════════════════════
+    async function submitDisableListing() {
+        const msg = document.getElementById('dl-msg');
+        msg.className = 'msg';
+        if (!currentUser) { msg.className = 'msg error'; msg.textContent = 'Please log in first.'; return; }
+        const listingId = parseInt(document.getElementById('dl-listing-id').value);
+        const isDisabled = document.getElementById('dl-action').value === 'true';
+        if (!listingId || listingId <= 0) { msg.className = 'msg error'; msg.textContent = 'Please enter a valid Listing ID.'; return; }
+        try {
+            const res = await fetch(`/api/Listings/${listingId}/disable`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hostUserID: currentUser.userId, isDisabled })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                msg.className = 'msg success';
+                msg.textContent = `✅ ${data.message}`;
+            } else {
+                msg.className = 'msg error';
+                msg.textContent = data.message || 'Failed to update listing.';
+            }
+        } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+    }
+</script>
+</body>
+</html>
