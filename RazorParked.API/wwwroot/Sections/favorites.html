@@ -1,0 +1,62 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: FAVORITES
+     API: GET    /api/Favorites/user/{userId}
+          DELETE /api/Favorites/{favoriteId}?userId={userId}
+═══════════════════════════════════════════════════════ -->
+
+<div class="page-section active">
+    <div class="page-header">
+        <h2>My Favorites</h2>
+        <p>Your saved parking spots for quick rebooking.</p>
+    </div>
+    <div id="favorites-list">
+        <div class="loading">Loading favorites...</div>
+    </div>
+</div>
+
+<script>
+    async function loadFavorites() {
+        const container = document.getElementById('favorites-list');
+        if (!window.currentUser) {
+            container.innerHTML = '<div class="empty"><div class="empty-icon">❤️</div><p>Please log in to view your favorites.</p></div>';
+            return;
+        }
+        container.innerHTML = '<div class="loading">Loading favorites...</div>';
+        try {
+            const res = await fetch(`/api/Favorites/user/${window.currentUser.userId}`);
+            const favorites = await res.json();
+            if (!favorites || favorites.length === 0) {
+                container.innerHTML = '<div class="empty"><div class="empty-icon">❤️</div><p>No favorites yet. Save a listing to see it here!</p></div>';
+                return;
+            }
+            container.innerHTML = `<div class="listings-grid">${favorites.map(f => `
+                <div class="listing-card">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                        <h3>${f.title}</h3>
+                        <span class="badge ${f.isAvailable ? 'available' : 'unavailable'}">${f.isAvailable ? 'Available' : 'Unavailable'}</span>
+                    </div>
+                    <div class="location">📍 ${f.location}</div>
+                    <div class="price" style="margin-bottom:16px">$${f.pricePerHour}<span>/hr</span></div>
+                    <div style="display:flex;gap:8px">
+                        <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="viewListing(${f.listingID})">View & Book</button>
+                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="removeFavorite(${f.favoriteID})">Remove</button>
+                    </div>
+                </div>`).join('')}</div>`;
+        } catch {
+            container.innerHTML = '<div class="empty"><p>Error loading favorites.</p></div>';
+        }
+    }
+
+    async function removeFavorite(favoriteId) {
+        if (!confirm('Remove this listing from favorites?')) return;
+        try {
+            const res = await fetch(`/api/Favorites/${favoriteId}?userId=${window.currentUser.userId}`, { method: 'DELETE' });
+            if (res.ok) loadFavorites();
+        } catch { alert('Connection error.'); }
+    }
+
+    window.loadFavorites = loadFavorites;
+    window.removeFavorite = removeFavorite;
+
+    loadFavorites();
+</script>
