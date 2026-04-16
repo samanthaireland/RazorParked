@@ -45,7 +45,21 @@ namespace RazorParked.Controllers
             if (maxPrice.HasValue)
                 query = query.Where(l => l.PricePerHour <= maxPrice.Value);
 
-            var listings = await query.ToListAsync();
+            var listings = await query.Select(l => new
+            {
+                l.ListingID,
+                l.Title,
+                l.Location,
+                l.PricePerHour,
+                l.IsAvailable,
+                l.Latitude,
+                l.Longitude,
+                l.AvailableFrom,
+                l.AvailableTo,
+                l.HostUserID   // ← just return this instead
+            }).ToListAsync();
+
+
             return Ok(listings);
         }
 

@@ -72,22 +72,45 @@ async function updateProfilePic() {
     const url = document.getElementById('profile-pic-url').value;
     const msg = document.getElementById('pic-msg');
     msg.className = 'msg';
+
+    if (!url) {
+        msg.className = 'msg error';
+        msg.textContent = 'Please enter a URL.';
+        return;
+    }
+
     try {
+        // First fetch current data so we don't wipe other fields
+        const current = await fetch(`/api/Users/${currentUser.userId}`);
+        const data = await current.json();
+
         const res = await fetch(`/api/Users/${currentUser.userId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fullName: currentUser.fullName, profilePicUrl: url })
+            body: JSON.stringify({
+                fullName: data.fullName,
+                email: data.email,
+                bio: data.bio || '',
+                profilePicUrl: url
+            })
         });
+
         if (res.ok) {
             msg.className = 'msg success';
             msg.textContent = 'Picture updated!';
-            document.getElementById('profile-avatar').innerHTML =
-                `<img src="${url}" style="width:100%;height:100%;object-fit:cover" />`;
+            const imgHtml = `<img src="${url}" style="width:100%;height:100%;object-fit:cover" />`;
+            document.getElementById('profile-avatar').innerHTML = imgHtml;
             const preview = document.getElementById('profile-avatar-preview');
-            if (preview) preview.innerHTML =
-                `<img src="${url}" style="width:100%;height:100%;object-fit:cover" />`;
+            if (preview) preview.innerHTML = imgHtml;
+        } else {
+            const err = await res.json();
+            msg.className = 'msg error';
+            msg.textContent = err.message || 'Update failed.';
         }
-    } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+    } catch {
+        msg.className = 'msg error';
+        msg.textContent = 'Connection error.';
+    }
 }
 
 async function changePassword() {

@@ -19,7 +19,30 @@ async function loadDriverReservations() {
             container.innerHTML = '<div class="empty"><div class="empty-icon">🎫</div><p>No reservations yet.</p></div>';
             return;
         }
-        container.innerHTML = `<div class="listings-grid">${reservations.map(r => `
+
+        // Fetch listing details to get hostUserID + host info
+        const listingCache = {};
+        const hostCache = {};
+        await Promise.all(reservations.map(async r => {
+            if (!r.listingID || listingCache[r.listingID]) return;
+            try {
+                const lr = await fetch(`/api/Listings/${r.listingID}`);
+                if (lr.ok) {
+                    const l = await lr.json();
+                    listingCache[r.listingID] = l;
+                    if (l.hostUserID && !hostCache[l.hostUserID]) {
+                        const hr = await fetch(`/api/Users/${l.hostUserID}`);
+                        if (hr.ok) hostCache[l.hostUserID] = await hr.json();
+                    }
+                }
+            } catch { }
+        }));
+
+        container.innerHTML = `<div class="listings-grid">${reservations.map(r => {
+            const listing = listingCache[r.listingID];
+            const hostId = listing?.hostUserID;
+            const host = hostCache[hostId];
+            return `
             <div class="listing-card">
                 <h3>${r.title || 'Parking Spot'}</h3>
                 <div class="location">📍 ${r.fullAddress || 'Fayetteville, AR'}</div>
@@ -29,11 +52,37 @@ async function loadDriverReservations() {
                 <div style="font-size:13px;color:var(--muted);margin-bottom:12px">
                     ${new Date(r.reservationStart).toLocaleDateString()} → ${new Date(r.reservationEnd).toLocaleDateString()}
                 </div>
+
+                ${host ? `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;
+                            padding:10px;background:var(--surface);border-radius:8px;
+                            border:1px solid var(--border);cursor:pointer"
+                     onclick="openHostModal(${hostId})">
+                    <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;
+                                flex-shrink:0;border:2px solid var(--red)">
+                        ${host.profilePicUrl
+                        ? `<img src="${host.profilePicUrl}" style="width:100%;height:100%;object-fit:cover"/>`
+                        : `<div style="width:100%;height:100%;background:var(--red);color:#fff;
+                                          display:flex;align-items:center;justify-content:center;
+                                          font-size:12px;font-weight:700">
+                                   ${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}
+                               </div>`
+                    }
+                    </div>
+                    <span style="font-size:13px;color:var(--muted)">
+                        Hosted by <strong style="color:var(--text)">${host.fullName || 'Host'}</strong>
+                    </span>
+                    <span style="margin-left:auto;font-size:12px;color:var(--muted2)">View →</span>
+                </div>` : ''}
+
+                ${hostId ? `
                 <button class="btn-primary" style="width:100%;padding:8px;font-size:13px"
-                    onclick="startConversation(${r.hostUserID}, ${r.listingID}, '${(r.title || 'Host').replace(/'/g, '')}')">
+                    onclick="startConversation(${hostId}, ${r.listingID}, '${(r.title || 'Host').replace(/'/g, '')}')">
                     💬 Message Host
-                </button>
-            </div>`).join('')}</div>`;
+                </button>` : `
+                <div class="msg error" style="display:block;font-size:13px">Host info unavailable</div>`}
+            </div>`;
+        }).join('')}</div>`;
     } catch {
         container.innerHTML = '<div class="empty"><p>Error loading reservations.</p></div>';
     }
