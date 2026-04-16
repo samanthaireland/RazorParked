@@ -10,6 +10,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="profile.js"></script>
     <script src="messages.js"></script>
+    <script src="towing.js"></script>
     <style>
         :root {
             --bg: #ffffff;
@@ -962,6 +963,21 @@
                 padding: 12px 14px;
                 border-bottom: 1px solid var(--border);
             }
+
+        /* ── Carter Sprint 6: Toggle switch ── */
+        .promo-toggle { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; margin-left: 16px; }
+        .promo-toggle input { opacity: 0; width: 0; height: 0; }
+        .promo-toggle .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--border); border-radius: 28px; transition: 0.3s;
+        }
+        .promo-toggle .slider:before {
+            position: absolute; content: ""; height: 22px; width: 22px;
+            left: 3px; bottom: 3px; background: #fff; border-radius: 50%;
+            transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .promo-toggle input:checked + .slider { background: var(--red); }
+        .promo-toggle input:checked + .slider:before { transform: translateX(22px); }
     </style>
 </head>
 <body>
@@ -1001,6 +1017,7 @@
                     <div id="notif-list"></div>
                 </div>
             </div>
+            <button class="nav-btn" id="nav-admin-btn" onclick="showPage('admin-broadcast')" style="display:none">📢 Broadcast</button>
             <button id="nav-logout" onclick="logout()">Log Out</button>
         </div>
     </nav>
@@ -1231,6 +1248,7 @@
                 <button class="btn-secondary" onclick="window.location.href='Sections/business.html?page=business-hours'">🕐 Business Hours</button>
                 <button class="btn-secondary" onclick="window.location.href='Sections/business.html?page=disable-listing'">🚫 Disable Space</button>
                 <button class="btn-secondary" onclick="showPage('host-reports')">📊 Reports</button>
+                <button class="btn-secondary" onclick="showPage('towing')">🚛 Towing</button>
             </div>
         </div>
         <div id="host-listings">
@@ -1376,6 +1394,8 @@
             if (name === 'host' && currentUser) loadHostListings();
             if (name === 'my-reservations' && currentUser) loadMyReservations();
             if (name === 'history' && currentUser) loadReservationHistory();
+            if (name === 'towing' && currentUser) loadTowingContacts();
+            if (name === 'admin-broadcast' && !currentUser) showPage('login');
             if (name === 'host-reports' && currentUser) loadHostReports();
             if (name === 'profile' && currentUser) setTimeout(() => loadProfile(), 100);
             if (name === 'register') clearRegisterForm();
@@ -1399,6 +1419,11 @@
                 user.style.display = 'flex';
                 nameEl.textContent = currentUser.fullName;
                 if (currentUser.role === 'Host') hostBtn.style.display = 'inline-block';
+                // Carter Sprint 6: Show broadcast button for admins
+                const adminBtn = document.getElementById('nav-admin-btn');
+                if (adminBtn && currentUser.roles && currentUser.roles.includes('Admin')) {
+                    adminBtn.style.display = 'inline-block';
+                }
             } else {
                 guest.style.display = 'flex';
                 user.style.display = 'none';
@@ -2109,7 +2134,8 @@
         // ══════════════════════════════════════
         async function loadAllSections() {
             const sections = ['register', 'login', 'search', 'listing', 'host',
-                'create-listing', 'my-reservations', 'payment', 'history', 'messages', 'profile', 'favorites'];
+                'create-listing', 'my-reservations', 'payment', 'history', 'messages', 'profile', 'favorites',
+                'towing', 'admin-broadcast'];
             for (const name of sections) {
                 try {
                     const el = document.getElementById('page-' + name);
@@ -2330,6 +2356,10 @@
     <div id="page-favorites" class="page"></div>
     <!-- PAGE: MESSAGES -->
     <div id="page-messages" class="page"></div>
+    <!-- PAGE: TOWING CONTACTS (Carter — Sprint 6) -->
+    <div id="page-towing" class="page"></div>
+    <!-- PAGE: ADMIN BROADCAST (Carter — Sprint 6) -->
+    <div id="page-admin-broadcast" class="page"></div>
 
 </body>
 </html>

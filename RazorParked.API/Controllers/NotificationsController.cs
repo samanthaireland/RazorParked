@@ -87,5 +87,75 @@ namespace RazorParked.API.Controllers
 
             return Ok(new { message = "Notification marked as read." });
         }
+
+        // ===============================
+        // POST /api/Notifications/broadcast
+        // Criteria 16: Send platform announcement to opted-in users
+        // Carter — Sprint 6
+        // ===============================
+        [HttpPost("broadcast")]
+        public async Task<IActionResult> BroadcastAnnouncement([FromBody] BroadcastRequest request)
+        {
+            if (request.SenderUserID <= 0)
+                return BadRequest(new { message = "Invalid sender." });
+
+            if (string.IsNullOrWhiteSpace(request.Subject) || string.IsNullOrWhiteSpace(request.MessageBody))
+                return BadRequest(new { message = "Subject and message are required." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            // Verify sender is an Admin
+            var isAdmin = await connection.QueryFirstOrDefaultAsync<int?>(@"
+                SELECT ur.UserID FROM dbo.UserRoles ur
+                JOIN dbo.Roles r ON ur.RoleID = r.RoleID
+                WHERE ur.UserID = @UserID AND r.RoleName = 'Admin'",
+                new { UserID = request.SenderUserID });
+
+            if (isAdmin == null)
+                return Forbid();
+
+            // Ensure PromoOptIn column exists on Users table
+            await connection.ExecuteAsync(@"
+                IF NOT EXISTS (
+                    SELECT 1 FROM sys.columns
+                    WHERE object_id = OBJECT_ID('dbo.Users') AND name = 'PromoOptIn'
+                )
+                ALTER TABLE dbo.Users ADD PromoOptIn BIT NOT NULL DEFAULT 0;");
+
+            // Get all opted-in users
+            var optedInUsers = await connection.QueryAsync<int>(@"
+                SELECT UserID FROM dbo.Users
+                WHERE PromoOptIn = 1 AND UserID != @SenderUserID",
+                new { request.SenderUserID });
+
+            var userList = optedInUsers.ToList();
+            var broadcastMessage = $"📢 {request.Subject}: {request.MessageBody}";
+
+            // Insert a notification for each opted-in user
+            foreach (var userId in userList)
+            {
+                await connection.ExecuteAsync(@"
+                    INSERT INTO dbo.Notifications (UserID, ReservationID, Type, Message, IsRead, CreatedAt)
+                    VALUES (@UserID, NULL, 'Broadcast', @Message, 0, GETUTCDATE());",
+                    new { UserID = userId, Message = broadcastMessage });
+            }
+
+            return Ok(new
+            {
+                message = "Broadcast sent successfully.",
+                recipientCount = userList.Count,
+                subject = request.Subject
+            });
+        }
+    }
+
+    // ── Request model for broadcast ──
+    public class BroadcastRequest
+    {
+        public int SenderUserID { get; set; }
+        public string Subject { get; set; } = "";
+        public string MessageBody { get; set; } = "";
     }
 }

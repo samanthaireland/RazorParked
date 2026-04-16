@@ -47,6 +47,10 @@
                     style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s">
                 🖼️ Profile Picture
             </button>
+            <button onclick="switchProfileTab('preferences')" id="tab-btn-preferences"
+                    style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s">
+                ⚙️ Preferences
+            </button>
         </div>
     </div>
 
@@ -175,6 +179,27 @@
             </div>
             <button class="btn-primary" style="width:100%" onclick="updateProfilePic()">Update Picture</button>
             <div id="pic-msg" class="msg"></div>
+        </div>
+
+        <!-- TAB: Preferences — Carter Sprint 6 -->
+        <div id="profile-tab-preferences" class="form-card" style="max-width:100%;display:none">
+            <div class="card-top">
+                <div class="form-title" style="font-size:22px">Preferences</div>
+                <div class="form-subtitle">Manage your communication and notification settings.</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)">
+                <div>
+                    <div style="font-size:15px;font-weight:600;color:var(--text)">📧 Promotional Emails</div>
+                    <div style="font-size:13px;color:var(--muted);margin-top:4px;line-height:1.4">
+                        Receive event parking deals, platform announcements, and new feature updates.
+                    </div>
+                </div>
+                <label class="promo-toggle">
+                    <input type="checkbox" id="promo-optin-toggle" onchange="togglePromoOptIn()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div id="prefs-msg" class="msg" style="margin-top:12px"></div>
         </div>
 
     </div>

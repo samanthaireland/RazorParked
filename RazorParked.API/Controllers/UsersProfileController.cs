@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 
@@ -30,6 +30,21 @@ public class UsersController : ControllerBase
               WHERE ur.UserID = @UserId",
             new { UserId = userId });
 
+        // Carter: Check if PromoOptIn column exists and get value
+        var promoOptIn = false;
+        try
+        {
+            var optIn = await con.QueryFirstOrDefaultAsync<bool?>(
+                @"SELECT CASE WHEN EXISTS (
+                    SELECT 1 FROM sys.columns
+                    WHERE object_id = OBJECT_ID('dbo.Users') AND name = 'PromoOptIn'
+                  ) THEN (SELECT PromoOptIn FROM dbo.Users WHERE UserID = @UserId)
+                  ELSE 0 END",
+                new { UserId = userId });
+            promoOptIn = optIn ?? false;
+        }
+        catch { /* Column may not exist yet — default to false */ }
+
         return Ok(new
         {
             userId = user.UserID,
@@ -37,7 +52,8 @@ public class UsersController : ControllerBase
             email = user.Email,
             bio = user.Bio ?? "",
             profilePicUrl = user.ProfilePicUrl ?? "",
-            roles = roles.ToList()
+            roles = roles.ToList(),
+            promoOptIn = promoOptIn
         });
     }
 
@@ -82,6 +98,45 @@ public class UsersController : ControllerBase
 
         return Ok(new { message = "Password updated." });
     }
+
+    // ===============================
+    // PATCH /api/Users/{userId}/preferences
+    // Criteria 15: Save promo email opt-in preference
+    // Carter — Sprint 6
+    // ===============================
+    [HttpPatch("{userId}/preferences")]
+    public async Task<IActionResult> UpdatePreferences(int userId, [FromBody] UserPreferencesDto dto)
+    {
+        if (userId <= 0)
+            return BadRequest(new { message = "Invalid user ID." });
+
+        var cs = _config.GetConnectionString("DefaultConnection");
+        using var con = new SqlConnection(cs);
+        await con.OpenAsync();
+
+        // Ensure PromoOptIn column exists
+        await con.ExecuteAsync(@"
+            IF NOT EXISTS (
+                SELECT 1 FROM sys.columns
+                WHERE object_id = OBJECT_ID('dbo.Users') AND name = 'PromoOptIn'
+            )
+            ALTER TABLE dbo.Users ADD PromoOptIn BIT NOT NULL DEFAULT 0;");
+
+        var rows = await con.ExecuteAsync(
+            "UPDATE dbo.Users SET PromoOptIn = @PromoOptIn WHERE UserID = @UserId",
+            new { dto.PromoOptIn, UserId = userId });
+
+        if (rows == 0)
+            return NotFound(new { message = "User not found." });
+
+        return Ok(new
+        {
+            message = dto.PromoOptIn
+                ? "You're now subscribed to promotional emails and announcements."
+                : "You've been unsubscribed from promotional emails.",
+            promoOptIn = dto.PromoOptIn
+        });
+    }
 }
 
 public class UpdateProfileDto
@@ -97,4 +152,10 @@ public class ChangePasswordDto
     public string CurrentPassword { get; set; } = "";
     public string NewPassword { get; set; } = "";
     public string ConfirmPassword { get; set; } = "";
+}
+
+// Carter — Sprint 6
+public class UserPreferencesDto
+{
+    public bool PromoOptIn { get; set; }
 }
