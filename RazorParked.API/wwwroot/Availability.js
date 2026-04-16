@@ -1,0 +1,177 @@
+﻿// ═══════════════════════════════════════════════════════
+//  AVAILABILITY MANAGER
+//  Owner:  Kaden
+//  API:    GET    /api/Listings/{id}/availability
+//          POST   /api/Listings/{id}/availability
+//          DELETE /api/Listings/{id}/availability/{slotId}
+//  To edit: only touch this file + Sections/availability.html!
+// ═══════════════════════════════════════════════════════
+
+let _availListingId = null;
+
+// Called from the 🗓 Availability button on each listing card
+function openAvailability(listingId) {
+    _availListingId = listingId;
+    sessionStorage.setItem('availListingId', listingId);
+    window.showPage('availability');
+}
+
+// Called by index.html router when the availability page loads
+async function initAvailabilityPage() {
+    if (!window.currentUser && !currentUser) { window.showPage('login'); return; }
+
+    // Restore listing ID from sessionStorage in case the variable was reset
+    if (!_availListingId) {
+        _availListingId = parseInt(sessionStorage.getItem('availListingId'));
+    }
+
+    if (!_availListingId) return;
+
+    // Show the listing name in the page header
+    try {
+        const userId = (window.currentUser || currentUser).userId;
+        const res = await fetch(`/api/Listings/host/${userId}`);
+        const listings = await res.json();
+        const listing = listings.find(l => l.listingID === _availListingId);
+        const nameEl = document.getElementById('avail-listing-name');
+        if (nameEl && listing) nameEl.textContent = listing.title;
+    } catch { }
+
+    await loadAvailabilitySlots();
+}
+
+// Criteria 7: GET /api/Listings/{id}/availability
+async function loadAvailabilitySlots() {
+    const container = document.getElementById('avail-slots-container');
+    const countEl = document.getElementById('avail-slot-count');
+    if (!container || !_availListingId) return;
+
+    container.innerHTML = '<div class="loading">Loading slots...</div>';
+
+    try {
+        const res = await fetch(`/api/Listings/${_availListingId}/availability`);
+        if (!res.ok) throw new Error();
+        const slots = await res.json();
+
+        if (!slots || slots.length === 0) {
+            container.innerHTML = `
+                <div class="empty">
+                    <div class="empty-icon">🗓️</div>
+                    <p>No availability slots yet. Add one above!</p>
+                </div>`;
+            if (countEl) countEl.textContent = '';
+            return;
+        }
+
+        if (countEl) countEl.textContent = `${slots.length} slot${slots.length !== 1 ? 's' : ''}`;
+
+        container.innerHTML = `
+            <div class="listings-grid">
+                ${slots.map(s => `
+                    <div class="listing-card" style="cursor:default">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+                            <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px">
+                                Slot #${s.slotID}
+                            </div>
+                            <span class="badge available">Active</span>
+                        </div>
+                        <div style="font-size:13px;color:var(--muted);margin-bottom:6px">
+                            🕐 <strong style="color:var(--text)">Start:</strong>
+                            ${new Date(s.startDateTime).toLocaleString()}
+                        </div>
+                        <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+                            🕐 <strong style="color:var(--text)">End:</strong>
+                            ${new Date(s.endDateTime).toLocaleString()}
+                        </div>
+                        <button class="btn-secondary"
+                            style="width:100%;padding:8px;font-size:13px;color:var(--red);border-color:var(--red)"
+                            onclick="deleteAvailabilitySlot(${s.slotID})">
+                            🗑 Remove Slot
+                        </button>
+                    </div>
+                `).join('')}
+            </div>`;
+
+    } catch {
+        container.innerHTML = `
+            <div class="empty">
+                <div class="empty-icon">⚠️</div>
+                <p>Error loading slots. Make sure the API is running.</p>
+            </div>`;
+    }
+}
+
+// Criteria 8: POST /api/Listings/{id}/availability
+async function addAvailabilitySlot() {
+    const msg = document.getElementById('avail-msg');
+    msg.className = 'msg';
+
+    const start = document.getElementById('avail-start').value;
+    const end = document.getElementById('avail-end').value;
+
+    if (!start || !end) {
+        msg.className = 'msg error';
+        msg.textContent = 'Please fill in both start and end times.';
+        return;
+    }
+    if (new Date(start) >= new Date(end)) {
+        msg.className = 'msg error';
+        msg.textContent = 'Start time must be before end time.';
+        return;
+    }
+
+    const user = window.currentUser || currentUser;
+
+    try {
+        const res = await fetch(`/api/Listings/${_availListingId}/availability`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                hostUserID: user.userId,
+                startDateTime: start,
+                endDateTime: end
+            })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            msg.className = 'msg success';
+            msg.textContent = 'Slot added successfully!';
+            document.getElementById('avail-start').value = '';
+            document.getElementById('avail-end').value = '';
+            await loadAvailabilitySlots();
+        } else {
+            msg.className = 'msg error';
+            msg.textContent = data.message || 'Failed to add slot.';
+        }
+    } catch {
+        msg.className = 'msg error';
+        msg.textContent = 'Connection error.';
+    }
+}
+
+// Criteria 9: DELETE /api/Listings/{id}/availability/{slotId}
+// Confirmation dialog prevents accidental deletion
+async function deleteAvailabilitySlot(slotId) {
+    if (!confirm('Are you sure you want to remove this availability slot?')) return;
+
+    const user = window.currentUser || currentUser;
+
+    try {
+        const res = await fetch(
+            `/api/Listings/${_availListingId}/availability/${slotId}?hostUserId=${user.userId}`,
+            { method: 'DELETE' }
+        );
+        const data = await res.json();
+        if (res.ok) {
+            await loadAvailabilitySlots();
+        } else {
+            alert(data.message || 'Failed to remove slot.');
+        }
+    } catch {
+        alert('Connection error.');
+    }
+}
+
+// Expose to index.html router
+window.initAvailabilityPage = initAvailabilityPage;
+window.openAvailability = openAvailability;

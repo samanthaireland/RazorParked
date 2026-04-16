@@ -11,6 +11,7 @@
     <script src="profile.js"></script>
     <script src="messages.js"></script>
     <script src="towing.js"></script>
+    <script src="availability.js"></script>
     <style>
         :root {
             --bg: #ffffff;
@@ -965,19 +966,53 @@
             }
 
         /* ── Carter Sprint 6: Toggle switch ── */
-        .promo-toggle { position: relative; display: inline-block; width: 50px; height: 28px; flex-shrink: 0; margin-left: 16px; }
-        .promo-toggle input { opacity: 0; width: 0; height: 0; }
-        .promo-toggle .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--border); border-radius: 28px; transition: 0.3s;
+        .promo-toggle {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+            flex-shrink: 0;
+            margin-left: 16px;
         }
-        .promo-toggle .slider:before {
-            position: absolute; content: ""; height: 22px; width: 22px;
-            left: 3px; bottom: 3px; background: #fff; border-radius: 50%;
-            transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        .promo-toggle input:checked + .slider { background: var(--red); }
-        .promo-toggle input:checked + .slider:before { transform: translateX(22px); }
+
+            .promo-toggle input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+            .promo-toggle .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: var(--border);
+                border-radius: 28px;
+                transition: 0.3s;
+            }
+
+                .promo-toggle .slider:before {
+                    position: absolute;
+                    content: "";
+                    height: 22px;
+                    width: 22px;
+                    left: 3px;
+                    bottom: 3px;
+                    background: #fff;
+                    border-radius: 50%;
+                    transition: 0.3s;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                }
+
+            .promo-toggle input:checked + .slider {
+                background: var(--red);
+            }
+
+                .promo-toggle input:checked + .slider:before {
+                    transform: translateX(22px);
+                }
     </style>
 </head>
 <body>
@@ -1405,6 +1440,7 @@
             if (name === 'business-analytics' && currentUser) loadBusinessAnalytics();
             if (name === 'messages' && currentUser) setTimeout(() => window.loadMessages && window.loadMessages(), 300);
             if (name === 'favorites' && currentUser) setTimeout(() => window.loadFavorites && window.loadFavorites(), 300);
+            if (name === 'availability' && currentUser) setTimeout(() => window.initAvailabilityPage && window.initAvailabilityPage(), 100);
             // Task 10: force map to recalculate size when returning to search
             if (name === 'search' && currentView === 'map' && leafletMap) {
                 setTimeout(() => leafletMap.invalidateSize(), 150);
@@ -1508,6 +1544,7 @@
                 const data = await res.json();
                 if (res.ok) {
                     currentUser = { userId: data.userId, fullName: data.fullName, email: data.email, role: data.role || 'Customer' };
+                    window.currentUser = currentUser;
                     localStorage.setItem('rp_user', JSON.stringify(currentUser));
                     updateNav();
                     showPage('home');
@@ -1556,10 +1593,10 @@
 
                 if (!listings || listings.length === 0) {
                     container.innerHTML = `
-                                    <div class="empty">
-                                        <div class="empty-icon">🅿️</div>
-                                        <p>No listings found. Try adjusting your filters.</p>
-                                    </div>`;
+                                            <div class="empty">
+                                                <div class="empty-icon">🅿️</div>
+                                                <p>No listings found. Try adjusting your filters.</p>
+                                            </div>`;
                     if (currentView === 'map') clearMapMarkers();
                     return;
                 }
@@ -1576,46 +1613,46 @@
                 }));
 
                 container.innerHTML = `
-                                <div class="results-meta">
-                                    <span class="results-count">
-                                        <strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found
-                                    </span>
-                                </div>
-                                <div class="listings-grid">
-                                    ${listings.map(l => {
+                                        <div class="results-meta">
+                                            <span class="results-count">
+                                                <strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found
+                                            </span>
+                                        </div>
+                                        <div class="listings-grid">
+                                            ${listings.map(l => {
                     const hid = l.hostUserID || l.HostUserID;
                     const host = hostCache[hid];
                     return `
-                                        <div class="listing-card" onclick="viewListing(${l.listingID})">
-                                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                                <h3>${l.title}</h3>
-                                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">
-                                                    ${l.isAvailable ? 'Available' : 'Taken'}
-                                                </span>
-                                            </div>
-                                            <div class="location">📍 ${l.location || l.approximateLocation || 'Fayetteville, AR'}</div>
-                                            <div class="price">$${l.pricePerHour}<span>/hr</span></div>
-                                            ${host ? `
-                                            <div style="display:flex;align-items:center;gap:8px;margin-top:12px;
-                                                        padding-top:12px;border-top:1px solid var(--border)">
-                                                <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;
-                                                            flex-shrink:0;border:2px solid var(--red)">
-                                                    ${host.profilePicUrl
+                                                <div class="listing-card" onclick="viewListing(${l.listingID})">
+                                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                                        <h3>${l.title}</h3>
+                                                        <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">
+                                                            ${l.isAvailable ? 'Available' : 'Taken'}
+                                                        </span>
+                                                    </div>
+                                                    <div class="location">📍 ${l.location || l.approximateLocation || 'Fayetteville, AR'}</div>
+                                                    <div class="price">$${l.pricePerHour}<span>/hr</span></div>
+                                                    ${host ? `
+                                                    <div style="display:flex;align-items:center;gap:8px;margin-top:12px;
+                                                                padding-top:12px;border-top:1px solid var(--border)">
+                                                        <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;
+                                                                    flex-shrink:0;border:2px solid var(--red)">
+                                                            ${host.profilePicUrl
                                 ? `<img src="${host.profilePicUrl}" style="width:100%;height:100%;object-fit:cover"/>`
                                 : `<div style="width:100%;height:100%;background:var(--red);color:#fff;
-                                                                      display:flex;align-items:center;justify-content:center;
-                                                                      font-size:12px;font-weight:700">
-                                                               ${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}
-                                                           </div>`
+                                                                              display:flex;align-items:center;justify-content:center;
+                                                                              font-size:12px;font-weight:700">
+                                                                       ${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}
+                                                                   </div>`
                             }
-                                                </div>
-                                                <span style="font-size:13px;color:var(--muted)">
-                                                    Hosted by <strong style="color:var(--text)">${host.fullName || 'Host'}</strong>
-                                                </span>
-                                            </div>` : ''}
-                                        </div>`;
+                                                        </div>
+                                                        <span style="font-size:13px;color:var(--muted)">
+                                                            Hosted by <strong style="color:var(--text)">${host.fullName || 'Host'}</strong>
+                                                        </span>
+                                                    </div>` : ''}
+                                                </div>`;
                 }).join('')}
-                                </div>`;
+                                        </div>`;
 
                 if (currentView === 'map') {
                     await loadMapView();
@@ -1623,10 +1660,10 @@
 
             } catch (err) {
                 container.innerHTML = `
-                                <div class="empty">
-                                    <div class="empty-icon">⚠️</div>
-                                    <p>Error loading listings. Make sure the API is running.</p>
-                                </div>`;
+                                        <div class="empty">
+                                            <div class="empty-icon">⚠️</div>
+                                            <p>Error loading listings. Make sure the API is running.</p>
+                                        </div>`;
             }
         }
 
@@ -1817,93 +1854,93 @@
                 const res = await fetch(`/api/Listings/${id}`);
                 const l = await res.json();
                 container.innerHTML = `
-                            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
-                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">
-                                    ${l.isAvailable ? 'Available' : 'Unavailable'}
-                                </span>
-                                ${currentUser ? `
-                                <button id="fav-btn" onclick="toggleFavorite(${l.listingID})"
-                                    style="background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s">
-                                    ♡ Save to Favorites
-                                </button>` : ''}
-                            </div>
-                            <div class="detail-grid">
-                                <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
-                                <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
-                                <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
-                                <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
-                            </div>
-                            ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
-                                                        <div style="margin:20px 0">
-                                        <div class="section-divider"><span>Your Host</span></div>
-                                        <div onclick="openHostModal(${l.hostUserID})" style="display:flex;align-items:center;
-                                             gap:12px;background:var(--surface);border:1.5px solid var(--border);
-                                             border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.2s"
-                                             onmouseover="this.style.borderColor='var(--red)'"
-                                             onmouseout="this.style.borderColor='var(--border)'">
-                                            <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;
-                                                        flex-shrink:0;border:2px solid var(--red)" id="detail-host-avatar-${l.listingID}">
-                                                <div style="width:100%;height:100%;background:var(--red);color:#fff;
-                                                            display:flex;align-items:center;justify-content:center;
-                                                            font-size:18px;font-weight:700">?</div>
-                                            </div>
-                                            <div>
-                                                <div style="font-size:11px;font-weight:700;color:var(--muted2);
-                                                            text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Hosted by</div>
-                                                <div style="font-weight:600;color:var(--text)" id="detail-host-name-${l.listingID}">
-                                                    Loading...
+                                    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
+                                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                                        <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">
+                                            ${l.isAvailable ? 'Available' : 'Unavailable'}
+                                        </span>
+                                        ${currentUser ? `
+                                        <button id="fav-btn" onclick="toggleFavorite(${l.listingID})"
+                                            style="background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s">
+                                            ♡ Save to Favorites
+                                        </button>` : ''}
+                                    </div>
+                                    <div class="detail-grid">
+                                        <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
+                                        <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
+                                        <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
+                                        <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
+                                    </div>
+                                    ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
+                                                                <div style="margin:20px 0">
+                                                <div class="section-divider"><span>Your Host</span></div>
+                                                <div onclick="openHostModal(${l.hostUserID})" style="display:flex;align-items:center;
+                                                     gap:12px;background:var(--surface);border:1.5px solid var(--border);
+                                                     border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.2s"
+                                                     onmouseover="this.style.borderColor='var(--red)'"
+                                                     onmouseout="this.style.borderColor='var(--border)'">
+                                                    <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;
+                                                                flex-shrink:0;border:2px solid var(--red)" id="detail-host-avatar-${l.listingID}">
+                                                        <div style="width:100%;height:100%;background:var(--red);color:#fff;
+                                                                    display:flex;align-items:center;justify-content:center;
+                                                                    font-size:18px;font-weight:700">?</div>
+                                                    </div>
+                                                    <div>
+                                                        <div style="font-size:11px;font-weight:700;color:var(--muted2);
+                                                                    text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Hosted by</div>
+                                                        <div style="font-weight:600;color:var(--text)" id="detail-host-name-${l.listingID}">
+                                                            Loading...
+                                                        </div>
+                                                    </div>
+                                                    <div style="margin-left:auto;color:var(--muted2);font-size:13px">View Profile →</div>
                                                 </div>
                                             </div>
-                                            <div style="margin-left:auto;color:var(--muted2);font-size:13px">View Profile →</div>
-                                        </div>
-                                    </div>
-                            ${l.isAvailable && currentUser ? `
-                                <div class="form-card" style="margin-top:24px;max-width:100%">
-                                    <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
-                                    <div class="form-row">
-                                        <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
-                                        <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
-                                    </div>
-                                    <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
-                                    <div id="res-msg" class="msg"></div>
-                                </div>`
+                                    ${l.isAvailable && currentUser ? `
+                                        <div class="form-card" style="margin-top:24px;max-width:100%">
+                                            <div class="card-top"><div class="form-title" style="font-size:24px">Reserve This Spot</div></div>
+                                            <div class="form-row">
+                                                <div class="form-group"><label>Start Time</label><input id="res-start" type="datetime-local" /></div>
+                                                <div class="form-group"><label>End Time</label><input id="res-end" type="datetime-local" /></div>
+                                            </div>
+                                            <button class="btn-primary" style="width:100%" onclick="makeReservation()">Reserve Now</button>
+                                            <div id="res-msg" class="msg"></div>
+                                        </div>`
                         : (!currentUser
                             ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
                             : `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`
                         )}
 
-                            <!-- REVIEWS SECTION -->
-                            <div style="margin-top:40px">
-                                <div class="section-divider"><span>Reviews</span></div>
-                                <div id="reviews-container"><div class="loading">Loading reviews...</div></div>
+                                    <!-- REVIEWS SECTION -->
+                                    <div style="margin-top:40px">
+                                        <div class="section-divider"><span>Reviews</span></div>
+                                        <div id="reviews-container"><div class="loading">Loading reviews...</div></div>
 
-                                ${currentUser ? `
-                                <div class="form-card" style="margin-top:24px;max-width:100%">
-                                    <div class="card-top"><div class="form-title" style="font-size:22px">Leave a Review</div></div>
-                                    <div class="form-group">
-                                        <label>Star Rating</label>
-                                        <select id="review-rating">
-                                            <option value="">Select rating</option>
-                                            <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
-                                            <option value="4">⭐⭐⭐⭐ 4 - Good</option>
-                                            <option value="3">⭐⭐⭐ 3 - Average</option>
-                                            <option value="2">⭐⭐ 2 - Poor</option>
-                                            <option value="1">⭐ 1 - Terrible</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Comment (optional)</label>
-                                        <textarea id="review-comment" rows="3" placeholder="Share your experience..."></textarea>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Reservation ID</label>
-                                        <input id="review-reservation-id" type="number" placeholder="Enter your reservation ID for this listing" />
-                                    </div>
-                                    <button class="btn-primary" style="width:100%" onclick="submitReview(${l.listingID})">Submit Review</button>
-                                    <div id="review-msg" class="msg"></div>
-                                </div>` : ''}
-                            </div>`;
+                                        ${currentUser ? `
+                                        <div class="form-card" style="margin-top:24px;max-width:100%">
+                                            <div class="card-top"><div class="form-title" style="font-size:22px">Leave a Review</div></div>
+                                            <div class="form-group">
+                                                <label>Star Rating</label>
+                                                <select id="review-rating">
+                                                    <option value="">Select rating</option>
+                                                    <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                                                    <option value="4">⭐⭐⭐⭐ 4 - Good</option>
+                                                    <option value="3">⭐⭐⭐ 3 - Average</option>
+                                                    <option value="2">⭐⭐ 2 - Poor</option>
+                                                    <option value="1">⭐ 1 - Terrible</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Comment (optional)</label>
+                                                <textarea id="review-comment" rows="3" placeholder="Share your experience..."></textarea>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Reservation ID</label>
+                                                <input id="review-reservation-id" type="number" placeholder="Enter your reservation ID for this listing" />
+                                            </div>
+                                            <button class="btn-primary" style="width:100%" onclick="submitReview(${l.listingID})">Submit Review</button>
+                                            <div id="review-msg" class="msg"></div>
+                                        </div>` : ''}
+                                    </div>`;
 
                 fetch(`/api/Users/${l.hostUserID}`)
                     .then(r => r.json())
@@ -1914,10 +1951,10 @@
                         if (avatarEl) avatarEl.innerHTML = host.profilePicUrl
                             ? `<img src="${host.profilePicUrl}" style="width:100%;height:100%;object-fit:cover"/>`
                             : `<div style="width:100%;height:100%;background:var(--red);color:#fff;
-                                   display:flex;align-items:center;justify-content:center;
-                                   font-size:18px;font-weight:700">
-                           ${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}
-                       </div>`;
+                                           display:flex;align-items:center;justify-content:center;
+                                           font-size:18px;font-weight:700">
+                                   ${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}
+                               </div>`;
                     }).catch(() => { });
 
 
@@ -1968,15 +2005,20 @@
                     return;
                 }
                 container.innerHTML = `<div class="listings-grid">${listings.map(l => `
-                                                    <div class="listing-card">
-                                                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                                            <h3>${l.title}</h3>
-                                                            <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
-                                                        </div>
-                                                        <div class="location">📍 ${l.location}</div>
-                                                        <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
-                                                        <button class="btn-secondary" style="width:100%;padding:8px;font-size:13px" onclick="deleteListing(${l.listingID})">Delete</button>
-                                                    </div>`).join('')}</div>`;
+                                                                            <div class="listing-card">
+                                                                                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                                                                    <h3>${l.title}</h3>
+                                                                                    <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
+                                                                                </div>
+                                                                                <div class="location">📍 ${l.location}</div>
+                                                                                <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
+                                                                                <div style="display:flex;gap:8px">
+    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
+        onclick="openAvailability(${l.listingID})">🗓 Availability</button>
+    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
+        onclick="deleteListing(${l.listingID})">Delete</button>
+</div>
+                                                                            </div>`).join('')}</div>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>'; }
         }
 
@@ -2221,7 +2263,7 @@
         async function loadAllSections() {
             const sections = ['register', 'login', 'search', 'listing', 'host',
                 'create-listing', 'my-reservations', 'payment', 'history', 'messages', 'profile', 'favorites',
-                'towing', 'admin-broadcast'];
+                'towing', 'admin-broadcast', 'availability'];
             for (const name of sections) {
                 try {
                     const el = document.getElementById('page-' + name);
@@ -2414,6 +2456,12 @@
                         <span>${r.status}</span>
                     </div>
                 `).join('');
+                                            <div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)">
+                                                <span>${r.listing}</span>
+                                                <span>${formatDate(r.start)}</span>
+                                                <span>${r.status}</span>
+                                            </div>
+                                        `).join('');
 
                 // ===== USAGE =====
                 document.getElementById('usage-report').innerHTML =
@@ -2424,6 +2472,12 @@
                     <div>Cancelled: ${usage.cancelled ?? 0}</div>
                 </div>
                 `;
+                                        <div style="display:flex;gap:24px">
+                                            <div>Total: ${usage.totalReservations ?? 0}</div>
+                                            <div>Confirmed: ${usage.confirmed ?? 0}</div>
+                                            <div>Cancelled: ${usage.cancelled ?? 0}</div>
+                                        </div>
+                                        `;
 
             } catch (err) {
                 console.error("Report error:", err);
@@ -2488,6 +2542,8 @@
     <div id="page-messages" class="page"></div>
     <!-- PAGE: VIEW HOST -->
     <div id="page-view-host" class="page"></div>
+    <!-- PAGE: availability -->
+    <div id="page-availability" class="page"></div>
 
     <!--PAGE:HOST PROFILE ON LISTINGS-->
     <script src="hostprofile.js"></script>

@@ -56,9 +56,8 @@ namespace RazorParked.Controllers
                 l.Longitude,
                 l.AvailableFrom,
                 l.AvailableTo,
-                l.HostUserID   // ← just return this instead
+                l.HostUserID
             }).ToListAsync();
-
 
             return Ok(listings);
         }
@@ -90,7 +89,7 @@ namespace RazorParked.Controllers
                 listing.IsAvailable,
                 listing.AvailableFrom,
                 listing.AvailableTo,
-                ApproximateLocation = listing.Location.Split(',')[0].Trim() // city/area only
+                ApproximateLocation = listing.Location.Split(',')[0].Trim()
             });
         }
 
@@ -137,7 +136,6 @@ namespace RazorParked.Controllers
         // ===============================
         // POST /api/Listings
         // Create a new listing
-        // CHANGED: Added Latitude and Longitude to INSERT query and parameters
         // ===============================
         [HttpPost]
         public async Task<IActionResult> CreateListing([FromBody] CreateListingRequest request)
@@ -152,7 +150,6 @@ namespace RazorParked.Controllers
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
 
-            // Verify host exists
             var hostExists = await connection.QueryFirstOrDefaultAsync<int?>(
                 "SELECT UserID FROM dbo.Users WHERE UserID = @HostUserID",
                 new { request.HostUserID });
@@ -265,9 +262,8 @@ namespace RazorParked.Controllers
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
 
-            // Verify listing belongs to this host
             var ownerId = await connection.QuerySingleOrDefaultAsync<int?>(@"
-        SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
+                SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
                 new { ListingID = id });
 
             if (ownerId == null) return NotFound(new { message = "Listing not found." });
@@ -276,8 +272,8 @@ namespace RazorParked.Controllers
             foreach (var date in request.Dates)
             {
                 await connection.ExecuteAsync(@"
-            INSERT INTO dbo.ListingDates (ListingID, ListedDate, Label, CreatedAt)
-            VALUES (@ListingID, @ListedDate, @Label, GETUTCDATE())",
+                    INSERT INTO dbo.ListingDates (ListingID, ListedDate, Label, CreatedAt)
+                    VALUES (@ListingID, @ListedDate, @Label, GETUTCDATE())",
                     new { ListingID = id, date.ListedDate, date.Label });
             }
 
@@ -299,10 +295,10 @@ namespace RazorParked.Controllers
             await connection.OpenAsync();
 
             var dates = await connection.QueryAsync<dynamic>(@"
-        SELECT DateID, ListingID, ListedDate, Label, CreatedAt
-        FROM dbo.ListingDates
-        WHERE ListingID = @ListingID
-        ORDER BY ListedDate ASC",
+                SELECT DateID, ListingID, ListedDate, Label, CreatedAt
+                FROM dbo.ListingDates
+                WHERE ListingID = @ListingID
+                ORDER BY ListedDate ASC",
                 new { ListingID = id });
 
             return Ok(dates);
@@ -322,17 +318,16 @@ namespace RazorParked.Controllers
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
 
-            // Verify listing belongs to this host
             var ownerId = await connection.QuerySingleOrDefaultAsync<int?>(@"
-        SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
+                SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
                 new { ListingID = id });
 
             if (ownerId == null) return NotFound(new { message = "Listing not found." });
             if (ownerId != hostUserId) return Forbid();
 
             var affected = await connection.ExecuteAsync(@"
-        DELETE FROM dbo.ListingDates
-        WHERE DateID = @DateID AND ListingID = @ListingID",
+                DELETE FROM dbo.ListingDates
+                WHERE DateID = @DateID AND ListingID = @ListingID",
                 new { DateID = dateId, ListingID = id });
 
             if (affected == 0)
@@ -355,7 +350,6 @@ namespace RazorParked.Controllers
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
 
-            // Verify host exists
             var hostExists = await connection.QueryFirstOrDefaultAsync<int?>(
                 "SELECT UserID FROM dbo.Users WHERE UserID = @HostUserID",
                 new { request.HostUserID });
@@ -368,11 +362,11 @@ namespace RazorParked.Controllers
             foreach (var listing in request.Listings)
             {
                 var newId = await connection.QuerySingleAsync<int>(@"
-            INSERT INTO dbo.ParkingListings 
-                (HostUserID, Title, Description, Location, PricePerHour, IsAvailable, AvailableFrom, AvailableTo)
-            VALUES 
-                (@HostUserID, @Title, @Description, @Location, @PricePerHour, 1, @AvailableFrom, @AvailableTo);
-            SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                    INSERT INTO dbo.ParkingListings 
+                        (HostUserID, Title, Description, Location, PricePerHour, IsAvailable, AvailableFrom, AvailableTo)
+                    VALUES 
+                        (@HostUserID, @Title, @Description, @Location, @PricePerHour, 1, @AvailableFrom, @AvailableTo);
+                    SELECT CAST(SCOPE_IDENTITY() AS INT);",
                     new
                     {
                         HostUserID = request.HostUserID,
@@ -408,24 +402,22 @@ namespace RazorParked.Controllers
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
 
-            // Verify listing belongs to this host
             var ownerId = await connection.QuerySingleOrDefaultAsync<int?>(@"
-        SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
+                SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
                 new { ListingID = id });
 
             if (ownerId == null) return NotFound(new { message = "Listing not found." });
             if (ownerId != request.HostUserID) return Forbid();
 
-            // Clear existing hours and replace
             await connection.ExecuteAsync(@"
-        DELETE FROM dbo.BusinessHours WHERE ListingID = @ListingID",
+                DELETE FROM dbo.BusinessHours WHERE ListingID = @ListingID",
                 new { ListingID = id });
 
             foreach (var hour in request.Hours)
             {
                 await connection.ExecuteAsync(@"
-            INSERT INTO dbo.BusinessHours (ListingID, DayOfWeek, OpenTime, CloseTime, CreatedAt)
-            VALUES (@ListingID, @DayOfWeek, @OpenTime, @CloseTime, GETUTCDATE())",
+                    INSERT INTO dbo.BusinessHours (ListingID, DayOfWeek, OpenTime, CloseTime, CreatedAt)
+                    VALUES (@ListingID, @DayOfWeek, @OpenTime, @CloseTime, GETUTCDATE())",
                     new { ListingID = id, hour.DayOfWeek, hour.OpenTime, hour.CloseTime });
             }
 
@@ -446,22 +438,120 @@ namespace RazorParked.Controllers
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
 
-            // Verify listing belongs to this host
             var ownerId = await connection.QuerySingleOrDefaultAsync<int?>(@"
-        SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
+                SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
                 new { ListingID = id });
 
             if (ownerId == null) return NotFound(new { message = "Listing not found." });
             if (ownerId != request.HostUserID) return Forbid();
 
             await connection.ExecuteAsync(@"
-        UPDATE dbo.ParkingListings
-        SET IsDisabled = @IsDisabled
-        WHERE ListingID = @ListingID",
+                UPDATE dbo.ParkingListings
+                SET IsDisabled = @IsDisabled
+                WHERE ListingID = @ListingID",
                 new { ListingID = id, request.IsDisabled });
 
             var status = request.IsDisabled ? "disabled" : "enabled";
             return Ok(new { message = $"Listing {status} successfully.", isDisabled = request.IsDisabled });
+        }
+
+        // ===============================
+        // GET /api/Listings/{id}/availability
+        // Criteria 7: Get all availability slots for a listing
+        // ADDED: New endpoint for availability manager
+        // ===============================
+        [HttpGet("{id}/availability")]
+        public async Task<IActionResult> GetAvailability(int id)
+        {
+            if (id <= 0)
+                return BadRequest(new { message = "Invalid listing ID." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            var slots = await connection.QueryAsync<dynamic>(@"
+                SELECT SlotID, ListingID, StartDateTime, EndDateTime, CreatedAt
+                FROM dbo.AvailabilitySlots
+                WHERE ListingID = @ListingID
+                ORDER BY StartDateTime ASC",
+                new { ListingID = id });
+
+            return Ok(slots);
+        }
+
+        // ===============================
+        // POST /api/Listings/{id}/availability
+        // Criteria 8: Add a new availability slot
+        // ADDED: New endpoint for availability manager
+        // ===============================
+        [HttpPost("{id}/availability")]
+        public async Task<IActionResult> AddAvailabilitySlot(int id, [FromBody] AddAvailabilitySlotRequest request)
+        {
+            if (id <= 0 || request.HostUserID <= 0)
+                return BadRequest(new { message = "Invalid request." });
+
+            if (request.StartDateTime >= request.EndDateTime)
+                return BadRequest(new { message = "Start time must be before end time." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            var ownerId = await connection.QuerySingleOrDefaultAsync<int?>(@"
+                SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
+                new { ListingID = id });
+
+            if (ownerId == null) return NotFound(new { message = "Listing not found." });
+            if (ownerId != request.HostUserID) return Forbid();
+
+            var newSlotId = await connection.QuerySingleAsync<int>(@"
+                INSERT INTO dbo.AvailabilitySlots (ListingID, StartDateTime, EndDateTime, CreatedAt)
+                VALUES (@ListingID, @StartDateTime, @EndDateTime, GETUTCDATE());
+                SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                new { ListingID = id, request.StartDateTime, request.EndDateTime });
+
+            return StatusCode(201, new
+            {
+                message = "Availability slot added successfully.",
+                slotId = newSlotId,
+                listingId = id,
+                request.StartDateTime,
+                request.EndDateTime
+            });
+        }
+
+        // ===============================
+        // DELETE /api/Listings/{id}/availability/{slotId}
+        // Criteria 9: Remove a specific availability slot
+        // ADDED: New endpoint for availability manager
+        // ===============================
+        [HttpDelete("{id}/availability/{slotId}")]
+        public async Task<IActionResult> DeleteAvailabilitySlot(int id, int slotId, [FromQuery] int hostUserId)
+        {
+            if (id <= 0 || slotId <= 0 || hostUserId <= 0)
+                return BadRequest(new { message = "Invalid request." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            var ownerId = await connection.QuerySingleOrDefaultAsync<int?>(@"
+                SELECT HostUserID FROM dbo.ParkingListings WHERE ListingID = @ListingID",
+                new { ListingID = id });
+
+            if (ownerId == null) return NotFound(new { message = "Listing not found." });
+            if (ownerId != hostUserId) return Forbid();
+
+            var affected = await connection.ExecuteAsync(@"
+                DELETE FROM dbo.AvailabilitySlots
+                WHERE SlotID = @SlotID AND ListingID = @ListingID",
+                new { SlotID = slotId, ListingID = id });
+
+            if (affected == 0)
+                return NotFound(new { message = "Slot not found." });
+
+            return Ok(new { message = "Availability slot removed successfully." });
         }
     }
 }
