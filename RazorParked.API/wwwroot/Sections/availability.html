@@ -1,0 +1,52 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: AVAILABILITY MANAGER
+     Owner:   Kaden
+     API:     GET    /api/Listings/{id}/availability
+              POST   /api/Listings/{id}/availability
+              DELETE /api/Listings/{id}/availability/{slotId}
+     To edit: only touch this file + availability.js!
+═══════════════════════════════════════════════════════ -->
+
+<button class="btn-ghost" onclick="showPage('host')" style="margin-bottom:24px">
+    ← Back to My Listings
+</button>
+
+<div class="page-header">
+    <h2>Availability Manager</h2>
+    <p>Managing slots for: <strong id="avail-listing-name" style="color:var(--red)"></strong></p>
+</div>
+
+<!-- Add new slot form -->
+<div class="form-card" style="max-width:600px;margin:0 0 32px 0">
+    <div class="card-top">
+        <div class="form-title" style="font-size:24px">Add Availability Slot</div>
+        <div class="form-subtitle">Set a start and end time for when this spot is available.</div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Start Date &amp; Time</label>
+            <input id="avail-start" type="datetime-local" />
+        </div>
+        <div class="form-group">
+            <label>End Date &amp; Time</label>
+            <input id="avail-end" type="datetime-local" />
+        </div>
+    </div>
+    <button class="btn-primary" style="width:100%" onclick="addAvailabilitySlot()">
+        + Add Slot
+    </button>
+    <div id="avail-msg" class="msg"></div>
+</div>
+
+<!-- Slot count header -->
+<div style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--text)">
+        Current Slots
+    </div>
+    <span id="avail-slot-count" style="font-size:13px;color:var(--muted)"></span>
+</div>
+
+<!-- Slots grid — populated by availability.js -->
+<div id="avail-slots-container">
+    <div class="loading">Loading slots...</div>
+</div>
