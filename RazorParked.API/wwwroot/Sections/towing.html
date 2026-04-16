@@ -1,0 +1,41 @@
+<!-- ═══════════════════════════════════════════════════════
+     SECTION: TOWING CONTACTS
+     Owner:   Carter — Sprint 6
+     API:     GET /api/TowingContacts, POST /api/TowingContacts/request
+═══════════════════════════════════════════════════════ -->
+
+<button class="btn-ghost" onclick="showPage('host')" style="margin-bottom:24px">← Back to Dashboard</button>
+
+<div class="page-header">
+    <h2>🚛 Towing Contacts</h2>
+    <p>Local towing companies available for unauthorized vehicle removal near your listings.</p>
+</div>
+
+<!-- Towing Companies List -->
+<div id="towing-contacts-list">
+    <div class="loading">Loading towing contacts...</div>
+</div>
+
+<!-- Request Tow Form -->
+<div class="form-card" style="max-width:600px;margin-top:32px">
+    <div class="card-top">
+        <div class="form-title">Report Unauthorized Vehicle</div>
+        <div class="form-subtitle">Submit a tow request for an unauthorized vehicle on your listing.</div>
+    </div>
+    <div class="form-group">
+        <label>Your Listing</label>
+        <select id="tow-listing-select">
+            <option value="">Loading listings...</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Spot Number</label>
+        <input id="tow-spot" placeholder="e.g. SPOT-3-1" />
+    </div>
+    <div class="form-group">
+        <label>Vehicle Description (optional)</label>
+        <textarea id="tow-vehicle-desc" rows="3" placeholder="Color, make, model, license plate if visible..."></textarea>
+    </div>
+    <button class="btn-primary" style="width:100%" onclick="submitTowRequest()">Submit Tow Request</button>
+    <div id="tow-msg" class="msg"></div>
+</div>
