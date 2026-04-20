@@ -1737,13 +1737,7 @@
                                                         transform:rotate(-45deg);
                                                         box-shadow:0 3px 10px rgba(157,34,53,0.45);
                                                     "></div>`,
-                                                                        width:28px; height:28px;
-                                                                        background:#9d2235;
-                                                                        border:3px solid #fff;
-                                                                        border-radius:50% 50% 50% 0;
-                                                                        transform:rotate(-45deg);
-                                                                        box-shadow:0 3px 10px rgba(157,34,53,0.45);
-                                                                    "></div>`,
+                                                                 
                     iconSize: [28, 28],
                     iconAnchor: [14, 28],
                     popupAnchor: [0, -30]
@@ -2456,12 +2450,7 @@
                         <span>${r.status}</span>
                     </div>
                 `).join('');
-                                            <div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)">
-                                                <span>${r.listing}</span>
-                                                <span>${formatDate(r.start)}</span>
-                                                <span>${r.status}</span>
-                                            </div>
-                                        `).join('');
+                                           
 
                 // ===== USAGE =====
                 document.getElementById('usage-report').innerHTML =
@@ -2472,13 +2461,7 @@
                     <div>Cancelled: ${usage.cancelled ?? 0}</div>
                 </div>
                 `;
-                                        <div style="display:flex;gap:24px">
-                                            <div>Total: ${usage.totalReservations ?? 0}</div>
-                                            <div>Confirmed: ${usage.confirmed ?? 0}</div>
-                                            <div>Cancelled: ${usage.cancelled ?? 0}</div>
-                                        </div>
-                                        `;
-
+                                      
             } catch (err) {
                 console.error("Report error:", err);
             }

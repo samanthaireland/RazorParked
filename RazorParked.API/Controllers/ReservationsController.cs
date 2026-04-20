@@ -39,7 +39,7 @@ namespace RazorParked.API.Controllers
 
             // Check listing exists and is available
             var listing = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
-                SELECT ListingID, IsAvailable, HostUserID 
+                SELECT ListingID, Title, IsAvailable, HostUserID 
                 FROM dbo.ParkingListings 
                 WHERE ListingID = @ListingID",
                 new { request.ListingID });
@@ -103,6 +103,54 @@ namespace RazorParked.API.Controllers
                     UserID = request.DriverUserID,
                     ReservationID = newId,
                     Message = $"Your reservation has been confirmed! Spot {assignedSpot} is ready."
+                });
+
+            // ── Auto-message: create/find conversation and post system message ──
+            // Get driver's name
+            var driver = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
+                SELECT FullName FROM dbo.Users WHERE UserID = @UserID",
+                new { UserID = request.DriverUserID });
+
+            string driverName = driver?.FullName ?? "A driver";
+            string listingTitle = (string)listing.Title;
+            int hostUserId = (int)listing.HostUserID;
+
+            // Format: "DRIVER reserved LISTING for MMMM d from h:mm tt – h:mm tt"
+            string dateStr = request.ReservationStart.ToString("MMMM d");
+            string startTime = request.ReservationStart.ToString("h:mm tt");
+            string endTime = request.ReservationEnd.ToString("h:mm tt");
+            string autoMsg = $"📋 {driverName} reserved {listingTitle} for {dateStr} from {startTime} – {endTime}";
+
+            // Find existing conversation or create one
+            var existingConv = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
+                SELECT ConversationID FROM dbo.Conversations
+                WHERE ListingID = @ListingID AND DriverUserID = @DriverUserID AND HostUserID = @HostUserID",
+                new { request.ListingID, request.DriverUserID, HostUserID = hostUserId });
+
+            int convId;
+            if (existingConv != null)
+            {
+                convId = (int)existingConv.ConversationID;
+            }
+            else
+            {
+                convId = await connection.QuerySingleAsync<int>(@"
+                    INSERT INTO dbo.Conversations (ListingID, DriverUserID, HostUserID, CreatedAt)
+                    VALUES (@ListingID, @DriverUserID, @HostUserID, GETUTCDATE());
+                    SELECT CAST(SCOPE_IDENTITY() AS INT);",
+                    new { request.ListingID, request.DriverUserID, HostUserID = hostUserId });
+            }
+
+            // Insert the auto-message into the conversation
+            await connection.ExecuteAsync(@"
+                INSERT INTO dbo.Messages (ConversationID, SenderUserID, ReceiverUserID, Body, SentAt, IsRead)
+                VALUES (@ConversationID, @SenderUserID, @ReceiverUserID, @Body, GETUTCDATE(), 0);",
+                new
+                {
+                    ConversationID = convId,
+                    SenderUserID = request.DriverUserID,
+                    ReceiverUserID = hostUserId,
+                    Body = autoMsg
                 });
 
             return StatusCode(201, new

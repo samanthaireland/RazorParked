@@ -50,14 +50,12 @@ async function loadDriverReservations() {
                     <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
                 </div>
                 <div style="font-size:13px;color:var(--muted);margin-bottom:12px">
-                    ${new Date(r.reservationStart).toLocaleDateString()} → ${new Date(r.reservationEnd).toLocaleDateString()}
+                    ${new Date(r.reservationStart).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })} → ${new Date(r.reservationEnd).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </div>
-
                 ${host ? `
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;
                             padding:10px;background:var(--surface);border-radius:8px;
-                            border:1px solid var(--border);cursor:pointer"
-                     onclick="openHostModal(${hostId})">
+                            border:1px solid var(--border)">
                     <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;
                                 flex-shrink:0;border:2px solid var(--red)">
                         ${host.profilePicUrl
@@ -66,15 +64,12 @@ async function loadDriverReservations() {
                                           display:flex;align-items:center;justify-content:center;
                                           font-size:12px;font-weight:700">
                                    ${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}
-                               </div>`
-                    }
+                               </div>`}
                     </div>
                     <span style="font-size:13px;color:var(--muted)">
                         Hosted by <strong style="color:var(--text)">${host.fullName || 'Host'}</strong>
                     </span>
-                    <span style="margin-left:auto;font-size:12px;color:var(--muted2)">View →</span>
                 </div>` : ''}
-
                 ${hostId ? `
                 <button class="btn-primary" style="width:100%;padding:8px;font-size:13px"
                     onclick="startConversation(${hostId}, ${r.listingID}, '${(r.title || 'Host').replace(/'/g, '')}')">
@@ -96,20 +91,65 @@ async function loadHostConversations() {
     try {
         const res = await fetch(`/api/Messages/user/${currentUser.userId}`);
         const data = await res.json();
-        if (!data.conversations || data.conversations.length === 0) {
+
+        // Only show conversations where current user is the HOST
+        const convos = (data.conversations || []).filter(c => c.hostUserID === currentUser.userId);
+        if (convos.length === 0) {
             container.innerHTML = '<div class="empty"><div class="empty-icon">💬</div><p>No messages yet.</p></div>';
             return;
         }
-        container.innerHTML = `<div class="listings-grid">${data.conversations.map(c => `
-            <div class="listing-card" style="cursor:pointer"
-                onclick="openMsgConversation(${c.conversationID}, ${c.otherUserId}, '${(c.otherUserName || 'Driver').replace(/'/g, '')}')">
-                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-                    <h3>${c.otherUserName || 'Driver'}</h3>
-                    ${c.unreadCount > 0 ? `<span style="background:var(--red);color:#fff;font-size:11px;padding:2px 8px;border-radius:10px">${c.unreadCount}</span>` : ''}
+
+        // Fetch reservations per driver to show date/time on each card
+        const reservationCache = {};
+        await Promise.all(convos.map(async c => {
+            if (!c.driverUserID || reservationCache[c.driverUserID]) return;
+            try {
+                const rr = await fetch(`/api/Reservations/user/${c.driverUserID}`);
+                if (rr.ok) reservationCache[c.driverUserID] = await rr.json();
+            } catch { }
+        }));
+
+        container.innerHTML = `<div class="listings-grid">${convos.map(c => {
+            const driverName = c.otherPartyName || 'Driver';
+            const initial = driverName.charAt(0).toUpperCase();
+            const safeName = driverName.replace(/'/g, '');
+
+            const driverReservations = reservationCache[c.driverUserID] || [];
+            const reservation = driverReservations.find(r => r.listingID === c.listingID);
+            const dateRange = reservation
+                ? new Date(reservation.reservationStart).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' → ' + new Date(reservation.reservationEnd).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : null;
+            const statusClass = reservation?.status === 'Confirmed' ? 'available' : 'unavailable';
+
+            return `
+            <div class="listing-card">
+                <h3>${c.listingTitle || 'Listing'}</h3>
+                <div class="location">📍 ${c.listingTitle || 'Fayetteville, AR'}</div>
+                ${reservation ? `
+                <div style="margin:8px 0">
+                    <span class="badge ${statusClass}">${reservation.status}</span>
                 </div>
-                <div class="location">📍 ${c.listingTitle || 'Listing'}</div>
-                <div style="font-size:13px;color:var(--muted);margin-top:8px">${c.lastMessage || 'No messages yet'}</div>
-            </div>`).join('')}</div>`;
+                <div style="font-size:13px;color:var(--muted);margin-bottom:8px">${dateRange}</div>` : ''}
+                <div style="display:flex;align-items:center;gap:8px;margin:8px 0;
+                            padding:10px;background:var(--surface);border-radius:8px;
+                            border:1px solid var(--border)">
+                    <div style="width:28px;height:28px;border-radius:50%;background:var(--red);
+                                color:#fff;display:flex;align-items:center;justify-content:center;
+                                font-size:12px;font-weight:700;flex-shrink:0">
+                        ${initial}
+                    </div>
+                    <span style="font-size:13px;color:var(--muted)">
+                        Reserved by <strong style="color:var(--text)">${driverName}</strong>
+                    </span>
+                    ${c.unreadCount > 0 ? `<span style="margin-left:auto;background:var(--red);color:#fff;
+                        font-size:11px;padding:2px 8px;border-radius:10px">${c.unreadCount} new</span>` : ''}
+                </div>
+                <button class="btn-primary" style="width:100%;padding:8px;font-size:13px"
+                    onclick="openMsgConversation(${c.conversationID}, ${c.driverUserID}, '${safeName}', ${c.listingID})">
+                    💬 Message Driver
+                </button>
+            </div>`;
+        }).join('')}</div>`;
     } catch {
         container.innerHTML = '<div class="empty"><p>Error loading conversations.</p></div>';
     }
@@ -139,9 +179,12 @@ async function startConversation(receiverId, listingId, name) {
     try {
         const res = await fetch(`/api/Messages/user/${currentUser.userId}`);
         const data = await res.json();
-        const existing = data.conversations?.find(c => c.otherUserId === receiverId);
+        // Find existing convo from driver perspective
+        const existing = data.conversations?.find(
+            c => c.hostUserID === receiverId && c.driverUserID === currentUser.userId
+        );
         if (existing) {
-            openMsgConversation(existing.conversationID, receiverId, name);
+            openMsgConversation(existing.conversationID, receiverId, name, listingId);
             return;
         }
     } catch { }
@@ -153,10 +196,12 @@ async function startConversation(receiverId, listingId, name) {
     document.getElementById('msg-thread-panel').scrollIntoView({ behavior: 'smooth' });
 }
 
-async function openMsgConversation(conversationId, receiverId, name) {
+// Accepts optional listingId so host replies work
+async function openMsgConversation(conversationId, receiverId, name, listingId) {
     window._activeMsgConvId = conversationId;
     window._activeMsgReceiverId = receiverId;
     window._activeMsgName = name;
+    if (listingId) window._activeMsgListingId = listingId;
 
     document.getElementById('msg-thread-panel').style.display = 'block';
     document.getElementById('msg-thread-messages').innerHTML = '<div class="loading">Loading...</div>';
@@ -176,6 +221,28 @@ async function openMsgConversation(conversationId, receiverId, name) {
             document.getElementById('msg-thread-messages').innerHTML = '<div class="empty"><p>No messages yet!</p></div>';
         } else {
             document.getElementById('msg-thread-messages').innerHTML = data.messages.map(m => {
+                // System/auto messages rendered as a banner, not a chat bubble
+                // Catches 📋 prefix OR auto-reservation phrase pattern
+                const isSystem = m.body && (
+                    m.body.startsWith('📋') ||
+                    m.body.includes('feel free') ||
+                    (m.body.includes('reserved') && m.body.includes(' for ') && m.body.includes(' from '))
+                );
+                if (isSystem) {
+                    const bannerTime = new Date(m.sentAt).toLocaleString([], {
+                        month: 'short', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                    return `
+                    <div style="text-align:center;margin:12px 0">
+                        <div style="display:inline-block;background:var(--gold-light);
+                            border:1px solid var(--gold);color:#7a5a10;
+                            font-size:12px;padding:7px 16px;border-radius:20px;max-width:90%">
+                            🗓️ ${m.body.replace('📋 ', '')}
+                            <span style="display:block;font-size:10px;opacity:0.7;margin-top:2px">${bannerTime}</span>
+                        </div>
+                    </div>`;
+                }
                 const isMine = m.senderUserID === currentUser.userId;
                 return `
                     <div style="display:flex;flex-direction:column;align-items:${isMine ? 'flex-end' : 'flex-start'}">
@@ -207,6 +274,12 @@ async function sendMsgReply() {
     if (!body) {
         status.className = 'msg error';
         status.textContent = 'Message cannot be empty.';
+        return;
+    }
+
+    if (!window._activeMsgReceiverId) {
+        status.className = 'msg error';
+        status.textContent = 'Could not identify recipient. Please go back and try again.';
         return;
     }
 
