@@ -40,7 +40,17 @@ namespace RazorParked.Controllers
                 query = query.Where(l => l.Location.Contains(location));
 
             if (date.HasValue)
-                query = query.Where(l => l.AvailableFrom <= date && l.AvailableTo >= date);
+            {
+                var dateValue = date.Value;
+                var listingIdsWithSlots = await _context.Database
+                    .SqlQueryRaw<int>(@"
+            SELECT DISTINCT ListingID FROM dbo.AvailabilitySlots
+            WHERE CAST(StartDateTime AS DATE) <= {0}
+            AND CAST(EndDateTime AS DATE) >= {0}",
+                        dateValue.Date)
+                    .ToListAsync();
+                query = query.Where(l => listingIdsWithSlots.Contains(l.ListingID));
+            }
 
             if (maxPrice.HasValue)
                 query = query.Where(l => l.PricePerHour <= maxPrice.Value);
