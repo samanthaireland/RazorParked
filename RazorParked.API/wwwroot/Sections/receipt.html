@@ -1,0 +1,103 @@
+﻿<!-- ═══════════════════════════════════════════════════════
+     SECTION: RECEIPT
+     Owner:   Ryleigh
+     API:     GET /api/Payments/reservation/{id}
+═══════════════════════════════════════════════════════ -->
+
+<style>
+    .receipt-card {
+        max-width: 520px;
+        margin: 0 auto;
+    }
+
+    .receipt-header {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .receipt-logo {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 28px;
+        color: var(--red);
+        letter-spacing: 2px;
+        margin-bottom: 2px;
+    }
+
+    .receipt-sub {
+        font-size: 13px;
+        color: var(--muted);
+    }
+
+    .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--surface2);
+    }
+
+        .receipt-row .label {
+            color: var(--muted);
+        }
+
+        .receipt-row .val {
+            font-weight: 600;
+            color: var(--text);
+            text-align: right;
+            max-width: 60%;
+        }
+
+    .receipt-total-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        font-weight: 600;
+        padding: 10px 0 4px;
+    }
+
+        .receipt-total-row .val {
+            color: var(--red);
+        }
+
+    .receipt-section {
+        background: var(--surface);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        margin-bottom: 14px;
+    }
+
+    .receipt-section-title {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--muted2);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 10px;
+    }
+
+    .paid-badge {
+        background: #edf7f0;
+        color: #2d7a4f;
+        border: 1px solid #b3dfc4;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 100px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: inline-block;
+    }
+</style>
+
+<div class="page-section active">
+    <button class="btn-ghost" onclick="showPage('my-reservations')" style="margin-bottom:24px">← Back to Reservations</button>
+    <div class="receipt-card">
+        <div class="receipt-header">
+            <div class="receipt-logo">🐗 RazorParked</div>
+            <div class="receipt-sub">Payment Receipt &nbsp; <span class="paid-badge">Paid</span></div>
+        </div>
+        <div id="receipt-content">
+            <div class="loading">Loading receipt...</div>
+        </div>
+    </div>
+</div>
