@@ -27,8 +27,8 @@ namespace RazorParked.API.Controllers
                 return BadRequest(new { message = "Invalid payment data." });
 
             if (string.IsNullOrWhiteSpace(request.PaymentMethod) ||
-                (request.PaymentMethod != "Venmo" && request.PaymentMethod != "InAppCredit"))
-                return BadRequest(new { message = "Payment method must be Venmo or InAppCredit." });
+    (request.PaymentMethod != "Venmo" && request.PaymentMethod != "InAppCredit" && request.PaymentMethod != "CreditCard"))
+                return BadRequest(new { message = "Payment method must be Venmo, Credit Card, or InAppCredit." });
 
             var connectionString = _config.GetConnectionString("DefaultConnection");
             using var connection = new SqlConnection(connectionString);

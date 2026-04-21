@@ -82,7 +82,7 @@
         .page {
             display: none;
             padding: 48px 40px;
-            max-width: 1000px;
+            max-width: 1000px;<div id="bulk-msg" class="msg"></div>
             margin: 0 auto;
         }
 
@@ -307,6 +307,7 @@
         <button class="btn-secondary" style="width:100%;margin-bottom:12px" onclick="addBulkSpot()">+ Add Another Space</button>
         <button class="btn-primary" style="width:100%" onclick="submitBulkListing()">Submit All Spaces</button>
         <div id="bulk-msg" class="msg"></div>
+        <div id="bulk-photo-section"></div>
     </div>
 </div>
 
@@ -325,8 +326,10 @@
             <div class="form-subtitle">Calls PATCH /api/Listings/{id}/businessHours</div>
         </div>
         <div class="form-group">
-            <label>Listing ID</label>
-            <input id="bh-listing-id" type="number" placeholder="Enter the listing ID to configure" />
+            <label>Select Listing</label>
+            <select id="bh-listing-id">
+                <option value="">Loading your listings...</option>
+            </select>
         </div>
         <div class="section-divider"><span>Operating Hours</span></div>
         <div id="bh-hours-container">
@@ -465,7 +468,32 @@
             const data = await res.json();
             if (res.ok) {
                 msg.className = 'msg success';
-                msg.textContent = `✅ ${data.message} (IDs: ${data.listingIds.join(', ')})`;
+                msg.textContent = `✅ ${data.message} — Now add photos below!`;
+
+                // Show photo upload for each created listing
+                const photoSection = document.getElementById('bulk-photo-section');
+                photoSection.innerHTML = `
+                <div style="margin-top:32px;border-top:2px solid var(--border);padding-top:24px">
+                    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;
+                        letter-spacing:1px;margin-bottom:4px">Add Photos</div>
+                    <div style="font-size:14px;color:var(--muted);margin-bottom:20px">
+                        Add photos to each listing (optional but recommended)
+                    </div>
+                    ${data.listingIds.map((id, i) => `
+                        <div style="margin-bottom:24px;background:var(--surface);
+                            border:1.5px solid var(--border);border-radius:var(--radius);padding:20px">
+                            <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;
+                                color:var(--red);margin-bottom:12px">
+                                Space ${i + 1} — Listing #${id}
+                            </div>
+                            <div id="photo-widget-${id}"></div>
+                        </div>`).join('')}
+                </div>`;
+
+                // Init upload widget for each listing
+                data.listingIds.forEach(id => {
+                    renderPhotoUploadWidget(`photo-widget-${id}`, id, currentUser.userId);
+                });
             } else {
                 msg.className = 'msg error';
                 msg.textContent = data.message || 'Failed to create listings.';
@@ -568,6 +596,29 @@
             }
         } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
     }
+
+    // ══════════════════════════════════════
+    // HOST LISTINGS DROPDOWN
+    // ══════════════════════════════════════
+    async function loadHostListingsDropdown(selectId) {
+        if (!currentUser) return;
+        try {
+            const res = await fetch(`/api/Listings/host/${currentUser.userId}`);
+            const listings = await res.json();
+            const select = document.getElementById(selectId);
+            if (!listings.length) {
+                select.innerHTML = '<option value="">No listings found</option>';
+                return;
+            }
+            select.innerHTML = '<option value="">Select a listing...</option>' +
+                listings.map(l => `<option value="${l.listingID}">${l.title} — ${l.location}</option>`).join('');
+        } catch {
+            document.getElementById(selectId).innerHTML = '<option value="">Error loading listings</option>';
+        }
+    }
+
+    // Load dropdowns on page init
+    loadHostListingsDropdown('bh-listing-id');
 </script>
 </body>
 </html>
