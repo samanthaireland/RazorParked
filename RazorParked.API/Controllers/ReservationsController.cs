@@ -216,6 +216,34 @@ namespace RazorParked.API.Controllers
 
             return Ok(reservations);
         }
+        // ===============================
+        // GET /api/Reservations/host/{userId}
+        // Get all confirmed reservations for a host (for gift dropdown)
+        // ===============================
+        [HttpGet("host/{userId}")]
+        public async Task<IActionResult> GetReservationsByHost(int userId)
+        {
+            if (userId <= 0)
+                return BadRequest(new { message = "Invalid user ID." });
+
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            var reservations = await connection.QueryAsync<dynamic>(@"
+        SELECT r.ReservationID, r.DriverUserID, r.ReservationStart, r.ReservationEnd, r.Status,
+               u.FullName AS CustomerName,
+               p.Title AS ListingTitle
+        FROM dbo.Reservations r
+        INNER JOIN dbo.ParkingListings p ON r.ListingID = p.ListingID
+        INNER JOIN dbo.Users u ON r.DriverUserID = u.UserID
+        WHERE p.HostUserID = @HostUserID
+        AND r.Status = 'Confirmed'
+        ORDER BY r.ReservationStart DESC",
+                new { HostUserID = userId });
+
+            return Ok(reservations);
+        }
 
         // ===============================
         // PATCH /api/Reservations/{id}/cancel

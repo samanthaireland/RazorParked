@@ -1238,10 +1238,6 @@
                     <button class="btn-secondary" style="width:100%;padding:11px" onclick="geocodeAddress()">📍 Auto-fill from Address</button>
                 </div>
             </div>
-            <div class="form-row">
-                <div class="form-group"><label>Available From</label><input id="cl-from" type="datetime-local" /></div>
-                <div class="form-group"><label>Available To</label><input id="cl-to" type="datetime-local" /></div>
-            </div>
             <button class="btn-primary" style="width:100%;margin-top:8px" onclick="createListing()">Create Listing</button>
             <div id="cl-msg" class="msg"></div>
         </div>
@@ -1634,8 +1630,6 @@
                         <div class="detail-grid">
                             <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
                             <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
-                            <div class="detail-item"><label>Available From</label><span>${new Date(l.availableFrom).toLocaleDateString()}</span></div>
-                            <div class="detail-item"><label>Available To</label><span>${new Date(l.availableTo).toLocaleDateString()}</span></div>
                         </div>
                         ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
                         ${currentUser && currentUser.userId === l.hostUserID ? `
@@ -1815,8 +1809,6 @@
                         description: document.getElementById('cl-desc').value,
                         location: document.getElementById('cl-location').value,
                         pricePerHour: parseFloat(document.getElementById('cl-price').value),
-                        availableFrom: document.getElementById('cl-from').value,
-                        availableTo: document.getElementById('cl-to').value,
                         latitude: parseFloat(document.getElementById('cl-lat').value) || null,
                         longitude: parseFloat(document.getElementById('cl-lng').value) || null
                     })

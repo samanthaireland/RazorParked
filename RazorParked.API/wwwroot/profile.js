@@ -33,6 +33,20 @@ async function loadProfile() {
             document.getElementById('profile-avatar').innerHTML =
                 `<img src="${data.profilePicUrl}" style="width:100%;height:100%;object-fit:cover" />`;
         }
+
+        // Show/hide host-only gift section based on role
+        const giftSection = document.getElementById('credits-gift-section');
+        if (giftSection) {
+            giftSection.style.display = data.roles.includes('Host') ? 'block' : 'none';
+        }
+
+        // Load credit balance once profile is ready
+        await loadCreditBalance();
+
+        // If host, load their recent reservations into the gift dropdown
+        if (data.roles.includes('Host')) {
+            await loadReservationsForGift();
+        }
     } catch { console.error('Could not load profile'); }
 }
 
@@ -80,7 +94,6 @@ async function updateProfilePic() {
     }
 
     try {
-        // First fetch current data so we don't wipe other fields
         const current = await fetch(`/api/Users/${currentUser.userId}`);
         const data = await current.json();
 
@@ -188,8 +201,180 @@ async function changeEmail() {
     } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
 }
 
+// ═══════════════════════════════════════════════════════
+// CREDITS & PAYMENT
+// ═══════════════════════════════════════════════════════
+
+async function loadCreditBalance() {
+    try {
+        const res = await fetch(`/api/Users/${currentUser.userId}/credits`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const balance = typeof data.balance === 'number' ? data.balance : (data.credits ?? 0);
+        const formatted = `$${balance.toFixed(2)}`;
+
+        const balanceEl = document.getElementById('credits-balance-amount');
+        if (balanceEl) balanceEl.textContent = formatted;
+
+        // Also show a small badge in the sidebar button
+        const badge = document.getElementById('credits-tab-badge');
+        if (badge) badge.textContent = formatted;
+    } catch { console.error('Could not load credit balance'); }
+}
+
+async function buyCredits() {
+    const msg = document.getElementById('credits-buy-msg');
+    msg.className = 'msg';
+
+    const amountInput = document.getElementById('credits-buy-amount');
+    const amount = parseFloat(amountInput.value);
+
+    if (!amount || amount <= 0) {
+        msg.className = 'msg error';
+        msg.textContent = 'Please enter a valid amount.';
+        return;
+    }
+
+    const btn = document.getElementById('credits-buy-btn');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    try {
+        const res = await fetch(`/api/Users/${currentUser.userId}/credits/purchase`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            msg.className = 'msg success';
+            msg.textContent = `Successfully added $${amount.toFixed(2)} in credits!`;
+            amountInput.value = '';
+            await loadCreditBalance();
+        } else {
+            msg.className = 'msg error';
+            msg.textContent = data.message || 'Purchase failed.';
+        }
+    } catch {
+        msg.className = 'msg error';
+        msg.textContent = 'Connection error.';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Buy Credits';
+    }
+}
+
+// Host only — load reservations for their listings so they can gift credits
+async function loadReservationsForGift() {
+    try {
+        const res = await fetch(`/api/Reservations/host/${currentUser.userId}`);
+        if (!res.ok) return;
+        const reservations = await res.json();
+
+        const select = document.getElementById('credits-gift-reservation');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">— Choose a reservation —</option>';
+
+        if (!reservations.length) {
+            select.innerHTML += '<option disabled>No confirmed reservations found</option>';
+            return;
+        }
+
+        reservations.forEach(r => {
+            const start = new Date(r.reservationStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const end = new Date(r.reservationEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const label = `#${r.reservationID} — ${r.customerName} · ${r.listingTitle} · ${start} → ${end}`;
+            const opt = document.createElement('option');
+            opt.value = r.reservationID;
+            opt.dataset.customerId = r.driverUserID;
+            opt.dataset.name = r.customerName;
+            opt.dataset.spot = r.listingTitle;
+            opt.dataset.date = `${start} → ${end}`;
+            opt.textContent = label;
+            select.appendChild(opt);
+        });
+    } catch { console.error('Could not load reservations for gift'); }
+}
+
+function onReservationPick() {
+    const select = document.getElementById('credits-gift-reservation');
+    const opt = select.options[select.selectedIndex];
+    const detail = document.getElementById('credits-res-detail');
+    if (!select.value) { detail.style.display = 'none'; return; }
+    document.getElementById('credits-rd-name').textContent = `Reservation #${select.value} — ${opt.dataset.name}`;
+    document.getElementById('credits-rd-spot').textContent = opt.dataset.spot;
+    document.getElementById('credits-rd-date').textContent = opt.dataset.date;
+    detail.style.display = 'block';
+}
+
+async function giftCredits() {
+    const msg = document.getElementById('credits-gift-msg');
+    msg.className = 'msg';
+
+    const select = document.getElementById('credits-gift-reservation');
+    const selectedOpt = select.options[select.selectedIndex];
+    const reservationId = select.value;
+    const customerId = selectedOpt?.dataset?.customerId;
+    const amount = parseFloat(document.getElementById('credits-gift-amount').value);
+    const note = document.getElementById('credits-gift-note')?.value?.trim() || '';
+
+    if (!reservationId) {
+        msg.className = 'msg error';
+        msg.textContent = 'Please select a reservation.';
+        return;
+    }
+    if (!amount || amount <= 0) {
+        msg.className = 'msg error';
+        msg.textContent = 'Please enter a valid amount to gift.';
+        return;
+    }
+
+    const btn = document.getElementById('credits-gift-btn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+        const res = await fetch(`/api/Users/${currentUser.userId}/credits/gift`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipientUserId: customerId, reservationId, amount, note })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            msg.className = 'msg success';
+            msg.textContent = `Gifted $${amount.toFixed(2)} in credits successfully!`;
+            document.getElementById('credits-gift-amount').value = '';
+            document.getElementById('credits-gift-note').value = '';
+            document.getElementById('credits-char-left').textContent = '160';
+            document.getElementById('credits-res-detail').style.display = 'none';
+            select.value = '';
+            await loadCreditBalance();
+        } else {
+            msg.className = 'msg error';
+            msg.textContent = data.message || 'Gift failed.';
+        }
+    } catch {
+        msg.className = 'msg error';
+        msg.textContent = 'Connection error.';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Credits';
+    }
+}
+
+// Quick-select preset amounts for buying credits
+function setPresetAmount(amount) {
+    const input = document.getElementById('credits-buy-amount');
+    if (input) input.value = amount;
+}
+
+// ═══════════════════════════════════════════════════════
+// TAB SWITCHING — updated to include 'credits'
+// ═══════════════════════════════════════════════════════
+
 function switchProfileTab(tab) {
-    ['info', 'edit', 'password', 'picture', 'email'].forEach(t => {
+    ['info', 'edit', 'password', 'picture', 'email', 'credits'].forEach(t => {
         document.getElementById('profile-tab-' + t).style.display = 'none';
         const btn = document.getElementById('tab-btn-' + t);
         btn.style.background = 'none';
@@ -201,4 +386,9 @@ function switchProfileTab(tab) {
     active.style.background = 'var(--red)';
     active.style.color = '#fff';
     active.style.fontWeight = '600';
+
+    // Refresh balance every time the credits tab is opened
+    if (tab === 'credits') {
+        loadCreditBalance();
+    }
 }
