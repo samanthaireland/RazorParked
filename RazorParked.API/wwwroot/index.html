@@ -1300,11 +1300,6 @@
         </div>
     </div>
 
-    <footer>
-        <div class="footer-logo">🐗 RazorParked</div>
-        <div>University of Arkansas &nbsp;·&nbsp; Fayetteville, AR &nbsp;·&nbsp; <span>Go Hogs!</span></div>
-    </footer>
-
     <script>
         // ══════════════════════════════════════
         // STATE
@@ -1348,7 +1343,7 @@
             }
             if (name === 'messages' && currentUser) setTimeout(() => window.loadMessages && window.loadMessages(), 300);
             if (name === 'receipt' && window._lastReceipt) setTimeout(() => renderReceipt(window._lastReceipt), 100);
-            if (name === 'favorites' && currentUser) setTimeout(() => window.loadFavorites && window.loadFavorites(), 300);
+            if (name === 'favorites' && currentUser) loadFavorites();
             if (name === 'availability' && currentUser) setTimeout(() => window.initAvailabilityPage && window.initAvailabilityPage(), 100);
             if (name === 'search' && currentView === 'map' && leafletMap) {
                 setTimeout(() => leafletMap.invalidateSize(), 150);
@@ -1484,38 +1479,38 @@
                     try { const pr = await fetch(`/api/Listings/${l.listingID}/photos`); if (pr.ok) photoCache[l.listingID] = await pr.json(); } catch { }
                 }));
                 container.innerHTML = `
-                            <div class="results-meta">
-                                <span class="results-count"><strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found</span>
-                            </div>
-                            <div class="listings-grid">
-                                ${listings.map(l => {
+                                <div class="results-meta">
+                                    <span class="results-count"><strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found</span>
+                                </div>
+                                <div class="listings-grid">
+                                    ${listings.map(l => {
                     const hid = l.hostUserID || l.HostUserID;
                     const host = hostCache[hid];
                     const photos = photoCache[l.listingID] || [];
                     const cover = photos[0];
                     return `
-                                        <div class="listing-card" onclick="viewListing(${l.listingID})" style="padding:0;overflow:hidden">
-                                            ${cover ? `<div style="height:160px;overflow:hidden;background:var(--surface2)"><img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'" /></div>` : ''}
-                                            <div style="padding:18px">
-                                                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                                    <h3>${l.title}</h3>
-                                                    <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Taken'}</span>
-                                                </div>
-                                                <div class="location">📍 ${l.location || l.approximateLocation || 'Fayetteville, AR'}</div>
-                                                <div class="price">$${l.pricePerHour}<span>/hr</span></div>
-                                                ${host ? `
-                                                <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-                                                    <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)">
-                                                        ${host.profilePicUrl
+                                            <div class="listing-card" onclick="viewListing(${l.listingID})" style="padding:0;overflow:hidden">
+                                                ${cover ? `<div style="height:160px;overflow:hidden;background:var(--surface2)"><img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'" /></div>` : ''}
+                                                <div style="padding:18px">
+                                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                                        <h3>${l.title}</h3>
+                                                        <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Taken'}</span>
+                                                    </div>
+                                                    <div class="location">📍 ${l.location || l.approximateLocation || 'Fayetteville, AR'}</div>
+                                                    <div class="price">$${l.pricePerHour}<span>/hr</span></div>
+                                                    ${host ? `
+                                                    <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+                                                        <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)">
+                                                            ${host.profilePicUrl
                                 ? `<img src="${host.profilePicUrl}" style="width:100%;height:100%;object-fit:cover"/>`
                                 : `<div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}</div>`}
-                                                    </div>
-                                                    <span style="font-size:13px;color:var(--muted)">Hosted by <strong style="color:var(--text)">${host.fullName || 'Host'}</strong></span>
-                                                </div>` : ''}
-                                            </div>
-                                        </div>`;
+                                                        </div>
+                                                        <span style="font-size:13px;color:var(--muted)">Hosted by <strong style="color:var(--text)">${host.fullName || 'Host'}</strong></span>
+                                                    </div>` : ''}
+                                                </div>
+                                            </div>`;
                 }).join('')}
-                            </div>`;
+                                </div>`;
                 if (currentView === 'map') await loadMapView();
             } catch {
                 container.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><p>Error loading listings. Make sure the API is running.</p></div>`;
@@ -1573,13 +1568,13 @@
                     boundsPoints.push([lat, lng]);
                     const marker = L.marker([lat, lng], { icon: redIcon }).addTo(leafletMap);
                     marker.bindPopup(`
-                                <div class="map-popup">
-                                    <div class="map-popup-title">${listing.title}</div>
-                                    <div class="map-popup-location">📍 ${listing.location || listing.approximateLocation || 'Fayetteville, AR'}</div>
-                                    <div class="map-popup-price">$${listing.pricePerHour}<span>/hr</span></div>
-                                    <div class="map-popup-badge"><span class="badge ${listing.isAvailable ? 'available' : 'unavailable'}">${listing.isAvailable ? 'Available' : 'Taken'}</span></div>
-                                    <button class="map-popup-btn" onclick="viewListing(${listing.listingID})">View &amp; Reserve</button>
-                                </div>`, { maxWidth: 230 });
+                                    <div class="map-popup">
+                                        <div class="map-popup-title">${listing.title}</div>
+                                        <div class="map-popup-location">📍 ${listing.location || listing.approximateLocation || 'Fayetteville, AR'}</div>
+                                        <div class="map-popup-price">$${listing.pricePerHour}<span>/hr</span></div>
+                                        <div class="map-popup-badge"><span class="badge ${listing.isAvailable ? 'available' : 'unavailable'}">${listing.isAvailable ? 'Available' : 'Taken'}</span></div>
+                                        <button class="map-popup-btn" onclick="viewListing(${listing.listingID})">View &amp; Reserve</button>
+                                    </div>`, { maxWidth: 230 });
                     mapMarkers.push(marker);
                 });
                 document.getElementById('map-notice').classList.toggle('visible', hasNoCoords);
@@ -1625,77 +1620,77 @@
                 const res = await fetch(`/api/Listings/${id}`);
                 const l = await res.json();
                 container.innerHTML = `
-                            <div id="listing-photos-carousel"></div>
-                            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
-                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Unavailable'}</span>
-                                ${currentUser ? `
-                                <button id="fav-btn" onclick="toggleFavorite(${l.listingID})"
-                                    style="background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s">
-                                    ♡ Save to Favorites
-                                </button>` : ''}
-                            </div>
-                            <div class="detail-grid">
-                                <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
-                                <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
-                            </div>
-                            ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
-                            ${currentUser && currentUser.userId === l.hostUserID ? `
-                            <div style="background:var(--gold-light);border:1.5px solid var(--gold);border-radius:var(--radius);padding:16px 20px;margin-bottom:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-                                <span style="font-size:13px;font-weight:600;color:#7a5a10;flex:1">🏠 You own this listing</span>
-                                <button class="btn-secondary" style="padding:8px 16px;font-size:13px"
-                                    onclick="editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${((l.approximateLocation || l.location) || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit Details</button>
-                                <button class="btn-secondary" style="padding:8px 16px;font-size:13px" onclick="managePhotos(${l.listingID})">📷 Manage Photos</button>
-                            </div>` : ''}
-                            <div style="margin:20px 0">
-                                <div class="section-divider"><span>Your Host</span></div>
-                                <div onclick="openHostModal(${l.hostUserID})" style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.2s"
-                                     onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
-                                    <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)" id="detail-host-avatar-${l.listingID}">
-                                        <div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">?</div>
-                                    </div>
-                                    <div>
-                                        <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Hosted by</div>
-                                        <div style="font-weight:600;color:var(--text)" id="detail-host-name-${l.listingID}">Loading...</div>
-                                    </div>
-                                    <div style="margin-left:auto;color:var(--muted2);font-size:13px">View Profile →</div>
+                                <div id="listing-photos-carousel"></div>
+                                <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
+                                <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                                    <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Unavailable'}</span>
+                                    ${currentUser ? `
+                                    <button id="fav-btn" onclick="toggleFavorite(${l.listingID})"
+                                        style="background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s">
+                                        ♡ Save to Favorites
+                                    </button>` : ''}
                                 </div>
-                            </div>
+                                <div class="detail-grid">
+                                    <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
+                                    <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
+                                </div>
+                                ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
+                                ${currentUser && currentUser.userId === l.hostUserID ? `
+                                <div style="background:var(--gold-light);border:1.5px solid var(--gold);border-radius:var(--radius);padding:16px 20px;margin-bottom:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                                    <span style="font-size:13px;font-weight:600;color:#7a5a10;flex:1">🏠 You own this listing</span>
+                                    <button class="btn-secondary" style="padding:8px 16px;font-size:13px"
+                                        onclick="editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${((l.approximateLocation || l.location) || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit Details</button>
+                                    <button class="btn-secondary" style="padding:8px 16px;font-size:13px" onclick="managePhotos(${l.listingID})">📷 Manage Photos</button>
+                                </div>` : ''}
+                                <div style="margin:20px 0">
+                                    <div class="section-divider"><span>Your Host</span></div>
+                                    <div onclick="openHostModal(${l.hostUserID})" style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.2s"
+                                         onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
+                                        <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)" id="detail-host-avatar-${l.listingID}">
+                                            <div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">?</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Hosted by</div>
+                                            <div style="font-weight:600;color:var(--text)" id="detail-host-name-${l.listingID}">Loading...</div>
+                                        </div>
+                                        <div style="margin-left:auto;color:var(--muted2);font-size:13px">View Profile →</div>
+                                    </div>
+                                </div>
 
-                            ${l.isAvailable && currentUser && currentUser.userId !== l.hostUserID ? `
-                                <div id="reserve-section">
-                                    <div class="loading">Checking availability...</div>
-                                </div>`
+                                ${l.isAvailable && currentUser && currentUser.userId !== l.hostUserID ? `
+                                    <div id="reserve-section">
+                                        <div class="loading">Checking availability...</div>
+                                    </div>`
                         : (!currentUser
                             ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
                             : (currentUser.userId === l.hostUserID ? '' :
                                 `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`)
                         )}
 
-                            <!-- REVIEWS SECTION -->
-                            <div style="margin-top:40px">
-                                <div class="section-divider"><span>Reviews</span></div>
-                                <div id="reviews-container"><div class="loading">Loading reviews...</div></div>
-                                ${currentUser ? `
-                                <div class="form-card" style="margin-top:24px;max-width:100%">
-                                    <div class="card-top"><div class="form-title" style="font-size:22px">Leave a Review</div></div>
-                                    <div class="form-group">
-                                        <label>Star Rating</label>
-                                        <select id="review-rating">
-                                            <option value="">Select rating</option>
-                                            <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
-                                            <option value="4">⭐⭐⭐⭐ 4 - Good</option>
-                                            <option value="3">⭐⭐⭐ 3 - Average</option>
-                                            <option value="2">⭐⭐ 2 - Poor</option>
-                                            <option value="1">⭐ 1 - Terrible</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group"><label>Comment (optional)</label><textarea id="review-comment" rows="3" placeholder="Share your experience..."></textarea></div>
-                                    <div class="form-group"><label>Reservation ID</label><input id="review-reservation-id" type="number" placeholder="Enter your reservation ID for this listing" /></div>
-                                    <button class="btn-primary" style="width:100%" onclick="submitReview(${l.listingID})">Submit Review</button>
-                                    <div id="review-msg" class="msg"></div>
-                                </div>` : ''}
-                            </div>`;
+                                <!-- REVIEWS SECTION -->
+                                <div style="margin-top:40px">
+                                    <div class="section-divider"><span>Reviews</span></div>
+                                    <div id="reviews-container"><div class="loading">Loading reviews...</div></div>
+                                    ${currentUser ? `
+                                    <div class="form-card" style="margin-top:24px;max-width:100%">
+                                        <div class="card-top"><div class="form-title" style="font-size:22px">Leave a Review</div></div>
+                                        <div class="form-group">
+                                            <label>Star Rating</label>
+                                            <select id="review-rating">
+                                                <option value="">Select rating</option>
+                                                <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                                                <option value="4">⭐⭐⭐⭐ 4 - Good</option>
+                                                <option value="3">⭐⭐⭐ 3 - Average</option>
+                                                <option value="2">⭐⭐ 2 - Poor</option>
+                                                <option value="1">⭐ 1 - Terrible</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group"><label>Comment (optional)</label><textarea id="review-comment" rows="3" placeholder="Share your experience..."></textarea></div>
+                                        <div class="form-group"><label>Reservation ID</label><input id="review-reservation-id" type="number" placeholder="Enter your reservation ID for this listing" /></div>
+                                        <button class="btn-primary" style="width:100%" onclick="submitReview(${l.listingID})">Submit Review</button>
+                                        <div id="review-msg" class="msg"></div>
+                                    </div>` : ''}
+                                </div>`;
 
                 fetch(`/api/Users/${l.hostUserID}`)
                     .then(r => r.json())
@@ -1729,29 +1724,29 @@
                 const slots = await res.json();
                 if (slots && slots.length > 0) {
                     section.innerHTML = `
-        <div class="form-card" style="margin-top:24px;max-width:100%">
-            <div class="card-top">
-                <div class="form-title" style="font-size:24px">Reserve This Spot</div>
-                <div class="form-subtitle">${slots.length} availability slot${slots.length !== 1 ? 's' : ''} — pick your dates and times below.</div>
-            </div>
-            <div id="rp-cal-reserve"></div>
-            <input type="hidden" id="res-start" />
-            <input type="hidden" id="res-end" />
-            <button class="btn-primary" style="width:100%;margin-top:16px" id="res-submit-btn" disabled onclick="makeReservation()">Reserve Now</button>
-            <div id="res-msg" class="msg"></div>
-        </div>`;
+            <div class="form-card" style="margin-top:24px;max-width:100%">
+                <div class="card-top">
+                    <div class="form-title" style="font-size:24px">Reserve This Spot</div>
+                    <div class="form-subtitle">${slots.length} availability slot${slots.length !== 1 ? 's' : ''} — pick your dates and times below.</div>
+                </div>
+                <div id="rp-cal-reserve"></div>
+                <input type="hidden" id="res-start" />
+                <input type="hidden" id="res-end" />
+                <button class="btn-primary" style="width:100%;margin-top:16px" id="res-submit-btn" disabled onclick="makeReservation()">Reserve Now</button>
+                <div id="res-msg" class="msg"></div>
+            </div>`;
                     await initReserveCalendar(listingId);
                 } else {
                     section.innerHTML = `
-                                <div class="msg error" style="display:block">
-                                    This host has not set any availability slots yet. Check back later!
-                                </div>`;
+                                    <div class="msg error" style="display:block">
+                                        This host has not set any availability slots yet. Check back later!
+                                    </div>`;
                 }
             } catch {
                 section.innerHTML = `
-                            <div class="msg error" style="display:block">
-                                Could not check availability. Please try again.
-                            </div>`;
+                                <div class="msg error" style="display:block">
+                                    Could not check availability. Please try again.
+                                </div>`;
             }
         }
 
@@ -1783,23 +1778,23 @@
                     const photos = photoCache[l.listingID] || [];
                     const cover = photos[0];
                     return `
-                                <div class="listing-card" style="padding:0;overflow:hidden">
-                                    ${cover ? `<div style="height:160px;overflow:hidden;background:var(--surface2)"><img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'" /></div>` : ''}
-                                    <div style="padding:18px">
-                                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                            <h3 onclick="viewListingFromHost(${l.listingID})" style="cursor:pointer;color:var(--red);text-decoration:underline">${l.title}</h3>
-                                            <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
+                                    <div class="listing-card" style="padding:0;overflow:hidden">
+                                        ${cover ? `<div style="height:160px;overflow:hidden;background:var(--surface2)"><img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'" /></div>` : ''}
+                                        <div style="padding:18px">
+                                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                                <h3 onclick="viewListingFromHost(${l.listingID})" style="cursor:pointer;color:var(--red);text-decoration:underline">${l.title}</h3>
+                                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
+                                            </div>
+                                            <div class="location">📍 ${l.location}</div>
+                                            <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
+                                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                                <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="openAvailability(${l.listingID})">🗓 Availability</button>
+                                                <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="managePhotos(${l.listingID})">📷 Photos</button>
+                                                <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${(l.location || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit</button>
+                                                <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="deleteListing(${l.listingID})">Delete</button>
+                                            </div>
                                         </div>
-                                        <div class="location">📍 ${l.location}</div>
-                                        <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
-                                        <div style="display:flex;gap:8px;flex-wrap:wrap">
-                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="openAvailability(${l.listingID})">🗓 Availability</button>
-                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="managePhotos(${l.listingID})">📷 Photos</button>
-                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${(l.location || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit</button>
-                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="deleteListing(${l.listingID})">Delete</button>
-                                        </div>
-                                    </div>
-                                </div>`;
+                                    </div>`;
                 }).join('')}</div>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>'; }
         }
@@ -1863,26 +1858,26 @@
                     const payment = paymentCache[r.reservationID];
                     const isPaid = !!payment;
                     return `
-                                <div class="listing-card">
-                                    <h3>${r.title}</h3>
-                                    <div class="location">📍 ${r.fullAddress}</div>
-                                    <div style="margin:10px 0;display:flex;gap:6px;flex-wrap:wrap">
-                                        <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
-                                        ${isPaid ? '<span class="badge available">✅ Paid</span>' : ''}
-                                    </div>
-                                    <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong></div>
-                                    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
-                                        ${new Date(r.reservationStart).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })} →
-                                        ${new Date(r.reservationEnd).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                    </div>
-                                    ${r.status === 'Confirmed' ? `
-                                    <div style="display:flex;gap:8px;flex-wrap:wrap">
-                                        ${isPaid
+                                    <div class="listing-card">
+                                        <h3>${r.title}</h3>
+                                        <div class="location">📍 ${r.fullAddress}</div>
+                                        <div style="margin:10px 0;display:flex;gap:6px;flex-wrap:wrap">
+                                            <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
+                                            ${isPaid ? '<span class="badge available">✅ Paid</span>' : ''}
+                                        </div>
+                                        <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong></div>
+                                        <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+                                            ${new Date(r.reservationStart).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })} →
+                                            ${new Date(r.reservationEnd).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                        ${r.status === 'Confirmed' ? `
+                                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                            ${isPaid
                                 ? `<button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="loadReceiptForReservation(${r.reservationID})">🧾 View Receipt</button>`
                                 : `<button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="showPaymentPage(${r.reservationID}, ${r.pricePerHour}, '${(r.title || 'Parking Spot').replace(/'/g, '')}', '${r.reservationStart}', '${r.reservationEnd}', ${r.pricePerHour})">Pay</button>`}
-                                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID})">Cancel</button>
-                                    </div>` : ''}
-                                </div>`;
+                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID})">Cancel</button>
+                                        </div>` : ''}
+                                    </div>`;
                 }).join('')}</div>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reservations.</p></div>'; }
         }
@@ -2001,19 +1996,19 @@
                 const reservations = await res.json();
                 if (!reservations.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>No reservation history yet.</p></div>'; return; }
                 container.innerHTML = `
-                            <table class="history-table">
-                                <thead><tr><th>Listing</th><th>Spot</th><th>Date</th><th>Status</th><th>Amount</th></tr></thead>
-                                <tbody>
-                                    ${reservations.map(r => `
-                                        <tr>
-                                            <td><strong>${r.title || 'Parking Spot'}</strong><br><span style="font-size:12px;color:var(--muted)">${r.fullAddress || ''}</span></td>
-                                            <td>${r.assignedSpotNumber}</td>
-                                            <td style="font-size:13px">${new Date(r.reservationStart).toLocaleDateString()}<br><span style="color:var(--muted)">${new Date(r.reservationStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(r.reservationEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td>
-                                            <td><span class="badge ${r.status === 'Confirmed' ? 'available' : r.status === 'Cancelled' ? 'unavailable' : 'available'}">${r.status}</span></td>
-                                            <td>$${r.pricePerHour != null ? r.pricePerHour.toFixed(2) : '—'}</td>
-                                        </tr>`).join('')}
-                                </tbody>
-                            </table>`;
+                                <table class="history-table">
+                                    <thead><tr><th>Listing</th><th>Spot</th><th>Date</th><th>Status</th><th>Amount</th></tr></thead>
+                                    <tbody>
+                                        ${reservations.map(r => `
+                                            <tr>
+                                                <td><strong>${r.title || 'Parking Spot'}</strong><br><span style="font-size:12px;color:var(--muted)">${r.fullAddress || ''}</span></td>
+                                                <td>${r.assignedSpotNumber}</td>
+                                                <td style="font-size:13px">${new Date(r.reservationStart).toLocaleDateString()}<br><span style="color:var(--muted)">${new Date(r.reservationStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(r.reservationEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td>
+                                                <td><span class="badge ${r.status === 'Confirmed' ? 'available' : r.status === 'Cancelled' ? 'unavailable' : 'available'}">${r.status}</span></td>
+                                                <td>$${r.pricePerHour != null ? r.pricePerHour.toFixed(2) : '—'}</td>
+                                            </tr>`).join('')}
+                                    </tbody>
+                                </table>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reservation history.</p></div>'; }
         }
 
@@ -2047,20 +2042,20 @@
                 if (!data.reviews || data.reviews.length === 0) { container.innerHTML = '<div class="empty"><p>No reviews yet. Be the first to review!</p></div>'; return; }
                 const stars = (n) => '⭐'.repeat(n);
                 container.innerHTML = `
-                            <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:flex;gap:24px;align-items:center">
-                                <div style="text-align:center">
-                                    <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--red);line-height:1">${data.averageRating}</div>
-                                    <div style="font-size:13px;color:var(--muted)">${data.totalReviews} review${data.totalReviews !== 1 ? 's' : ''}</div>
-                                </div>
-                            </div>
-                            ${data.reviews.map(r => `
-                                <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px">
-                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-                                        <div><strong style="font-size:14px">${r.reviewerName}</strong><div style="font-size:18px;margin-top:2px">${stars(r.starRating)}</div></div>
-                                        <div style="font-size:12px;color:var(--muted2)">${new Date(r.createdAt).toLocaleDateString()}</div>
+                                <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:flex;gap:24px;align-items:center">
+                                    <div style="text-align:center">
+                                        <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--red);line-height:1">${data.averageRating}</div>
+                                        <div style="font-size:13px;color:var(--muted)">${data.totalReviews} review${data.totalReviews !== 1 ? 's' : ''}</div>
                                     </div>
-                                    ${r.comment ? `<p style="font-size:14px;color:var(--muted);font-family:'Source Serif 4',serif">${r.comment}</p>` : ''}
-                                </div>`).join('')}`;
+                                </div>
+                                ${data.reviews.map(r => `
+                                    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px">
+                                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                                            <div><strong style="font-size:14px">${r.reviewerName}</strong><div style="font-size:18px;margin-top:2px">${stars(r.starRating)}</div></div>
+                                            <div style="font-size:12px;color:var(--muted2)">${new Date(r.createdAt).toLocaleDateString()}</div>
+                                        </div>
+                                        ${r.comment ? `<p style="font-size:14px;color:var(--muted);font-family:'Source Serif 4',serif">${r.comment}</p>` : ''}
+                                    </div>`).join('')}`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reviews.</p></div>'; }
         }
 
@@ -2082,6 +2077,50 @@
                 if (res.ok) { msg.className = 'msg success'; msg.textContent = '✅ Review submitted successfully!'; loadReviews(listingId); }
                 else { msg.className = 'msg error'; msg.textContent = data.message || 'Failed to submit review.'; }
             } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+        }
+
+        // ══════════════════════════════════════
+        // FAVORITES PAGE — Ryleigh
+        // ══════════════════════════════════════
+        async function loadFavorites() {
+            const container = document.getElementById('favorites-list');
+            if (!container) return;
+            if (!currentUser) {
+                container.innerHTML = '<div class="empty"><div class="empty-icon">❤️</div><p>Please log in to view your favorites.</p></div>';
+                return;
+            }
+            container.innerHTML = '<div class="loading">Loading favorites...</div>';
+            try {
+                const res = await fetch(`/api/Favorites/user/${currentUser.userId}`);
+                const favorites = await res.json();
+                if (!favorites || favorites.length === 0) {
+                    container.innerHTML = '<div class="empty"><div class="empty-icon">❤️</div><p>No favorites yet. Save a listing to see it here!</p></div>';
+                    return;
+                }
+                container.innerHTML = `<div class="listings-grid">${favorites.map(f => `
+                <div class="listing-card">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                        <h3>${f.title}</h3>
+                        <span class="badge ${f.isAvailable ? 'available' : 'unavailable'}">${f.isAvailable ? 'Available' : 'Unavailable'}</span>
+                    </div>
+                    <div class="location">📍 ${f.location}</div>
+                    <div class="price" style="margin-bottom:16px">$${f.pricePerHour}<span>/hr</span></div>
+                    <div style="display:flex;gap:8px">
+                        <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="viewListing(${f.listingID})">View & Book</button>
+                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="removeFavorite(${f.favoriteID})">Remove</button>
+                    </div>
+                </div>`).join('')}</div>`;
+            } catch {
+                container.innerHTML = '<div class="empty"><p>Error loading favorites.</p></div>';
+            }
+        }
+
+        async function removeFavorite(favoriteId) {
+            if (!confirm('Remove this listing from favorites?')) return;
+            try {
+                const res = await fetch(`/api/Favorites/${favoriteId}?userId=${currentUser.userId}`, { method: 'DELETE' });
+                if (res.ok) loadFavorites();
+            } catch { alert('Connection error.'); }
         }
 
         // ══════════════════════════════════════
@@ -2159,13 +2198,13 @@
                 const container = document.getElementById('business-analytics-container');
                 if (!data.length) { container.innerHTML = "<p>No data available</p>"; return; }
                 container.innerHTML = data.map(item => `
-                            <div class="listing-card" style="margin-bottom:16px">
-                                <h3>${item.listingName}</h3>
-                                <p>Total Reservations: ${item.totalReservations}</p>
-                                <p>Confirmed: ${item.confirmedReservations}</p>
-                                <p>Cancelled: ${item.cancelledReservations}</p>
-                                <p><strong>Revenue: $${item.estimatedRevenue}</strong></p>
-                            </div>`).join("");
+                                <div class="listing-card" style="margin-bottom:16px">
+                                    <h3>${item.listingName}</h3>
+                                    <p>Total Reservations: ${item.totalReservations}</p>
+                                    <p>Confirmed: ${item.confirmedReservations}</p>
+                                    <p>Cancelled: ${item.cancelledReservations}</p>
+                                    <p><strong>Revenue: $${item.estimatedRevenue}</strong></p>
+                                </div>`).join("");
             } catch (err) { console.error(err); }
         }
 
@@ -2229,6 +2268,11 @@
     <div id="page-towing" class="page"></div>
     <!-- PAGE: ADMIN BROADCAST (Carter — Sprint 6) -->
     <div id="page-admin-broadcast" class="page"></div>
+
+    <footer>
+        <div class="footer-logo">🐗 RazorParked</div>
+        <div>University of Arkansas &nbsp;·&nbsp; Fayetteville, AR &nbsp;·&nbsp; <span>Go Hogs!</span></div>
+    </footer>
 
 </body>
 </html>
