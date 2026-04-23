@@ -54,6 +54,22 @@ namespace RazorParked.API.Controllers
             if ((int)listing.HostUserID == request.DriverUserID)
                 return BadRequest(new { message = "Hosts cannot reserve their own listing." });
 
+            // ADDED: Criteria 15 — check reservation falls within an availability slot
+            var slotMatch = await connection.QueryFirstOrDefaultAsync<int?>(@"
+                SELECT SlotID FROM dbo.AvailabilitySlots
+                WHERE ListingID = @ListingID
+                AND StartDateTime <= @ReservationStart
+                AND EndDateTime >= @ReservationEnd",
+                new
+                {
+                    request.ListingID,
+                    request.ReservationStart,
+                    request.ReservationEnd
+                });
+
+            if (slotMatch == null)
+                return BadRequest(new { message = "Your selected time does not fall within any available time slot set by the host. Please choose a time within the listed availability." });
+
             // Check for conflicting reservations
             var conflict = await connection.QueryFirstOrDefaultAsync<int?>(@"
                 SELECT ReservationID FROM dbo.Reservations
@@ -106,7 +122,6 @@ namespace RazorParked.API.Controllers
                 });
 
             // ── Auto-message: create/find conversation and post system message ──
-            // Get driver's name
             var driver = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
                 SELECT FullName FROM dbo.Users WHERE UserID = @UserID",
                 new { UserID = request.DriverUserID });
@@ -115,13 +130,11 @@ namespace RazorParked.API.Controllers
             string listingTitle = (string)listing.Title;
             int hostUserId = (int)listing.HostUserID;
 
-            // Format: "DRIVER reserved LISTING for MMMM d from h:mm tt – h:mm tt"
             string dateStr = request.ReservationStart.ToString("MMMM d");
             string startTime = request.ReservationStart.ToString("h:mm tt");
             string endTime = request.ReservationEnd.ToString("h:mm tt");
             string autoMsg = $"📋 {driverName} reserved {listingTitle} for {dateStr} from {startTime} – {endTime}";
 
-            // Find existing conversation or create one
             var existingConv = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
                 SELECT ConversationID FROM dbo.Conversations
                 WHERE ListingID = @ListingID AND DriverUserID = @DriverUserID AND HostUserID = @HostUserID",
@@ -141,7 +154,6 @@ namespace RazorParked.API.Controllers
                     new { request.ListingID, request.DriverUserID, HostUserID = hostUserId });
             }
 
-            // Insert the auto-message into the conversation
             await connection.ExecuteAsync(@"
                 INSERT INTO dbo.Messages (ConversationID, SenderUserID, ReceiverUserID, Body, SentAt, IsRead)
                 VALUES (@ConversationID, @SenderUserID, @ReceiverUserID, @Body, GETUTCDATE(), 0);",
@@ -216,9 +228,10 @@ namespace RazorParked.API.Controllers
 
             return Ok(reservations);
         }
+
         // ===============================
         // GET /api/Reservations/host/{userId}
-        // Get all confirmed reservations for a host (for gift dropdown)
+        // Get all confirmed reservations for a host
         // ===============================
         [HttpGet("host/{userId}")]
         public async Task<IActionResult> GetReservationsByHost(int userId)
@@ -231,15 +244,15 @@ namespace RazorParked.API.Controllers
             await connection.OpenAsync();
 
             var reservations = await connection.QueryAsync<dynamic>(@"
-        SELECT r.ReservationID, r.DriverUserID, r.ReservationStart, r.ReservationEnd, r.Status,
-               u.FullName AS CustomerName,
-               p.Title AS ListingTitle
-        FROM dbo.Reservations r
-        INNER JOIN dbo.ParkingListings p ON r.ListingID = p.ListingID
-        INNER JOIN dbo.Users u ON r.DriverUserID = u.UserID
-        WHERE p.HostUserID = @HostUserID
-        AND r.Status = 'Confirmed'
-        ORDER BY r.ReservationStart DESC",
+                SELECT r.ReservationID, r.DriverUserID, r.ReservationStart, r.ReservationEnd, r.Status,
+                       u.FullName AS CustomerName,
+                       p.Title AS ListingTitle
+                FROM dbo.Reservations r
+                INNER JOIN dbo.ParkingListings p ON r.ListingID = p.ListingID
+                INNER JOIN dbo.Users u ON r.DriverUserID = u.UserID
+                WHERE p.HostUserID = @HostUserID
+                AND r.Status = 'Confirmed'
+                ORDER BY r.ReservationStart DESC",
                 new { HostUserID = userId });
 
             return Ok(reservations);
@@ -274,7 +287,6 @@ namespace RazorParked.API.Controllers
             if ((string)reservation.Status == "Cancelled")
                 return BadRequest(new { message = "Reservation is already cancelled." });
 
-            // Check cancellation policy — free if more than 12 hours before start
             var hoursUntilStart = ((DateTime)reservation.ReservationStart - DateTime.UtcNow).TotalHours;
             var isFreeCancellation = hoursUntilStart > 12;
 
