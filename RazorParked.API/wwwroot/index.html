@@ -1360,7 +1360,7 @@
                 guest.style.display = 'none';
                 user.style.display = 'flex';
                 nameEl.textContent = currentUser.fullName;
-                if (currentUser.role === 'Host') hostBtn.style.display = 'inline-block';
+                hostBtn.style.display = 'inline-block';
                 const adminBtn = document.getElementById('nav-admin-btn');
                 if (adminBtn && currentUser.roles && currentUser.roles.includes('Admin')) {
                     adminBtn.style.display = 'inline-block';
@@ -1429,7 +1429,7 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    currentUser = { userId: data.userId, fullName: data.fullName, email: data.email, role: data.role || 'Customer' };
+                    currentUser = { userId: data.userId, fullName: data.fullName, email: data.email, role: data.role || 'Customer', roles: data.roles || [] };
                     window.currentUser = currentUser;
                     localStorage.setItem('rp_user', JSON.stringify(currentUser));
                     updateNav();
