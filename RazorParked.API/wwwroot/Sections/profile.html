@@ -36,12 +36,10 @@
             <button onclick="switchProfileTab('password')" id="tab-btn-password"
                     style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:4px;transition:all 0.2s">
                 🔒 Change Password
-
             </button>
             <button onclick="switchProfileTab('email')" id="tab-btn-email"
-                        style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:4px;transition:all 0.2s">
-                    📧 Change Email
-           
+                    style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:4px;transition:all 0.2s">
+                📧 Change Email
             </button>
             <button onclick="switchProfileTab('picture')" id="tab-btn-picture"
                     style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s">
@@ -50,6 +48,11 @@
             <button onclick="switchProfileTab('preferences')" id="tab-btn-preferences"
                     style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s">
                 ⚙️ Preferences
+            </button>
+            <button onclick="switchProfileTab('credits')" id="tab-btn-credits"
+                    style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:4px;transition:all 0.2s;display:flex;align-items:center;justify-content:space-between">
+                <span>💳 Credits &amp; Payment</span>
+                <span id="credits-tab-badge" style="font-size:11px;background:var(--red);color:#fff;padding:1px 8px;border-radius:99px;font-weight:700"></span>
             </button>
         </div>
     </div>
@@ -137,32 +140,30 @@
             </div>
             <button class="btn-primary" style="width:100%" onclick="changePassword()">Update Password</button>
             <div id="pw-msg" class="msg"></div>
-
-
         </div>
 
         <!-- TAB: Change Email -->
-<div id="profile-tab-email" class="form-card" style="max-width:100%;display:none">
-    <div class="card-top">
-        <div class="form-title" style="font-size:22px">Change Email</div>
-        <div class="form-subtitle">Update your login email address.</div>
-    </div>
-    <div class="form-group">
-        <label>Current Email</label>
-        <input id="profile-current-email" type="email" disabled
-            style="background:var(--surface2);cursor:not-allowed" />
-    </div>
-    <div class="form-group">
-        <label>New Email</label>
-        <input id="profile-new-email" type="email" placeholder="new@uark.edu" />
-    </div>
-    <div class="form-group">
-        <label>Confirm Password</label>
-        <input id="email-confirm-pw" type="password" placeholder="••••••••" />
-    </div>
-    <button class="btn-primary" style="width:100%" onclick="changeEmail()">Update Email</button>
-    <div id="email-msg" class="msg"></div>
-</div>
+        <div id="profile-tab-email" class="form-card" style="max-width:100%;display:none">
+            <div class="card-top">
+                <div class="form-title" style="font-size:22px">Change Email</div>
+                <div class="form-subtitle">Update your login email address.</div>
+            </div>
+            <div class="form-group">
+                <label>Current Email</label>
+                <input id="profile-current-email" type="email" disabled
+                       style="background:var(--surface2);cursor:not-allowed" />
+            </div>
+            <div class="form-group">
+                <label>New Email</label>
+                <input id="profile-new-email" type="email" placeholder="new@uark.edu" />
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input id="email-confirm-pw" type="password" placeholder="••••••••" />
+            </div>
+            <button class="btn-primary" style="width:100%" onclick="changeEmail()">Update Email</button>
+            <div id="email-msg" class="msg"></div>
+        </div>
 
         <!-- TAB: Profile Picture -->
         <div id="profile-tab-picture" class="form-card" style="max-width:100%;display:none">
@@ -181,7 +182,7 @@
             <div id="pic-msg" class="msg"></div>
         </div>
 
-        <!-- TAB: Preferences — Carter Sprint 6 -->
+        <!-- TAB: Preferences -->
         <div id="profile-tab-preferences" class="form-card" style="max-width:100%;display:none">
             <div class="card-top">
                 <div class="form-title" style="font-size:22px">Preferences</div>
@@ -200,6 +201,134 @@
                 </label>
             </div>
             <div id="prefs-msg" class="msg" style="margin-top:12px"></div>
+        </div>
+
+        <!-- TAB: Credits & Payment -->
+        <div id="profile-tab-credits" class="form-card" style="max-width:100%;display:none">
+            <div class="card-top">
+                <div class="form-title" style="font-size:22px">Credits &amp; Payment</div>
+                <div class="form-subtitle">Manage your in-app RazorParked credit balance.</div>
+            </div>
+
+            <!-- Balance -->
+            <div style="background:var(--surface2);border-radius:10px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+                <div>
+                    <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Your Balance</div>
+                    <div id="credits-balance-amount" style="font-size:2rem;font-weight:800;color:var(--red)">$0.00</div>
+                </div>
+                <span style="font-size:2rem">💰</span>
+            </div>
+
+            <!-- Buy Credits -->
+            <div style="border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:16px">
+                <div style="font-size:15px;font-weight:600;margin-bottom:4px">Buy Credits</div>
+                <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Add funds to use at checkout.</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+                    <button class="btn-secondary" style="padding:4px 14px;font-size:12px" onclick="setPresetAmount(10)">$10</button>
+                    <button class="btn-secondary" style="padding:4px 14px;font-size:12px" onclick="setPresetAmount(25)">$25</button>
+                    <button class="btn-secondary" style="padding:4px 14px;font-size:12px" onclick="setPresetAmount(50)">$50</button>
+                    <button class="btn-secondary" style="padding:4px 14px;font-size:12px" onclick="setPresetAmount(100)">$100</button>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <div style="position:relative;flex:1">
+                        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600">$</span>
+                        <input id="credits-buy-amount" type="number" min="1" step="1" placeholder="Custom amount" style="padding-left:24px" />
+                    </div>
+                    <button id="credits-buy-btn" class="btn-primary" style="white-space:nowrap" onclick="buyCredits()">Buy Credits</button>
+                </div>
+                <div id="credits-buy-msg" class="msg"></div>
+            </div>
+
+            <!-- Card on File -->
+            <div style="border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:16px">
+
+                <!-- No card saved — show form -->
+                <div id="cof-no-card">
+                    <div style="font-size:15px;font-weight:600;margin-bottom:4px">💳 Payment Card on File</div>
+                    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Save a card to use at checkout or to top up credits quickly.</div>
+                    <div class="form-group">
+                        <label>Name on Card</label>
+                        <input id="cof-name" type="text" placeholder="Jane Smith" />
+                    </div>
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input id="cof-number" type="text" placeholder="4242 4242 4242 4242" maxlength="19"
+                               oninput="formatCofCardNumber(this)" />
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                        <div class="form-group">
+                            <label>Expiry</label>
+                            <input id="cof-expiry" type="text" placeholder="MM / YY" maxlength="7"
+                                   oninput="formatCofExpiry(this)" />
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input id="cof-cvv" type="password" placeholder="•••" maxlength="4" />
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width:100%" onclick="saveCardOnFile()">Save Card</button>
+                    <div id="cof-msg" class="msg"></div>
+                </div>
+
+                <!-- Card saved — show masked display -->
+                <div id="cof-has-card" style="display:none">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                        <div style="font-size:15px;font-weight:600">💳 Payment Card on File</div>
+                        <span style="font-size:10px;background:#edf7f0;color:#2d7a4f;border:1px solid #b3dfc4;padding:2px 8px;border-radius:99px;font-weight:600">Saved</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+                        <div style="width:38px;height:26px;background:var(--gold);border-radius:4px;flex-shrink:0"></div>
+                        <div>
+                            <div id="cof-display-num" style="font-size:15px;font-weight:600;letter-spacing:.1em;color:var(--text)">•••• •••• •••• ????</div>
+                            <div id="cof-display-meta" style="font-size:12px;color:var(--muted);margin-top:2px">Name · Expires ??/??</div>
+                        </div>
+                        <button onclick="removeCardOnFile()"
+                                style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;line-height:1"
+                                title="Remove card">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gift Credits (Host only) -->
+            <div id="credits-gift-section" style="border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:none">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                    <div style="font-size:15px;font-weight:600">🎁 Gift Credits to a Reserver</div>
+                    <span style="font-size:10px;background:var(--red);color:#fff;padding:2px 8px;border-radius:99px;font-weight:600">Host Only</span>
+                </div>
+                <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Send credits to a customer who reserved your spot.</div>
+
+                <div class="form-group">
+                    <label>Select Reservation</label>
+                    <select id="credits-gift-reservation" onchange="onReservationPick()" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font-size:14px">
+                        <option value="">— Choose a reservation —</option>
+                    </select>
+                </div>
+
+                <div id="credits-res-detail" style="background:var(--surface2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--muted);display:none;line-height:1.7">
+                    <strong id="credits-rd-name" style="color:var(--text)"></strong><br>
+                    <span id="credits-rd-spot"></span><br>
+                    <span id="credits-rd-date"></span>
+                </div>
+
+                <div class="form-group">
+                    <label>Amount to Gift</label>
+                    <div style="position:relative">
+                        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600">$</span>
+                        <input id="credits-gift-amount" type="number" min="1" step="1" placeholder="e.g. 5" style="padding-left:24px" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Note <span style="font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0">(optional)</span></label>
+                    <textarea id="credits-gift-note" maxlength="160" rows="2" placeholder="e.g. Thanks for being a great guest!" oninput="document.getElementById('credits-char-left').textContent=160-this.value.length"></textarea>
+                    <div style="font-size:11px;color:var(--muted);text-align:right;margin-top:4px"><span id="credits-char-left">160</span> characters remaining</div>
+                </div>
+
+                <button id="credits-gift-btn" class="btn-primary" style="width:100%" onclick="giftCredits()">Send Credits</button>
+                <div id="credits-gift-msg" class="msg"></div>
+            </div>
         </div>
 
     </div>
