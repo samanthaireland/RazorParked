@@ -1,0 +1,28 @@
+﻿<div class="page-header">
+    <button onclick="showPage('host')" style="margin-bottom:20px">← Back</button>
+    <h2>Business Analytics</h2>
+    <p>Track performance of your parking listings.</p>
+</div>
+
+<!-- REVENUE CHART -->
+<div class="form-card" style="max-width:100%;margin-bottom:24px">
+    <div class="card-top">
+        <div class="form-title" style="font-size:24px">Revenue by Listing</div>
+        <div class="form-subtitle">Compare estimated revenue across your parking listings</div>
+    </div>
+    <canvas id="businessRevenueChart" height="110" style="margin-top:20px"></canvas>
+</div>
+
+<!-- STATUS CHART -->
+<div class="form-card" style="max-width:100%;margin-bottom:24px">
+    <div class="card-top">
+        <div class="form-title" style="font-size:24px">Booking Status Overview</div>
+        <div class="form-subtitle">Confirmed vs cancelled reservations across all listings</div>
+    </div>
+    <div style="max-width:500px;height:260px;margin:20px auto 0">
+        <canvas id="businessStatusChart"></canvas>
+    </div>
+</div>
+
+<!-- DETAIL CARDS -->
+<div id="business-analytics-container"></div>
