@@ -231,7 +231,27 @@ var RazorParkedCalendar = (function () {
         var self = this;
         return fetch('/api/Reservations/listing/' + listingId + '/blocked')
             .then(function (r) { return r.ok ? r.json() : {}; })
-            .then(function (d) { self.blockedSlots = d.blockedSlots || {}; self.blockedDays = d.blockedDays || []; self._renderCal(); })
+            .then(function (d) {
+                self.blockedSlots = d.blockedSlots || {};
+                // Block any day NOT in availableDates
+                var available = d.availableDates || [];
+                if (available.length > 0) {
+                    // Generate all dates from today to 1 year out
+                    var today = new Date();
+                    var allBlocked = [];
+                    for (var i = 0; i < 365; i++) {
+                        var dt = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+                        var k = dt.getFullYear() + '-'
+                            + (dt.getMonth() + 1 < 10 ? '0' : '') + (dt.getMonth() + 1) + '-'
+                            + (dt.getDate() < 10 ? '0' : '') + dt.getDate();
+                        if (available.indexOf(k) === -1) allBlocked.push(k);
+                    }
+                    self.blockedDays = allBlocked;
+                } else {
+                    self.blockedDays = d.blockedDays || [];
+                }
+                self._renderCal();
+            })
             .catch(function () { });
     };
 

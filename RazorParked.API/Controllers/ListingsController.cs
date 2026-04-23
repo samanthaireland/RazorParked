@@ -23,12 +23,15 @@ namespace RazorParked.Controllers
         // ===============================
         // GET /api/Listings
         // Search listings with filters
+        // CHANGED: Added dateTo param; date filter now checks
+        //          AvailabilitySlots across the full date range
         // ===============================
         [HttpGet]
         public async Task<IActionResult> SearchListings(
             [FromQuery] bool? availability,
             [FromQuery] string? location,
             [FromQuery] DateTime? date,
+            [FromQuery] DateTime? dateTo,   // ADDED
             [FromQuery] decimal? maxPrice)
         {
             var query = _context.ParkingListings.AsQueryable();
@@ -39,16 +42,20 @@ namespace RazorParked.Controllers
             if (!string.IsNullOrEmpty(location))
                 query = query.Where(l => l.Location.Contains(location));
 
+            // CHANGED: Check availability slots across the full date range
             if (date.HasValue)
             {
-                var dateValue = date.Value;
+                var dateFrom = date.Value.Date;
+                var dateTo2 = dateTo.HasValue ? dateTo.Value.Date : dateFrom;
+
                 var listingIdsWithSlots = await _context.Database
                     .SqlQueryRaw<int>(@"
-            SELECT DISTINCT ListingID FROM dbo.AvailabilitySlots
-            WHERE CAST(StartDateTime AS DATE) <= {0}
-            AND CAST(EndDateTime AS DATE) >= {0}",
-                        dateValue.Date)
+                        SELECT DISTINCT ListingID FROM dbo.AvailabilitySlots
+                        WHERE CAST(StartDateTime AS DATE) <= {0}
+                        AND CAST(EndDateTime AS DATE) >= {1}",
+                        dateFrom, dateTo2)
                     .ToListAsync();
+
                 query = query.Where(l => listingIdsWithSlots.Contains(l.ListingID));
             }
 
@@ -491,7 +498,7 @@ namespace RazorParked.Controllers
         // ===============================
         // POST /api/Listings/{id}/availability
         // Criteria 8: Add a new availability slot
-        // CHANGED: Auto-sets IsAvailable = 1 on the listing when first slot is added
+        // Auto-sets IsAvailable = 1 on the listing when slot is added
         // ===============================
         [HttpPost("{id}/availability")]
         public async Task<IActionResult> AddAvailabilitySlot(int id, [FromBody] AddAvailabilitySlotRequest request)
@@ -519,7 +526,7 @@ namespace RazorParked.Controllers
                 SELECT CAST(SCOPE_IDENTITY() AS INT);",
                 new { ListingID = id, request.StartDateTime, request.EndDateTime });
 
-            // CHANGED: Criteria 15 — mark listing as available when a slot is added
+            // Criteria 15: mark listing as available when a slot is added
             await connection.ExecuteAsync(@"
                 UPDATE dbo.ParkingListings
                 SET IsAvailable = 1
@@ -539,7 +546,7 @@ namespace RazorParked.Controllers
         // ===============================
         // DELETE /api/Listings/{id}/availability/{slotId}
         // Criteria 9: Remove a specific availability slot
-        // CHANGED: Auto-sets IsAvailable = 0 when last slot is deleted
+        // Auto-sets IsAvailable = 0 when last slot is deleted
         // ===============================
         [HttpDelete("{id}/availability/{slotId}")]
         public async Task<IActionResult> DeleteAvailabilitySlot(int id, int slotId, [FromQuery] int hostUserId)
@@ -566,7 +573,7 @@ namespace RazorParked.Controllers
             if (affected == 0)
                 return NotFound(new { message = "Slot not found." });
 
-            // CHANGED: Criteria 15 — if no slots remain, mark listing as unavailable
+            // Criteria 15: if no slots remain, mark listing as unavailable
             var remainingSlots = await connection.QuerySingleAsync<int>(@"
                 SELECT COUNT(*) FROM dbo.AvailabilitySlots
                 WHERE ListingID = @ListingID",

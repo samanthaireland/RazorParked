@@ -1716,14 +1716,24 @@
         }
 
         // CHANGED: Criteria 15 — new function, checks availability slots before showing reserve form
+        // Criteria 15: Only show reserve form if listing has availability slots
+        // CHANGED: Now uses calendar with blocked days so only available dates are selectable
         async function loadReserveSection(listingId) {
             const section = document.getElementById('reserve-section');
             if (!section) return;
             try {
                 const res = await fetch(`/api/Listings/${listingId}/availability`);
                 const slots = await res.json();
-                if (slots && slots.length > 0) {
+                if (!slots || slots.length === 0) {
                     section.innerHTML = `
+                <div class="msg error" style="display:block">
+                    This host has not set any availability slots yet. Check back later!
+                </div>`;
+                    return;
+                }
+
+                // Show calendar-based reserve form
+                section.innerHTML = `
             <div class="form-card" style="margin-top:24px;max-width:100%">
                 <div class="card-top">
                     <div class="form-title" style="font-size:24px">Reserve This Spot</div>
@@ -1732,21 +1742,21 @@
                 <div id="rp-cal-reserve"></div>
                 <input type="hidden" id="res-start" />
                 <input type="hidden" id="res-end" />
-                <button class="btn-primary" style="width:100%;margin-top:16px" id="res-submit-btn" disabled onclick="makeReservation()">Reserve Now</button>
+                <button class="btn-primary" style="width:100%;margin-top:16px" id="res-submit-btn"
+                    onclick="makeReservation()" disabled>Reserve Now</button>
                 <div id="res-msg" class="msg"></div>
             </div>`;
+
+                // Init the calendar and load blocked slots
+                if (typeof initReserveCalendar === 'function') {
                     await initReserveCalendar(listingId);
-                } else {
-                    section.innerHTML = `
-                                    <div class="msg error" style="display:block">
-                                        This host has not set any availability slots yet. Check back later!
-                                    </div>`;
                 }
+
             } catch {
                 section.innerHTML = `
-                                <div class="msg error" style="display:block">
-                                    Could not check availability. Please try again.
-                                </div>`;
+            <div class="msg error" style="display:block">
+                Could not check availability. Please try again.
+            </div>`;
             }
         }
 
