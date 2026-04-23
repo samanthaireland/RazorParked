@@ -25,15 +25,7 @@
         <button class="btn-primary" onclick="searchListings()">Search</button>
     </div>
 
-    <div style="margin-top:16px;margin-bottom:4px">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Dates and Times</div>
-        <button id="cal-date-display" onclick="toggleCalDrawer()"
-                style="width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);cursor:pointer">
-            📅 Select dates — click to open calendar
-        </button>
-    </div>
-
-    <div id="cal-drawer" style="display:none;margin-bottom:16px">
+    <div style="margin-top:16px;margin-bottom:16px">
         <div id="rp-cal-search"></div>
     </div>
 
@@ -59,7 +51,7 @@
 </div>
 
 <script>
-    var _calSearchInited = false;
+    if (typeof initSearchCalendar === 'function') initSearchCalendar();
 
     function toggleCalDrawer() {
         var drawer = document.getElementById('cal-drawer');

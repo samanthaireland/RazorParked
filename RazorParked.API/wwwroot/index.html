@@ -1360,7 +1360,7 @@
                 guest.style.display = 'none';
                 user.style.display = 'flex';
                 nameEl.textContent = currentUser.fullName;
-                if (currentUser.role === 'Host') hostBtn.style.display = 'inline-block';
+                hostBtn.style.display = 'inline-block';
                 const adminBtn = document.getElementById('nav-admin-btn');
                 if (adminBtn && currentUser.roles && currentUser.roles.includes('Admin')) {
                     adminBtn.style.display = 'inline-block';
@@ -1429,7 +1429,7 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    currentUser = { userId: data.userId, fullName: data.fullName, email: data.email, role: data.role || 'Customer' };
+                    currentUser = { userId: data.userId, fullName: data.fullName, email: data.email, role: data.role || 'Customer', roles: data.roles || [] };
                     window.currentUser = currentUser;
                     localStorage.setItem('rp_user', JSON.stringify(currentUser));
                     updateNav();
@@ -1611,6 +1611,7 @@
         // ══════════════════════════════════════
         async function viewListing(id) {
             selectedListingId = id;
+            window.currentListingId = id;   // ADD THIS
             showPage('listing');
             const backBtn = document.getElementById('listing-back-btn');
             if (backBtn) { backBtn.textContent = '← Back to Search'; backBtn.onclick = () => showPage('search'); }
@@ -1724,32 +1725,69 @@
             try {
                 const res = await fetch(`/api/Listings/${listingId}/availability`);
                 const slots = await res.json();
-                if (!slots || slots.length === 0) {
+                if (slots && slots.length > 0) {
+
+                    const aKey = window.calendarArriveKey || '';
+                    const dKey = window.calendarDepartKey || '';
+                    const aTime = window.calendarArriveTime || '';
+                    const dTime = window.calendarDepartTime || '';
+                    const hasSelection = aKey && dKey && aTime && dTime;
+                    const fmt = k => new Date(k + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+
+                    section.innerHTML = `
+                <div class="form-card" style="margin-top:24px;max-width:100%">
+                    <div class="card-top">
+                        <div class="form-title" style="font-size:24px">Reserve This Spot</div>
+                        <div class="form-subtitle">${slots.length} availability slot${slots.length !== 1 ? 's' : ''} available.</div>
+                    </div>
+
+                    ${hasSelection ? `
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                        <div style="border:2px solid #222;border-radius:10px;padding:12px 14px">
+                            <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:4px">Arrive</div>
+                            <div style="font-size:13px;font-weight:600;color:var(--text)">${fmt(aKey)}</div>
+                            <div style="font-size:15px;font-weight:700;color:var(--red);margin-top:3px">${aTime}</div>
+                        </div>
+                        <div style="border:2px solid #222;border-radius:10px;padding:12px 14px">
+                            <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:4px">Depart</div>
+                            <div style="font-size:13px;font-weight:600;color:var(--text)">${fmt(dKey)}</div>
+                            <div style="font-size:15px;font-weight:700;color:var(--red);margin-top:3px">${dTime}</div>
+                        </div>
+                    </div>
+                    <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:20px">
+                        Wrong dates?
+                        <a href="#" onclick="showPage('search');return false;"
+                           style="color:var(--red);font-weight:600;text-decoration:underline">
+                           Go back and change them
+                        </a>
+                    </div>
+                    ` : `
+                    <div style="background:#fdf6e8;border:1px solid #c0892a;border-radius:10px;padding:16px;margin-bottom:20px;text-align:center;color:#7a5a10;font-size:13px">
+                        No dates selected yet —
+                        <a href="#" onclick="showPage('search');return false;"
+                           style="color:var(--red);font-weight:600;text-decoration:underline">
+                           go back to search
+                        </a>
+                        and pick your dates and times first.
+                    </div>
+                    `}
+
+                    <input type="hidden" id="res-start" value="${window.calendarStartISO || ''}" />
+                    <input type="hidden" id="res-end"   value="${window.calendarEndISO || ''}" />
+
+                    <button class="btn-primary" style="width:100%" id="res-submit-btn"
+                        ${hasSelection ? '' : 'disabled'}
+                        onclick="makeReservation()">
+                        ${hasSelection ? 'Confirm Reservation' : 'Select dates to reserve'}
+                    </button>
+                    <div id="res-msg" class="msg"></div>
+                </div>`;
+
+                } else {
                     section.innerHTML = `
                 <div class="msg error" style="display:block">
                     This host has not set any availability slots yet. Check back later!
                 </div>`;
-                    return;
-                }
-
-                // Show calendar-based reserve form
-                section.innerHTML = `
-            <div class="form-card" style="margin-top:24px;max-width:100%">
-                <div class="card-top">
-                    <div class="form-title" style="font-size:24px">Reserve This Spot</div>
-                    <div class="form-subtitle">${slots.length} availability slot${slots.length !== 1 ? 's' : ''} — pick your dates and times below.</div>
-                </div>
-                <div id="rp-cal-reserve"></div>
-                <input type="hidden" id="res-start" />
-                <input type="hidden" id="res-end" />
-                <button class="btn-primary" style="width:100%;margin-top:16px" id="res-submit-btn"
-                    onclick="makeReservation()" disabled>Reserve Now</button>
-                <div id="res-msg" class="msg"></div>
-            </div>`;
-
-                // Init the calendar and load blocked slots
-                if (typeof initReserveCalendar === 'function') {
-                    await initReserveCalendar(listingId);
                 }
 
             } catch {
@@ -1916,6 +1954,27 @@
         async function makeReservation() {
             const msg = document.getElementById('res-msg');
             msg.className = 'msg';
+
+            // Ensure seconds are included — .NET requires HH:mm:ss
+            function ensureSeconds(iso) {
+                if (!iso) return iso;
+                // Already has seconds (e.g. T10:00:00)
+                if (/T\d{2}:\d{2}:\d{2}/.test(iso)) return iso;
+                // Just has HH:mm — append :00
+                return iso + ':00';
+            }
+
+            const startRaw = document.getElementById('res-start').value;
+            const endRaw = document.getElementById('res-end').value;
+            const start = ensureSeconds(startRaw);
+            const end = ensureSeconds(endRaw);
+
+            if (!start || !end) {
+                msg.className = 'msg error';
+                msg.textContent = 'Please select your dates and times before reserving.';
+                return;
+            }
+
             try {
                 const res = await fetch('/api/Reservations', {
                     method: 'POST',
@@ -1923,8 +1982,8 @@
                     body: JSON.stringify({
                         listingID: selectedListingId,
                         driverUserID: currentUser.userId,
-                        reservationStart: document.getElementById('res-start').value,
-                        reservationEnd: document.getElementById('res-end').value
+                        reservationStart: start,
+                        reservationEnd: end
                     })
                 });
                 const data = await res.json();
@@ -1933,9 +1992,17 @@
                     msg.textContent = `Reserved! Your spot: ${data.assignedSpotNumber}. Redirecting to payment...`;
                     selectedReservationId = data.reservationId;
                     const listingTitle = document.querySelector('#listing-detail-content h2')?.textContent || 'Parking Spot';
+                    // ADD THIS LINE RIGHT HERE:
+                    setTimeout(function () { viewListing(selectedListingId); }, 2500);
                     setTimeout(() => showPaymentPage(data.reservationId, null, listingTitle), 2000);
-                } else { msg.className = 'msg error'; msg.textContent = data.message || 'Reservation failed.'; }
-            } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = data.message || 'Reservation failed.';
+                }
+            } catch {
+                msg.className = 'msg error';
+                msg.textContent = 'Connection error.';
+            }
         }
 
         async function cancelReservation(id) {
