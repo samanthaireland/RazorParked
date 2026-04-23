@@ -47,6 +47,15 @@ async function loadProfile() {
         if (data.roles.includes('Host')) {
             await loadReservationsForGift();
         }
+
+        // Load saved card on file
+        loadCardOnFile();
+
+        // Auto-open credits tab if redirected from payment page
+        if (window._openCreditsTab) {
+            window._openCreditsTab = false;
+            switchProfileTab('credits');
+        }
     } catch { console.error('Could not load profile'); }
 }
 
@@ -370,25 +379,103 @@ function setPresetAmount(amount) {
 }
 
 // ═══════════════════════════════════════════════════════
+// CARD ON FILE
+// ═══════════════════════════════════════════════════════
+
+function formatCofCardNumber(input) {
+    let v = input.value.replace(/\D/g, '').substring(0, 16);
+    input.value = v.replace(/(.{4})/g, '$1 ').trim();
+}
+
+function formatCofExpiry(input) {
+    let v = input.value.replace(/\D/g, '').substring(0, 4);
+    if (v.length >= 2) v = v.substring(0, 2) + ' / ' + v.substring(2);
+    input.value = v;
+}
+
+function loadCardOnFile() {
+    const saved = localStorage.getItem('rp_card_on_file');
+    if (!saved) return;
+    try {
+        const card = JSON.parse(saved);
+        document.getElementById('cof-display-num').textContent = `•••• •••• •••• ${card.last4}`;
+        document.getElementById('cof-display-meta').textContent = `${card.name} · Expires ${card.expiry}`;
+        document.getElementById('cof-no-card').style.display = 'none';
+        document.getElementById('cof-has-card').style.display = 'block';
+    } catch { localStorage.removeItem('rp_card_on_file'); }
+}
+
+function saveCardOnFile() {
+    const msg = document.getElementById('cof-msg');
+    msg.className = 'msg';
+
+    const name = document.getElementById('cof-name').value.trim();
+    const number = document.getElementById('cof-number').value.replace(/\s/g, '');
+    const expiry = document.getElementById('cof-expiry').value.trim();
+    const cvv = document.getElementById('cof-cvv').value.trim();
+
+    if (!name || number.length < 16 || !expiry || !cvv) {
+        msg.className = 'msg error';
+        msg.textContent = 'Please fill in all card details.';
+        return;
+    }
+
+    const last4 = number.slice(-4);
+    const expiryFmt = expiry.replace(' / ', '/');
+
+    // Store only masked info — never store full card number or CVV
+    localStorage.setItem('rp_card_on_file', JSON.stringify({ last4, name, expiry: expiryFmt }));
+
+    // Store full details temporarily in memory only for payment use
+    window._cofFull = { cardName: name, cardNumber: number, cardExpiry: expiry, last4 };
+
+    document.getElementById('cof-display-num').textContent = `•••• •••• •••• ${last4}`;
+    document.getElementById('cof-display-meta').textContent = `${name} · Expires ${expiryFmt}`;
+    document.getElementById('cof-no-card').style.display = 'none';
+    document.getElementById('cof-has-card').style.display = 'block';
+
+    msg.className = 'msg success';
+    msg.textContent = 'Card saved!';
+    setTimeout(() => { msg.className = 'msg'; }, 3000);
+}
+
+function removeCardOnFile() {
+    localStorage.removeItem('rp_card_on_file');
+    window._cofFull = null;
+    document.getElementById('cof-no-card').style.display = 'block';
+    document.getElementById('cof-has-card').style.display = 'none';
+    document.getElementById('cof-name').value = '';
+    document.getElementById('cof-number').value = '';
+    document.getElementById('cof-expiry').value = '';
+    document.getElementById('cof-cvv').value = '';
+}
+
+// ═══════════════════════════════════════════════════════
 // TAB SWITCHING — updated to include 'credits'
 // ═══════════════════════════════════════════════════════
 
 function switchProfileTab(tab) {
-    ['info', 'edit', 'password', 'picture', 'email', 'credits'].forEach(t => {
-        document.getElementById('profile-tab-' + t).style.display = 'none';
+    ['info', 'edit', 'password', 'picture', 'email', 'preferences', 'credits'].forEach(t => {
+        const panel = document.getElementById('profile-tab-' + t);
         const btn = document.getElementById('tab-btn-' + t);
-        btn.style.background = 'none';
-        btn.style.color = 'var(--text)';
-        btn.style.fontWeight = '500';
+        if (panel) panel.style.display = 'none';
+        if (btn) {
+            btn.style.background = 'none';
+            btn.style.color = 'var(--text)';
+            btn.style.fontWeight = '500';
+        }
     });
-    document.getElementById('profile-tab-' + tab).style.display = 'block';
-    const active = document.getElementById('tab-btn-' + tab);
-    active.style.background = 'var(--red)';
-    active.style.color = '#fff';
-    active.style.fontWeight = '600';
+    const activePanel = document.getElementById('profile-tab-' + tab);
+    const activeBtn = document.getElementById('tab-btn-' + tab);
+    if (activePanel) activePanel.style.display = 'block';
+    if (activeBtn) {
+        activeBtn.style.background = 'var(--red)';
+        activeBtn.style.color = '#fff';
+        activeBtn.style.fontWeight = '600';
+    }
 
-    // Refresh balance every time the credits tab is opened
     if (tab === 'credits') {
         loadCreditBalance();
+        loadCardOnFile();
     }
 }

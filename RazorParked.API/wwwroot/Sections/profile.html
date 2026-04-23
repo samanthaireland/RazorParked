@@ -36,12 +36,10 @@
             <button onclick="switchProfileTab('password')" id="tab-btn-password"
                     style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:4px;transition:all 0.2s">
                 🔒 Change Password
-
             </button>
             <button onclick="switchProfileTab('email')" id="tab-btn-email"
                     style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:4px;transition:all 0.2s">
                 📧 Change Email
-
             </button>
             <button onclick="switchProfileTab('picture')" id="tab-btn-picture"
                     style="width:100%;text-align:left;background:none;color:var(--text);border:none;padding:10px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s">
@@ -142,8 +140,6 @@
             </div>
             <button class="btn-primary" style="width:100%" onclick="changePassword()">Update Password</button>
             <div id="pw-msg" class="msg"></div>
-
-
         </div>
 
         <!-- TAB: Change Email -->
@@ -186,7 +182,7 @@
             <div id="pic-msg" class="msg"></div>
         </div>
 
-        <!-- TAB: Preferences — Carter Sprint 6 -->
+        <!-- TAB: Preferences -->
         <div id="profile-tab-preferences" class="form-card" style="max-width:100%;display:none">
             <div class="card-top">
                 <div class="form-title" style="font-size:22px">Preferences</div>
@@ -206,6 +202,7 @@
             </div>
             <div id="prefs-msg" class="msg" style="margin-top:12px"></div>
         </div>
+
         <!-- TAB: Credits & Payment -->
         <div id="profile-tab-credits" class="form-card" style="max-width:100%;display:none">
             <div class="card-top">
@@ -240,6 +237,58 @@
                     <button id="credits-buy-btn" class="btn-primary" style="white-space:nowrap" onclick="buyCredits()">Buy Credits</button>
                 </div>
                 <div id="credits-buy-msg" class="msg"></div>
+            </div>
+
+            <!-- Card on File -->
+            <div style="border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:16px">
+
+                <!-- No card saved — show form -->
+                <div id="cof-no-card">
+                    <div style="font-size:15px;font-weight:600;margin-bottom:4px">💳 Payment Card on File</div>
+                    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Save a card to use at checkout or to top up credits quickly.</div>
+                    <div class="form-group">
+                        <label>Name on Card</label>
+                        <input id="cof-name" type="text" placeholder="Jane Smith" />
+                    </div>
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input id="cof-number" type="text" placeholder="4242 4242 4242 4242" maxlength="19"
+                               oninput="formatCofCardNumber(this)" />
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                        <div class="form-group">
+                            <label>Expiry</label>
+                            <input id="cof-expiry" type="text" placeholder="MM / YY" maxlength="7"
+                                   oninput="formatCofExpiry(this)" />
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input id="cof-cvv" type="password" placeholder="•••" maxlength="4" />
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width:100%" onclick="saveCardOnFile()">Save Card</button>
+                    <div id="cof-msg" class="msg"></div>
+                </div>
+
+                <!-- Card saved — show masked display -->
+                <div id="cof-has-card" style="display:none">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                        <div style="font-size:15px;font-weight:600">💳 Payment Card on File</div>
+                        <span style="font-size:10px;background:#edf7f0;color:#2d7a4f;border:1px solid #b3dfc4;padding:2px 8px;border-radius:99px;font-weight:600">Saved</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+                        <div style="width:38px;height:26px;background:var(--gold);border-radius:4px;flex-shrink:0"></div>
+                        <div>
+                            <div id="cof-display-num" style="font-size:15px;font-weight:600;letter-spacing:.1em;color:var(--text)">•••• •••• •••• ????</div>
+                            <div id="cof-display-meta" style="font-size:12px;color:var(--muted);margin-top:2px">Name · Expires ??/??</div>
+                        </div>
+                        <button onclick="removeCardOnFile()"
+                                style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;line-height:1"
+                                title="Remove card">
+                            ✕
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Gift Credits (Host only) -->
@@ -281,5 +330,6 @@
                 <div id="credits-gift-msg" class="msg"></div>
             </div>
         </div>
+
     </div>
 </div>
