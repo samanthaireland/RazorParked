@@ -78,6 +78,17 @@ async function loadDriverReservations() {
                 <div class="msg error" style="display:block;font-size:13px">Host info unavailable</div>`}
             </div>`;
         }).join('')}</div>`;
+        // Auto-open conversation if navigated from My Reservations
+        if (window._autoOpenListingId) {
+            const targetListingId = window._autoOpenListingId;
+            const targetHostId = window._autoOpenHostId;
+            const targetName = window._autoOpenListingName || 'Host';
+            window._autoOpenListingId = null;
+            window._autoOpenHostId = null;
+            window._autoOpenListingName = null;
+            setTimeout(() => startConversation(targetHostId, targetListingId, targetName), 150);
+        }
+
     } catch {
         container.innerHTML = '<div class="empty"><p>Error loading reservations.</p></div>';
     }

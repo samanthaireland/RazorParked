@@ -180,7 +180,6 @@ namespace RazorParked.API.Controllers
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
 
-            // Get all availability slots for this listing
             var availSlots = await connection.QueryAsync<dynamic>(@"
                 SELECT StartDateTime, EndDateTime
                 FROM dbo.AvailabilitySlots
@@ -188,14 +187,12 @@ namespace RazorParked.API.Controllers
                 ORDER BY StartDateTime ASC",
                 new { ListingID = listingId });
 
-            // Get all confirmed reservations to mark their time slots as booked
             var confirmedReservations = await connection.QueryAsync<dynamic>(@"
                 SELECT ReservationStart, ReservationEnd
                 FROM dbo.Reservations
                 WHERE ListingID = @ListingID AND Status = 'Confirmed'",
                 new { ListingID = listingId });
 
-            // Build the set of available dates from availability slots
             var availableDates = new HashSet<string>();
             foreach (var slot in availSlots)
             {
@@ -205,7 +202,6 @@ namespace RazorParked.API.Controllers
                     availableDates.Add(d.ToString("yyyy-MM-dd"));
             }
 
-            // Build blocked time slots per day from confirmed reservations
             var blockedSlots = new Dictionary<string, List<string>>();
             foreach (var res in confirmedReservations)
             {
@@ -215,7 +211,6 @@ namespace RazorParked.API.Controllers
                 if (!blockedSlots.ContainsKey(dateKey))
                     blockedSlots[dateKey] = new List<string>();
 
-                // Mark each hour in the reservation as blocked
                 for (var t = start; t < end; t = t.AddHours(1))
                 {
                     var timeStr = t.ToString("h:00 tt").TrimStart('0');
@@ -224,8 +219,6 @@ namespace RazorParked.API.Controllers
                 }
             }
 
-            // Blocked days = any day that is NOT in availableDates
-            // We return availableDates so the frontend knows which days to allow
             return Ok(new
             {
                 availableDates = availableDates.OrderBy(d => d).ToList(),
@@ -250,7 +243,7 @@ namespace RazorParked.API.Controllers
             var reservation = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
                 SELECT r.ReservationID, r.ListingID, r.DriverUserID, r.AssignedSpotNumber,
                        r.ReservationStart, r.ReservationEnd, r.Status, r.CreatedAt,
-                       p.Title, p.Location AS FullAddress, p.PricePerHour
+                       p.Title, p.Location AS FullAddress, p.PricePerHour, p.HostUserID
                 FROM dbo.Reservations r
                 INNER JOIN dbo.ParkingListings p ON r.ListingID = p.ListingID
                 WHERE r.ReservationID = @ReservationID",
@@ -279,7 +272,7 @@ namespace RazorParked.API.Controllers
             var reservations = await connection.QueryAsync<dynamic>(@"
                 SELECT r.ReservationID, r.ListingID, r.DriverUserID, r.AssignedSpotNumber,
                        r.ReservationStart, r.ReservationEnd, r.Status, r.CreatedAt,
-                       p.Title, p.Location AS FullAddress, p.PricePerHour
+                       p.Title, p.Location AS FullAddress, p.PricePerHour, p.HostUserID
                 FROM dbo.Reservations r
                 INNER JOIN dbo.ParkingListings p ON r.ListingID = p.ListingID
                 WHERE r.DriverUserID = @DriverUserID

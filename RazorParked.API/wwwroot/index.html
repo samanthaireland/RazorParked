@@ -1147,6 +1147,7 @@
                     style="width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);cursor:pointer">
                 📅 Select dates — click to open calendar
             </button>
+            <div id="rp-cal-search" style="display:none;margin-top:8px;"></div>
         </div>
         <div id="cal-drawer" style="display:none;margin-bottom:16px">
             <div id="rp-cal-search"></div>
@@ -1479,38 +1480,38 @@
                     try { const pr = await fetch(`/api/Listings/${l.listingID}/photos`); if (pr.ok) photoCache[l.listingID] = await pr.json(); } catch { }
                 }));
                 container.innerHTML = `
-                                <div class="results-meta">
-                                    <span class="results-count"><strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found</span>
-                                </div>
-                                <div class="listings-grid">
-                                    ${listings.map(l => {
+                                    <div class="results-meta">
+                                        <span class="results-count"><strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found</span>
+                                    </div>
+                                    <div class="listings-grid">
+                                        ${listings.map(l => {
                     const hid = l.hostUserID || l.HostUserID;
                     const host = hostCache[hid];
                     const photos = photoCache[l.listingID] || [];
                     const cover = photos[0];
                     return `
-                                            <div class="listing-card" onclick="viewListing(${l.listingID})" style="padding:0;overflow:hidden">
-                                                ${cover ? `<div style="height:160px;overflow:hidden;background:var(--surface2)"><img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'" /></div>` : ''}
-                                                <div style="padding:18px">
-                                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                                        <h3>${l.title}</h3>
-                                                        <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Taken'}</span>
-                                                    </div>
-                                                    <div class="location">📍 ${l.location || l.approximateLocation || 'Fayetteville, AR'}</div>
-                                                    <div class="price">$${l.pricePerHour}<span>/hr</span></div>
-                                                    ${host ? `
-                                                    <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-                                                        <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)">
-                                                            ${host.profilePicUrl
+                                                <div class="listing-card" onclick="viewListing(${l.listingID})" style="padding:0;overflow:hidden">
+                                                    ${cover ? `<div style="height:160px;overflow:hidden;background:var(--surface2)"><img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'" /></div>` : ''}
+                                                    <div style="padding:18px">
+                                                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                                            <h3>${l.title}</h3>
+                                                            <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Taken'}</span>
+                                                        </div>
+                                                        <div class="location">📍 ${l.location || l.approximateLocation || 'Fayetteville, AR'}</div>
+                                                        <div class="price">$${l.pricePerHour}<span>/hr</span></div>
+                                                        ${host ? `
+                                                        <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+                                                            <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)">
+                                                                ${host.profilePicUrl
                                 ? `<img src="${host.profilePicUrl}" style="width:100%;height:100%;object-fit:cover"/>`
                                 : `<div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}</div>`}
-                                                        </div>
-                                                        <span style="font-size:13px;color:var(--muted)">Hosted by <strong style="color:var(--text)">${host.fullName || 'Host'}</strong></span>
-                                                    </div>` : ''}
-                                                </div>
-                                            </div>`;
+                                                            </div>
+                                                            <span style="font-size:13px;color:var(--muted)">Hosted by <strong style="color:var(--text)">${host.fullName || 'Host'}</strong></span>
+                                                        </div>` : ''}
+                                                    </div>
+                                                </div>`;
                 }).join('')}
-                                </div>`;
+                                    </div>`;
                 if (currentView === 'map') await loadMapView();
             } catch {
                 container.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><p>Error loading listings. Make sure the API is running.</p></div>`;
@@ -1568,13 +1569,13 @@
                     boundsPoints.push([lat, lng]);
                     const marker = L.marker([lat, lng], { icon: redIcon }).addTo(leafletMap);
                     marker.bindPopup(`
-                                    <div class="map-popup">
-                                        <div class="map-popup-title">${listing.title}</div>
-                                        <div class="map-popup-location">📍 ${listing.location || listing.approximateLocation || 'Fayetteville, AR'}</div>
-                                        <div class="map-popup-price">$${listing.pricePerHour}<span>/hr</span></div>
-                                        <div class="map-popup-badge"><span class="badge ${listing.isAvailable ? 'available' : 'unavailable'}">${listing.isAvailable ? 'Available' : 'Taken'}</span></div>
-                                        <button class="map-popup-btn" onclick="viewListing(${listing.listingID})">View &amp; Reserve</button>
-                                    </div>`, { maxWidth: 230 });
+                                        <div class="map-popup">
+                                            <div class="map-popup-title">${listing.title}</div>
+                                            <div class="map-popup-location">📍 ${listing.location || listing.approximateLocation || 'Fayetteville, AR'}</div>
+                                            <div class="map-popup-price">$${listing.pricePerHour}<span>/hr</span></div>
+                                            <div class="map-popup-badge"><span class="badge ${listing.isAvailable ? 'available' : 'unavailable'}">${listing.isAvailable ? 'Available' : 'Taken'}</span></div>
+                                            <button class="map-popup-btn" onclick="viewListing(${listing.listingID})">View &amp; Reserve</button>
+                                        </div>`, { maxWidth: 230 });
                     mapMarkers.push(marker);
                 });
                 document.getElementById('map-notice').classList.toggle('visible', hasNoCoords);
@@ -1621,77 +1622,77 @@
                 const res = await fetch(`/api/Listings/${id}`);
                 const l = await res.json();
                 container.innerHTML = `
-                                <div id="listing-photos-carousel"></div>
-                                <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
-                                <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-                                    <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Unavailable'}</span>
-                                    ${currentUser ? `
-                                    <button id="fav-btn" onclick="toggleFavorite(${l.listingID})"
-                                        style="background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s">
-                                        ♡ Save to Favorites
-                                    </button>` : ''}
-                                </div>
-                                <div class="detail-grid">
-                                    <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
-                                    <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
-                                </div>
-                                ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
-                                ${currentUser && currentUser.userId === l.hostUserID ? `
-                                <div style="background:var(--gold-light);border:1.5px solid var(--gold);border-radius:var(--radius);padding:16px 20px;margin-bottom:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-                                    <span style="font-size:13px;font-weight:600;color:#7a5a10;flex:1">🏠 You own this listing</span>
-                                    <button class="btn-secondary" style="padding:8px 16px;font-size:13px"
-                                        onclick="editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${((l.approximateLocation || l.location) || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit Details</button>
-                                    <button class="btn-secondary" style="padding:8px 16px;font-size:13px" onclick="managePhotos(${l.listingID})">📷 Manage Photos</button>
-                                </div>` : ''}
-                                <div style="margin:20px 0">
-                                    <div class="section-divider"><span>Your Host</span></div>
-                                    <div onclick="openHostModal(${l.hostUserID})" style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.2s"
-                                         onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
-                                        <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)" id="detail-host-avatar-${l.listingID}">
-                                            <div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">?</div>
-                                        </div>
-                                        <div>
-                                            <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Hosted by</div>
-                                            <div style="font-weight:600;color:var(--text)" id="detail-host-name-${l.listingID}">Loading...</div>
-                                        </div>
-                                        <div style="margin-left:auto;color:var(--muted2);font-size:13px">View Profile →</div>
+                                    <div id="listing-photos-carousel"></div>
+                                    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
+                                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                                        <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Unavailable'}</span>
+                                        ${currentUser ? `
+                                        <button id="fav-btn" onclick="toggleFavorite(${l.listingID})"
+                                            style="background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s">
+                                            ♡ Save to Favorites
+                                        </button>` : ''}
                                     </div>
-                                </div>
+                                    <div class="detail-grid">
+                                        <div class="detail-item"><label>Approximate Area</label><span>📍 ${l.approximateLocation || l.location}</span></div>
+                                        <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
+                                    </div>
+                                    ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
+                                    ${currentUser && currentUser.userId === l.hostUserID ? `
+                                    <div style="background:var(--gold-light);border:1.5px solid var(--gold);border-radius:var(--radius);padding:16px 20px;margin-bottom:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                                        <span style="font-size:13px;font-weight:600;color:#7a5a10;flex:1">🏠 You own this listing</span>
+                                        <button class="btn-secondary" style="padding:8px 16px;font-size:13px"
+                                            onclick="editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${((l.approximateLocation || l.location) || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit Details</button>
+                                        <button class="btn-secondary" style="padding:8px 16px;font-size:13px" onclick="managePhotos(${l.listingID})">📷 Manage Photos</button>
+                                    </div>` : ''}
+                                    <div style="margin:20px 0">
+                                        <div class="section-divider"><span>Your Host</span></div>
+                                        <div onclick="openHostModal(${l.hostUserID})" style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.2s"
+                                             onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
+                                            <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)" id="detail-host-avatar-${l.listingID}">
+                                                <div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">?</div>
+                                            </div>
+                                            <div>
+                                                <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Hosted by</div>
+                                                <div style="font-weight:600;color:var(--text)" id="detail-host-name-${l.listingID}">Loading...</div>
+                                            </div>
+                                            <div style="margin-left:auto;color:var(--muted2);font-size:13px">View Profile →</div>
+                                        </div>
+                                    </div>
 
-                                ${l.isAvailable && currentUser && currentUser.userId !== l.hostUserID ? `
-                                    <div id="reserve-section">
-                                        <div class="loading">Checking availability...</div>
-                                    </div>`
+                                                                    ${l.isAvailable && currentUser ? `
+                                        <div id="reserve-section">
+                                            <div class="loading">Checking availability...</div>
+                                        </div>`
                         : (!currentUser
                             ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
                             : (currentUser.userId === l.hostUserID ? '' :
                                 `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`)
                         )}
 
-                                <!-- REVIEWS SECTION -->
-                                <div style="margin-top:40px">
-                                    <div class="section-divider"><span>Reviews</span></div>
-                                    <div id="reviews-container"><div class="loading">Loading reviews...</div></div>
-                                    ${currentUser ? `
-                                    <div class="form-card" style="margin-top:24px;max-width:100%">
-                                        <div class="card-top"><div class="form-title" style="font-size:22px">Leave a Review</div></div>
-                                        <div class="form-group">
-                                            <label>Star Rating</label>
-                                            <select id="review-rating">
-                                                <option value="">Select rating</option>
-                                                <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
-                                                <option value="4">⭐⭐⭐⭐ 4 - Good</option>
-                                                <option value="3">⭐⭐⭐ 3 - Average</option>
-                                                <option value="2">⭐⭐ 2 - Poor</option>
-                                                <option value="1">⭐ 1 - Terrible</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group"><label>Comment (optional)</label><textarea id="review-comment" rows="3" placeholder="Share your experience..."></textarea></div>
-                                        <div class="form-group"><label>Reservation ID</label><input id="review-reservation-id" type="number" placeholder="Enter your reservation ID for this listing" /></div>
-                                        <button class="btn-primary" style="width:100%" onclick="submitReview(${l.listingID})">Submit Review</button>
-                                        <div id="review-msg" class="msg"></div>
-                                    </div>` : ''}
-                                </div>`;
+                                    <!-- REVIEWS SECTION -->
+                                    <div style="margin-top:40px">
+                                        <div class="section-divider"><span>Reviews</span></div>
+                                        <div id="reviews-container"><div class="loading">Loading reviews...</div></div>
+                                        ${currentUser ? `
+                                        <div class="form-card" style="margin-top:24px;max-width:100%">
+                                            <div class="card-top"><div class="form-title" style="font-size:22px">Leave a Review</div></div>
+                                            <div class="form-group">
+                                                <label>Star Rating</label>
+                                                <select id="review-rating">
+                                                    <option value="">Select rating</option>
+                                                    <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                                                    <option value="4">⭐⭐⭐⭐ 4 - Good</option>
+                                                    <option value="3">⭐⭐⭐ 3 - Average</option>
+                                                    <option value="2">⭐⭐ 2 - Poor</option>
+                                                    <option value="1">⭐ 1 - Terrible</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group"><label>Comment (optional)</label><textarea id="review-comment" rows="3" placeholder="Share your experience..."></textarea></div>
+                                            <div class="form-group"><label>Reservation ID</label><input id="review-reservation-id" type="number" placeholder="Enter your reservation ID for this listing" /></div>
+                                            <button class="btn-primary" style="width:100%" onclick="submitReview(${l.listingID})">Submit Review</button>
+                                            <div id="review-msg" class="msg"></div>
+                                        </div>` : ''}
+                                    </div>`;
 
                 fetch(`/api/Users/${l.hostUserID}`)
                     .then(r => r.json())
@@ -1711,7 +1712,7 @@
                 loadReviews(id);
                 if (currentUser) checkIfFavorited(id);
                 // CHANGED: Criteria 15 — only show reserve form if listing has availability slots
-                if (l.isAvailable && currentUser && currentUser.userId !== l.hostUserID) loadReserveSection(id);
+                if (l.isAvailable && currentUser) loadReserveSection(id);
 
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listing.</p></div>'; }
         }
@@ -1719,89 +1720,59 @@
         // CHANGED: Criteria 15 — new function, checks availability slots before showing reserve form
         // Criteria 15: Only show reserve form if listing has availability slots
         // CHANGED: Now uses calendar with blocked days so only available dates are selectable
+
+
+
+
         async function loadReserveSection(listingId) {
             const section = document.getElementById('reserve-section');
             if (!section) return;
-            try {
-                const res = await fetch(`/api/Listings/${listingId}/availability`);
-                const slots = await res.json();
-                if (slots && slots.length > 0) {
 
-                    const aKey = window.calendarArriveKey || '';
-                    const dKey = window.calendarDepartKey || '';
-                    const aTime = window.calendarArriveTime || '';
-                    const dTime = window.calendarDepartTime || '';
-                    const hasSelection = aKey && dKey && aTime && dTime;
-                    const fmt = k => new Date(k + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-
-                    section.innerHTML = `
-                <div class="form-card" style="margin-top:24px;max-width:100%">
-                    <div class="card-top">
-                        <div class="form-title" style="font-size:24px">Reserve This Spot</div>
-                        <div class="form-subtitle">${slots.length} availability slot${slots.length !== 1 ? 's' : ''} available.</div>
-                    </div>
-
-                    ${hasSelection ? `
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-                        <div style="border:2px solid #222;border-radius:10px;padding:12px 14px">
-                            <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:4px">Arrive</div>
-                            <div style="font-size:13px;font-weight:600;color:var(--text)">${fmt(aKey)}</div>
-                            <div style="font-size:15px;font-weight:700;color:var(--red);margin-top:3px">${aTime}</div>
-                        </div>
-                        <div style="border:2px solid #222;border-radius:10px;padding:12px 14px">
-                            <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:4px">Depart</div>
-                            <div style="font-size:13px;font-weight:600;color:var(--text)">${fmt(dKey)}</div>
-                            <div style="font-size:15px;font-weight:700;color:var(--red);margin-top:3px">${dTime}</div>
-                        </div>
-                    </div>
-                    <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:20px">
-                        Wrong dates?
-                        <a href="#" onclick="showPage('search');return false;"
-                           style="color:var(--red);font-weight:600;text-decoration:underline">
-                           Go back and change them
-                        </a>
-                    </div>
-                    ` : `
-                    <div style="background:#fdf6e8;border:1px solid #c0892a;border-radius:10px;padding:16px;margin-bottom:20px;text-align:center;color:#7a5a10;font-size:13px">
-                        No dates selected yet —
-                        <a href="#" onclick="showPage('search');return false;"
-                           style="color:var(--red);font-weight:600;text-decoration:underline">
-                           go back to search
-                        </a>
-                        and pick your dates and times first.
-                    </div>
-                    `}
-
-                    <input type="hidden" id="res-start" value="${window.calendarStartISO || ''}" />
-                    <input type="hidden" id="res-end"   value="${window.calendarEndISO || ''}" />
-
-                    <button class="btn-primary" style="width:100%" id="res-submit-btn"
-                        ${hasSelection ? '' : 'disabled'}
-                        onclick="makeReservation()">
-                        ${hasSelection ? 'Confirm Reservation' : 'Select dates to reserve'}
+            section.innerHTML = `
+            <div style="margin-top:24px">
+                <div class="section-divider"><span>Reserve This Spot</span></div>
+                <div id="rp-cal-reserve"></div>
+                <input type="hidden" id="res-start" />
+                <input type="hidden" id="res-end" />
+                <div style="margin-top:16px">
+                    <button class="btn-primary" style="width:100%" id="res-submit-btn" disabled>
+                        Select dates and times to reserve
                     </button>
+                    <div style="text-align:center;margin-top:8px">
+                        <a href="#" onclick="showPage('search');return false;"
+                           style="font-size:12px;color:var(--muted);text-decoration:underline">
+                           Wrong listing? Go back to search
+                        </a>
+                    </div>
                     <div id="res-msg" class="msg"></div>
-                </div>`;
-
-                } else {
-                    section.innerHTML = `
-                <div class="msg error" style="display:block">
-                    This host has not set any availability slots yet. Check back later!
-                </div>`;
-                }
-
-            } catch {
-                section.innerHTML = `
-            <div class="msg error" style="display:block">
-                Could not check availability. Please try again.
+                </div>
             </div>`;
-            }
-        }
 
-        function viewListingFromHost(id) {
-            const backBtn = document.getElementById('listing-back-btn');
-            if (backBtn) { backBtn.textContent = '← Back to My Listings'; backBtn.onclick = () => showPage('host'); }
-            viewListing(id);
+            document.getElementById('res-submit-btn').addEventListener('click', makeReservation);
+
+            const cal = await initReserveCalendar(listingId);
+
+            const calEl = document.getElementById('rp-cal-reserve');
+            if (calEl) {
+                const tabs = calEl.querySelector('.rpc-tabs');
+                const gf = calEl.querySelector('.rpc-gf');
+                const leg = calEl.querySelector('.rpc-legend');
+                if (tabs) tabs.style.display = 'none';
+                if (gf) gf.style.display = 'none';
+                if (leg) leg.style.display = 'none';
+            }
+
+            cal.onConfirm = function (aKey, dKey, aTime, dTime) {
+                const se = document.getElementById('res-start');
+                const ee = document.getElementById('res-end');
+                if (se) se.value = aKey + 'T' + window._to24(aTime);
+                if (ee) ee.value = dKey + 'T' + window._to24(dTime);
+                const btn = document.getElementById('res-submit-btn');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = `Reserve: ${aTime} → ${dTime}`;
+                }
+            };
         }
 
         // ══════════════════════════════════════
@@ -1826,31 +1797,31 @@
                     const photos = photoCache[l.listingID] || [];
                     const cover = photos[0];
                     return `
-                                                    <div class="listing-card" style="padding:0;overflow:hidden">
-                                                        ${cover ? `
-                                                        <div style="height:160px;overflow:hidden;background:var(--surface2)">
-                                                            <img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;disp<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">lay:block"
-                                                                 onerror="this.parentElement.style.display='none'" />
-                                                        </div>` : ''}
-                                                        <div style="padding:18px">
-                                                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                                                <h3 onclick="viewListingFromHost(${l.listingID})" style="cursor:pointer;color:var(--red);text-decoration:underline">${l.title}</h3>
-                                                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
-                                                            </div>
-                                                            <div class="location">📍 ${l.location}</div>
-                                                            <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
-                                                            <div style="display:flex;gap:8px;flex-wrap:wrap">
-                                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
-                                            onclick="openAvailability(${l.listingID})">🗓 Availability</button>
-                                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
-                                            onclick="managePhotos(${l.listingID})">📷 Photos</button>
-                                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
-                                            onclick="editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${(l.location || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit</button>
-                                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
-                                            onclick="deleteListing(${l.listingID})">Delete</button>
+                                                        <div class="listing-card" style="padding:0;overflow:hidden">
+                                                            ${cover ? `
+                                                            <div style="height:160px;overflow:hidden;background:var(--surface2)">
+                                                                <img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;disp<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">lay:block"
+                                                                     onerror="this.parentElement.style.display='none'" />
+                                                            </div>` : ''}
+                                                            <div style="padding:18px">
+                                                                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                                                    <h3 onclick="viewListingFromHost(${l.listingID})" style="cursor:pointer;color:var(--red);text-decoration:underline">${l.title}</h3>
+                                                                    <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
+                                                                </div>
+                                                                <div class="location">📍 ${l.location}</div>
+                                                                <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
+                                                                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
+                                                onclick="openAvailability(${l.listingID})">🗓 Availability</button>
+                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
+                                                onclick="managePhotos(${l.listingID})">📷 Photos</button>
+                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
+                                                onclick="editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${(l.location || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit</button>
+                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
+                                                onclick="deleteListing(${l.listingID})">Delete</button>
 </div>
-                                                      </div>
-                                                  </div>`;
+                                                          </div>
+                                                      </div>`;
                 }).join('')}</div>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>'; }
         }
@@ -1895,6 +1866,12 @@
         // ══════════════════════════════════════
         // RESERVATIONS + CANCEL — Ryleigh
         // ══════════════════════════════════════
+        function messageHostForReservation(listingId, reservationId, hostId, listingTitle) {
+            window._autoOpenHostId = hostId;
+            window._autoOpenListingId = listingId;
+            window._autoOpenListingName = listingTitle;
+            showPage('messages');
+        }
         async function loadMyReservations() {
             if (!currentUser) { showPage('login'); return; }
             const container = document.getElementById('reservations-list');
@@ -1910,81 +1887,294 @@
                 await Promise.all(reservations.map(async r => {
                     try { const pr = await fetch(`/api/Payments/reservation/${r.reservationID}`); if (pr.ok) paymentCache[r.reservationID] = await pr.json(); } catch { }
                 }));
-                container.innerHTML = `<div class="listings-grid">${reservations.map(r => {
-                    const payment = paymentCache[r.reservationID];
-                    const isPaid = !!payment;
-                    return `
-                                    <div class="listing-card">
-                                        <h3>${r.title}</h3>
-                                        <div class="location">📍 ${r.fullAddress}</div>
-                                        <div style="margin:10px 0;display:flex;gap:6px;flex-wrap:wrap">
-                                            <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
-                                            ${isPaid ? '<span class="badge available">✅ Paid</span>' : ''}
-                                        </div>
-                                        <div style="font-size:13px;color:var(--muted);margin-bottom:4px">
-                                            Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong>
-                                        </div>
-                                        <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
-                                            ${new Date(r.reservationStart).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })} →
-                                            ${new Date(r.reservationEnd).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                        </div>
-                                        ${r.status === 'Confirmed' ? `
-                                        <div style="display:flex;gap:8px;flex-wrap:wrap">
-                                            ${isPaid ? `
-                                            <button class="btn-primary" style="flex:1;padding:8px;font-size:13px"
-                                                onclick="loadReceiptForReservation(${r.reservationID})">🧾 View Receipt</button>
-                                            ` : `
-                                            <button class="btn-primary" style="flex:1;padding:8px;font-size:13px"
-                            onclick="showPaymentPage(${r.reservationID}, ${r.pricePerHour}, '${(r.title || 'Parking Spot').replace(/'/g, '')}', '${r.reservationStart}', '${r.reservationEnd}', ${r.pricePerHour})">Pay</button>
-                                            `}
-                                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
-                                                onclick="cancelReservation(${r.reservationID})">Cancel</button>
-                                        </div>` : ''}
-                                    </div>`;
-                }).join('')}</div>`;
+
+                // ── Game schedule (same as calendar.js) ──
+                const FB_SCHED = {
+                    '2026-09-05': { opp: 'North Alabama', home: true, time: '11:00 AM' },
+                    '2026-09-12': { opp: 'Utah', home: false, time: '3:30 PM' },
+                    '2026-09-19': { opp: 'Georgia', home: true, time: '6:00 PM' },
+                    '2026-09-26': { opp: 'Tulsa', home: true, time: '11:00 AM' },
+                    '2026-10-03': { opp: 'Texas A&M', home: false, time: '6:00 PM' },
+                    '2026-10-10': { opp: 'Tennessee', home: true, time: '2:30 PM' },
+                    '2026-10-17': { opp: 'Vanderbilt', home: false, time: '11:00 AM' },
+                    '2026-10-31': { opp: 'Missouri', home: true, time: '11:00 AM' },
+                    '2026-11-07': { opp: 'Auburn', home: false, time: '6:00 PM' },
+                    '2026-11-14': { opp: 'South Carolina', home: true, time: '11:00 AM' },
+                    '2026-11-21': { opp: 'Texas', home: false, time: '6:00 PM' },
+                    '2026-11-28': { opp: 'LSU', home: true, time: '2:30 PM' }
+                };
+                const BB_SCHED = {
+                    '2026-02-20': { opp: 'Xavier', home: true, time: '3:00 PM' },
+                    '2026-02-21': { opp: 'Xavier', home: true, time: '1:00 PM' },
+                    '2026-02-22': { opp: 'Xavier', home: true, time: 'Noon' },
+                    '2026-02-24': { opp: 'Arkansas State', home: true, time: '3:00 PM' },
+                    '2026-02-25': { opp: 'Arkansas State', home: true, time: '3:00 PM' },
+                    '2026-03-01': { opp: 'Texas-Arlington', home: true, time: '11:00 AM' },
+                    '2026-03-03': { opp: 'Oral Roberts', home: true, time: '3:00 PM' },
+                    '2026-03-13': { opp: 'Mississippi State', home: true, time: '6:00 PM' },
+                    '2026-03-14': { opp: 'Mississippi State', home: true, time: '1:00 PM' },
+                    '2026-03-27': { opp: 'Florida', home: true, time: '6:00 PM' },
+                    '2026-03-28': { opp: 'Florida', home: true, time: '1:00 PM' },
+                    '2026-03-29': { opp: 'Florida', home: true, time: 'Noon' },
+                    '2026-04-16': { opp: 'Georgia', home: true, time: '7:00 PM' },
+                    '2026-04-17': { opp: 'Georgia', home: true, time: '6:00 PM' },
+                    '2026-04-18': { opp: 'Georgia', home: true, time: '1:00 PM' },
+                    '2026-04-23': { opp: 'Missouri', home: false, time: '7:00 PM' },
+                    '2026-04-28': { opp: 'Northwestern State', home: true, time: '6:00 PM' },
+                    '2026-05-01': { opp: 'Ole Miss', home: true, time: '6:00 PM' },
+                    '2026-05-08': { opp: 'Oklahoma', home: true, time: '6:00 PM' },
+                    '2026-05-09': { opp: 'Oklahoma', home: true, time: '2:00 PM' },
+                    '2026-05-10': { opp: 'Oklahoma', home: true, time: '1:00 PM' }
+                };
+                const ALL_GAMES = { ...FB_SCHED, ...BB_SCHED };
+
+                function gameKey(iso) { return iso ? iso.slice(0, 10) : ''; }
+                function getGame(iso) { return ALL_GAMES[gameKey(iso)] || null; }
+                function getSport(iso) { return FB_SCHED[gameKey(iso)] ? 'FB' : 'BB'; }
+
+                // ── Collect games that actually appear in this user's reservations ──
+                const presentGameDates = [...new Set(
+                    reservations.map(r => gameKey(r.reservationStart)).filter(k => ALL_GAMES[k])
+                )].sort();
+
+                // ── Build filter bar HTML ──
+                container.innerHTML = `
+            <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end">
+                    <div>
+                        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Sort by</div>
+                        <select id="res-sort" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--surface)">
+                            <option value="date">Date (soonest first)</option>
+                            <option value="date-desc">Date (latest first)</option>
+                            <option value="alpha">A → Z</option>
+                            <option value="alpha-desc">Z → A</option>
+                            <option value="gameday">Game day only</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Status</div>
+                        <select id="res-status" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--surface)">
+                            <option value="all">All statuses</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Cancelled">Cancelled</option>
+                            <option value="paid">Paid</option>
+                            <option value="unpaid">Unpaid</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Date range</div>
+                        <select id="res-range" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--surface)">
+                            <option value="all">All time</option>
+                            <option value="upcoming">Upcoming</option>
+                            <option value="past">Past</option>
+                        </select>
+                    </div>
+                    <div style="display:flex;gap:8px;padding-bottom:1px">
+                        <button onclick="resFilterClear()" style="padding:9px 14px;background:#fff;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted)">Clear</button>
+                        <button onclick="resFilterApply()" style="padding:9px 18px;background:var(--red);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#fff">Apply</button>
+                    </div>
+                </div>
+
+                <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Quick filters</div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                        <button class="res-qchip" data-key="gameday" onclick="resQuickFilter('gameday')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--red);background:var(--red-light);color:var(--red-dark);cursor:pointer;font-family:'DM Sans',sans-serif">Game days only</button>
+                        <button class="res-qchip" data-key="upcoming" onclick="resQuickFilter('upcoming')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">Upcoming</button>
+                        <button class="res-qchip" data-key="unpaid" onclick="resQuickFilter('unpaid')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">Needs payment</button>
+                        <button class="res-qchip" data-key="paid" onclick="resQuickFilter('paid')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">Paid</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="res-game-panel" style="display:none;background:#fff;border:1.5px solid var(--red);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--red-dark)">Filter by game</div>
+                    <button onclick="resClearGameFilter()" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:'DM Sans',sans-serif">Clear game filter</button>
+                </div>
+                <div id="res-game-chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            </div>
+
+            <div id="res-result-count" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
+            <div id="res-cards-grid" class="listings-grid"></div>`;
+
+                // ── State & helpers ──
+                let selectedGameDate = null;
+
+                function buildGameChips() {
+                    const chips = document.getElementById('res-game-chips');
+                    if (!chips) return;
+                    chips.innerHTML = presentGameDates.map(date => {
+                        const g = ALL_GAMES[date];
+                        const d = new Date(date + 'T12:00:00');
+                        const sport = FB_SCHED[date] ? 'FB' : 'BB';
+                        const lbl = (d.getMonth() + 1) + '/' + d.getDate() + ' ' + (g.home ? 'vs ' : '@ ') + 'Arkansas ' + g.opp;
+                        const active = selectedGameDate === date;
+                        const activeBg = sport === 'FB' ? 'var(--red)' : '#2d7a4f';
+                        const activeLight = sport === 'FB' ? 'var(--red-light)' : '#edf7f0';
+                        const activeDark = sport === 'FB' ? 'var(--red-dark)' : '#1a4a2e';
+                        const activeBorder = sport === 'FB' ? 'var(--red)' : '#2d7a4f';
+                        return `<button onclick="window._resSelectGame('${date}')"
+                        style="font-size:12px;padding:5px 12px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;
+                        border:1px solid ${active ? activeBorder : 'var(--border)'};
+                        background:${active ? activeBg : activeLight};
+                        color:${active ? '#fff' : activeDark}">
+                        ${lbl}
+                    </button>`;
+                    }).join('') || '<span style="font-size:12px;color:var(--muted)">No game-day reservations found.</span>';
+                }
+
+                window._resSelectGame = function (date) {
+                    selectedGameDate = selectedGameDate === date ? null : date;
+                    buildGameChips();
+                    renderFilteredCards();
+                };
+
+                window.resClearGameFilter = function () {
+                    selectedGameDate = null;
+                    buildGameChips();
+                    renderFilteredCards();
+                };
+
+                window.resFilterApply = renderFilteredCards;
+
+                window.resFilterClear = function () {
+                    document.getElementById('res-sort').value = 'date';
+                    document.getElementById('res-status').value = 'all';
+                    document.getElementById('res-range').value = 'all';
+                    document.getElementById('res-game-panel').style.display = 'none';
+                    selectedGameDate = null;
+                    document.querySelectorAll('.res-qchip').forEach(c => {
+                        c.style.background = 'var(--surface)'; c.style.color = 'var(--muted)'; c.style.borderColor = 'var(--border)';
+                    });
+                    renderFilteredCards();
+                };
+
+                window.resQuickFilter = function (key) {
+                    document.querySelectorAll('.res-qchip').forEach(c => {
+                        c.style.background = 'var(--surface)'; c.style.color = 'var(--muted)'; c.style.borderColor = 'var(--border)';
+                    });
+                    const btn = document.querySelector(`.res-qchip[data-key="${key}"]`);
+                    if (btn) { btn.style.background = 'var(--red-light)'; btn.style.color = 'var(--red-dark)'; btn.style.borderColor = 'var(--red)'; }
+                    if (key === 'gameday') {
+                        document.getElementById('res-sort').value = 'gameday';
+                        document.getElementById('res-game-panel').style.display = 'block';
+                        buildGameChips();
+                    }
+                    if (key === 'upcoming') document.getElementById('res-range').value = 'upcoming';
+                    if (key === 'unpaid') document.getElementById('res-status').value = 'unpaid';
+                    if (key === 'paid') document.getElementById('res-status').value = 'paid';
+                    renderFilteredCards();
+                };
+
+                // ── Sort dropdown shows/hides game panel ──
+                document.getElementById('res-sort').addEventListener('change', function () {
+                    const panel = document.getElementById('res-game-panel');
+                    if (this.value === 'gameday') {
+                        panel.style.display = 'block';
+                        buildGameChips();
+                    } else {
+                        panel.style.display = 'none';
+                        selectedGameDate = null;
+                    }
+                    renderFilteredCards();
+                });
+
+                function renderFilteredCards() {
+                    const sort = document.getElementById('res-sort').value;
+                    const status = document.getElementById('res-status').value;
+                    const range = document.getElementById('res-range').value;
+                    const now = new Date();
+                    let items = [...reservations];
+
+                    if (status === 'Confirmed') items = items.filter(r => r.status === 'Confirmed');
+                    if (status === 'Cancelled') items = items.filter(r => r.status === 'Cancelled');
+                    if (status === 'paid') items = items.filter(r => !!paymentCache[r.reservationID]);
+                    if (status === 'unpaid') items = items.filter(r => !paymentCache[r.reservationID] && r.status === 'Confirmed');
+                    if (range === 'upcoming') items = items.filter(r => new Date(r.reservationStart) >= now);
+                    if (range === 'past') items = items.filter(r => new Date(r.reservationStart) < now);
+                    if (sort === 'gameday' || selectedGameDate) items = items.filter(r => !!getGame(r.reservationStart));
+                    if (selectedGameDate) items = items.filter(r => gameKey(r.reservationStart) === selectedGameDate);
+                    if (sort === 'date') items.sort((a, b) => new Date(a.reservationStart) - new Date(b.reservationStart));
+                    if (sort === 'date-desc') items.sort((a, b) => new Date(b.reservationStart) - new Date(a.reservationStart));
+                    if (sort === 'alpha') items.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+                    if (sort === 'alpha-desc') items.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+
+                    const countEl = document.getElementById('res-result-count');
+                    if (countEl) countEl.textContent = `Showing ${items.length} reservation${items.length !== 1 ? 's' : ''}`;
+
+                    const grid = document.getElementById('res-cards-grid');
+                    if (!grid) return;
+                    if (!items.length) {
+                        grid.innerHTML = '<div class="empty"><p>No reservations match your filters.</p></div>';
+                        return;
+                    }
+
+                    grid.innerHTML = items.map(r => {
+                        const payment = paymentCache[r.reservationID];
+                        const isPaid = !!payment;
+                        const g = getGame(r.reservationStart);
+                        const sport = g ? getSport(r.reservationStart) : null;
+                        const gdAccent = sport === 'FB' ? 'var(--red)' : '#2d7a4f';
+                        const gdBg = sport === 'FB' ? 'var(--red-light)' : '#edf7f0';
+                        const gdDark = sport === 'FB' ? 'var(--red-dark)' : '#1a4a2e';
+                        const gdBorder = sport === 'FB' ? '#e8b4bc' : '#b3dfc4';
+
+                        return `<div class="listing-card" style="padding:0;overflow:hidden;border:${g ? '1.5px solid ' + gdAccent : '1.5px solid var(--border)'}">
+                        ${g ? `<div style="background:${gdBg};border-bottom:1px solid ${gdBorder};padding:8px 14px;display:flex;align-items:center;gap:6px">
+                            <div style="width:6px;height:6px;border-radius:50%;background:${gdAccent};flex-shrink:0"></div>
+                            <div style="font-size:11px;font-weight:600;color:${gdDark}">${sport === 'FB' ? 'Football' : 'Baseball'}: Arkansas ${g.home ? 'vs' : '@'} ${g.opp} · ${g.time}</div>
+                        </div>` : ''}
+                        <div style="padding:16px">
+                            <h3>${r.title}</h3>
+                            <div class="location">📍 ${r.fullAddress}</div>
+                            <div style="margin:10px 0;display:flex;gap:6px;flex-wrap:wrap">
+                                <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
+                                ${isPaid ? '<span class="badge available">✅ Paid</span>' : ''}
+                            </div>
+                            <div style="font-size:13px;color:var(--muted);margin-bottom:4px">
+                                Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong>
+                            </div>
+                            <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+                                ${new Date(r.reservationStart).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })} →
+                                ${new Date(r.reservationEnd).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            ${r.status === 'Confirmed' ? `
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${isPaid
+                                    ? `<button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="loadReceiptForReservation(${r.reservationID})">🧾 View Receipt</button>`
+                                    : `<button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="showPaymentPage(${r.reservationID},${r.pricePerHour},'${(r.title || '').replace(/'/g, '')}','${r.reservationStart}','${r.reservationEnd}',${r.pricePerHour})">Pay</button>`}
+        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID})">Cancel</button>
+</div>
+<div style="margin-top:6px">
+         <button class="btn-secondary" style="width:100%;padding:8px;font-size:13px" onclick="messageHostForReservation(${r.listingID},${r.reservationID},${r.hostUserID || 0},'${(r.title || '').replace(/'/g, '')}')">💬 Message Host</button>
+</div>` : ''}
+                        </div>
+                    </div>`;
+                    }).join('');
+                }
+
+                renderFilteredCards();
+
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reservations.</p></div>'; }
         }
 
-        async function showPaymentPage(reservationId, amount, title, start, end, pricePerHour) {
-            selectedReservationId = reservationId;
-            window.selectedReservationId = reservationId;
-            window.selectedPaymentTitle = title || 'Parking Spot';
-            window.selectedPaymentAmount = amount || 0;
-            if (!start || !end || !pricePerHour) {
-                try {
-                    const res = await fetch(`/api/Reservations/user/${currentUser.userId}`);
-                    const reservations = await res.json();
-                    const r = reservations.find(x => x.reservationID === reservationId);
-                    if (r) { start = r.reservationStart; end = r.reservationEnd; pricePerHour = r.pricePerHour; window.selectedPaymentTitle = r.title || title; }
-                } catch { }
-            }
-            window.selectedReservationStart = start;
-            window.selectedReservationEnd = end;
-            window.selectedPricePerHour = pricePerHour || 0;
-            window.selectedPaymentAmount = amount || 0;
-            showPage('payment');
-            setTimeout(() => initPaymentPage(), 150);
-        }
-
         async function makeReservation() {
+            const btn = document.getElementById('res-submit-btn');
+            if (btn) { if (btn.disabled) return; btn.disabled = true; btn.textContent = 'Processing...'; }
             const msg = document.getElementById('res-msg');
             msg.className = 'msg';
 
-            // Ensure seconds are included — .NET requires HH:mm:ss
             function ensureSeconds(iso) {
                 if (!iso) return iso;
-                // Already has seconds (e.g. T10:00:00)
                 if (/T\d{2}:\d{2}:\d{2}/.test(iso)) return iso;
-                // Just has HH:mm — append :00
                 return iso + ':00';
             }
 
-            const startRaw = document.getElementById('res-start').value;
-            const endRaw = document.getElementById('res-end').value;
-            const start = ensureSeconds(startRaw);
-            const end = ensureSeconds(endRaw);
+            const start = ensureSeconds(document.getElementById('res-start').value);
+            const end = ensureSeconds(document.getElementById('res-end').value);
 
             if (!start || !end) {
+                if (btn) { btn.disabled = false; btn.textContent = 'Confirm Reservation'; }
                 msg.className = 'msg error';
                 msg.textContent = 'Please select your dates and times before reserving.';
                 return;
@@ -2007,27 +2197,38 @@
                     msg.textContent = `Reserved! Your spot: ${data.assignedSpotNumber}. Redirecting to payment...`;
                     selectedReservationId = data.reservationId;
                     const listingTitle = document.querySelector('#listing-detail-content h2')?.textContent || 'Parking Spot';
-                    // ADD THIS LINE RIGHT HERE:
-                    setTimeout(function () { viewListing(selectedListingId); }, 2500);
-                    setTimeout(() => showPaymentPage(data.reservationId, null, listingTitle), 2000);
+                    setTimeout(() => showPaymentPage(data.reservationId, null, listingTitle), 1500);
                 } else {
+                    if (btn) { btn.disabled = false; btn.textContent = 'Confirm Reservation'; }
                     msg.className = 'msg error';
                     msg.textContent = data.message || 'Reservation failed.';
                 }
             } catch {
+                if (btn) { btn.disabled = false; btn.textContent = 'Confirm Reservation'; }
                 msg.className = 'msg error';
                 msg.textContent = 'Connection error.';
             }
         }
 
-        async function cancelReservation(id) {
-            if (!confirm('Cancel this reservation?')) return;
-            try {
-                const res = await fetch(`/api/Reservations/${id}/cancel?driverUserId=${currentUser.userId}`, { method: 'PATCH' });
-                const data = await res.json();
-                if (res.ok) { alert(data.freeCancellation ? 'Cancelled — no charge!' : 'Cancelled. Note: cancellation fee may apply.'); loadMyReservations(); }
-                else { alert(data.message || 'Cancellation failed.'); }
-            } catch { alert('Connection error.'); }
+        async function showPaymentPage(reservationId, amount, title, start, end, pricePerHour) {
+            selectedReservationId = reservationId;
+            window.selectedReservationId = reservationId;
+            window.selectedPaymentTitle = title || 'Parking Spot';
+            window.selectedPaymentAmount = amount || 0;
+            if (!start || !end || !pricePerHour) {
+                try {
+                    const res = await fetch(`/api/Reservations/user/${currentUser.userId}`);
+                    const reservations = await res.json();
+                    const r = reservations.find(x => x.reservationID === reservationId);
+                    if (r) { start = r.reservationStart; end = r.reservationEnd; pricePerHour = r.pricePerHour; window.selectedPaymentTitle = r.title || title; }
+                } catch { }
+            }
+            window.selectedReservationStart = start;
+            window.selectedReservationEnd = end;
+            window.selectedPricePerHour = pricePerHour || 0;
+            window.selectedPaymentAmount = amount || 0;
+            showPage('payment');
+            setTimeout(() => initPaymentPage(), 150);
         }
 
         // ══════════════════════════════════════
@@ -2088,19 +2289,19 @@
                 const reservations = await res.json();
                 if (!reservations.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>No reservation history yet.</p></div>'; return; }
                 container.innerHTML = `
-                                <table class="history-table">
-                                    <thead><tr><th>Listing</th><th>Spot</th><th>Date</th><th>Status</th><th>Amount</th></tr></thead>
-                                    <tbody>
-                                        ${reservations.map(r => `
-                                            <tr>
-                                                <td><strong>${r.title || 'Parking Spot'}</strong><br><span style="font-size:12px;color:var(--muted)">${r.fullAddress || ''}</span></td>
-                                                <td>${r.assignedSpotNumber}</td>
-                                                <td style="font-size:13px">${new Date(r.reservationStart).toLocaleDateString()}<br><span style="color:var(--muted)">${new Date(r.reservationStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(r.reservationEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td>
-                                                <td><span class="badge ${r.status === 'Confirmed' ? 'available' : r.status === 'Cancelled' ? 'unavailable' : 'available'}">${r.status}</span></td>
-                                                <td>$${r.pricePerHour != null ? r.pricePerHour.toFixed(2) : '—'}</td>
-                                            </tr>`).join('')}
-                                    </tbody>
-                                </table>`;
+                                    <table class="history-table">
+                                        <thead><tr><th>Listing</th><th>Spot</th><th>Date</th><th>Status</th><th>Amount</th></tr></thead>
+                                        <tbody>
+                                            ${reservations.map(r => `
+                                                <tr>
+                                                    <td><strong>${r.title || 'Parking Spot'}</strong><br><span style="font-size:12px;color:var(--muted)">${r.fullAddress || ''}</span></td>
+                                                    <td>${r.assignedSpotNumber}</td>
+                                                    <td style="font-size:13px">${new Date(r.reservationStart).toLocaleDateString()}<br><span style="color:var(--muted)">${new Date(r.reservationStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(r.reservationEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td>
+                                                    <td><span class="badge ${r.status === 'Confirmed' ? 'available' : r.status === 'Cancelled' ? 'unavailable' : 'available'}">${r.status}</span></td>
+                                                    <td>$${r.pricePerHour != null ? r.pricePerHour.toFixed(2) : '—'}</td>
+                                                </tr>`).join('')}
+                                        </tbody>
+                                    </table>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reservation history.</p></div>'; }
         }
 
@@ -2135,20 +2336,20 @@
                 if (!data.reviews || data.reviews.length === 0) { container.innerHTML = '<div class="empty"><p>No reviews yet. Be the first to review!</p></div>'; return; }
                 const stars = (n) => '⭐'.repeat(n);
                 container.innerHTML = `
-                                <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:flex;gap:24px;align-items:center">
-                                    <div style="text-align:center">
-                                        <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--red);line-height:1">${data.averageRating}</div>
-                                        <div style="font-size:13px;color:var(--muted)">${data.totalReviews} review${data.totalReviews !== 1 ? 's' : ''}</div>
-                                    </div>
-                                </div>
-                                ${data.reviews.map(r => `
-                                    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px">
-                                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-                                            <div><strong style="font-size:14px">${r.reviewerName}</strong><div style="font-size:18px;margin-top:2px">${stars(r.starRating)}</div></div>
-                                            <div style="font-size:12px;color:var(--muted2)">${new Date(r.createdAt).toLocaleDateString()}</div>
+                                    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:flex;gap:24px;align-items:center">
+                                        <div style="text-align:center">
+                                            <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--red);line-height:1">${data.averageRating}</div>
+                                            <div style="font-size:13px;color:var(--muted)">${data.totalReviews} review${data.totalReviews !== 1 ? 's' : ''}</div>
                                         </div>
-                                        ${r.comment ? `<p style="font-size:14px;color:var(--muted);font-family:'Source Serif 4',serif">${r.comment}</p>` : ''}
-                                    </div>`).join('')}`;
+                                    </div>
+                                    ${data.reviews.map(r => `
+                                        <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px">
+                                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+                                                <div><strong style="font-size:14px">${r.reviewerName}</strong><div style="font-size:18px;margin-top:2px">${stars(r.starRating)}</div></div>
+                                                <div style="font-size:12px;color:var(--muted2)">${new Date(r.createdAt).toLocaleDateString()}</div>
+                                            </div>
+                                            ${r.comment ? `<p style="font-size:14px;color:var(--muted);font-family:'Source Serif 4',serif">${r.comment}</p>` : ''}
+                                        </div>`).join('')}`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reviews.</p></div>'; }
         }
 
@@ -2191,18 +2392,18 @@
                     return;
                 }
                 container.innerHTML = `<div class="listings-grid">${favorites.map(f => `
-                <div class="listing-card">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                        <h3>${f.title}</h3>
-                        <span class="badge ${f.isAvailable ? 'available' : 'unavailable'}">${f.isAvailable ? 'Available' : 'Unavailable'}</span>
-                    </div>
-                    <div class="location">📍 ${f.location}</div>
-                    <div class="price" style="margin-bottom:16px">$${f.pricePerHour}<span>/hr</span></div>
-                    <div style="display:flex;gap:8px">
-                        <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="viewListing(${f.listingID})">View & Book</button>
-                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="removeFavorite(${f.favoriteID})">Remove</button>
-                    </div>
-                </div>`).join('')}</div>`;
+                    <div class="listing-card">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                            <h3>${f.title}</h3>
+                            <span class="badge ${f.isAvailable ? 'available' : 'unavailable'}">${f.isAvailable ? 'Available' : 'Unavailable'}</span>
+                        </div>
+                        <div class="location">📍 ${f.location}</div>
+                        <div class="price" style="margin-bottom:16px">$${f.pricePerHour}<span>/hr</span></div>
+                        <div style="display:flex;gap:8px">
+                            <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="viewListing(${f.listingID})">View & Book</button>
+                            <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="removeFavorite(${f.favoriteID})">Remove</button>
+                        </div>
+                    </div>`).join('')}</div>`;
             } catch {
                 container.innerHTML = '<div class="empty"><p>Error loading favorites.</p></div>';
             }
