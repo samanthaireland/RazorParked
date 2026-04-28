@@ -23,15 +23,13 @@ namespace RazorParked.Controllers
         // ===============================
         // GET /api/Listings
         // Search listings with filters
-        // CHANGED: Added dateTo param; date filter now checks
-        //          AvailabilitySlots across the full date range
         // ===============================
         [HttpGet]
         public async Task<IActionResult> SearchListings(
             [FromQuery] bool? availability,
             [FromQuery] string? location,
             [FromQuery] DateTime? date,
-            [FromQuery] DateTime? dateTo,   // ADDED
+            [FromQuery] DateTime? dateTo,
             [FromQuery] decimal? maxPrice)
         {
             var query = _context.ParkingListings.AsQueryable();
@@ -42,7 +40,6 @@ namespace RazorParked.Controllers
             if (!string.IsNullOrEmpty(location))
                 query = query.Where(l => l.Location.Contains(location));
 
-            // CHANGED: Check availability slots across the full date range
             if (date.HasValue)
             {
                 var dateFrom = date.Value.Date;
@@ -239,6 +236,8 @@ namespace RazorParked.Controllers
         // ===============================
         // DELETE /api/Listings/{id}
         // Delete a listing (owner only)
+        // CHANGED: Full cascade delete — removes all related
+        // records in correct order to avoid FK constraint errors
         // ===============================
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteListing(int id, [FromQuery] int hostUserId)
@@ -257,9 +256,40 @@ namespace RazorParked.Controllers
             if (ownerId == null) return NotFound(new { message = "Listing not found." });
             if (ownerId != hostUserId) return Forbid();
 
+            // Step 1: Delete records that reference Reservations
             await connection.ExecuteAsync(@"
-                DELETE FROM dbo.ParkingListings WHERE ListingID = @ListingID",
-                new { ListingID = id });
+                DELETE n FROM dbo.Notifications n
+                INNER JOIN dbo.Reservations r ON n.ReservationID = r.ReservationID
+                WHERE r.ListingID = @ListingID", new { ListingID = id });
+
+            await connection.ExecuteAsync(@"
+                DELETE p FROM dbo.Payments p
+                INNER JOIN dbo.Reservations r ON p.ReservationID = r.ReservationID
+                WHERE r.ListingID = @ListingID", new { ListingID = id });
+
+            await connection.ExecuteAsync(@"
+                DELETE rv FROM dbo.Reviews rv
+                INNER JOIN dbo.Reservations r ON rv.ReservationID = r.ReservationID
+                WHERE r.ListingID = @ListingID", new { ListingID = id });
+
+            // Step 2: Delete records that reference Conversations
+            await connection.ExecuteAsync(@"
+                DELETE m FROM dbo.Messages m
+                INNER JOIN dbo.Conversations c ON m.ConversationID = c.ConversationID
+                WHERE c.ListingID = @ListingID", new { ListingID = id });
+
+            // Step 3: Delete direct child tables of ParkingListings
+            await connection.ExecuteAsync("DELETE FROM dbo.AvailabilitySlots WHERE ListingID = @ListingID", new { ListingID = id });
+            await connection.ExecuteAsync("DELETE FROM dbo.ListingDates WHERE ListingID = @ListingID", new { ListingID = id });
+            await connection.ExecuteAsync("DELETE FROM dbo.BusinessHours WHERE ListingID = @ListingID", new { ListingID = id });
+            await connection.ExecuteAsync("DELETE FROM dbo.ListingPhotos WHERE ListingID = @ListingID", new { ListingID = id });
+            await connection.ExecuteAsync("DELETE FROM dbo.Favorites WHERE ListingID = @ListingID", new { ListingID = id });
+            await connection.ExecuteAsync("DELETE FROM dbo.Reviews WHERE ListingID = @ListingID", new { ListingID = id });
+            await connection.ExecuteAsync("DELETE FROM dbo.Conversations WHERE ListingID = @ListingID", new { ListingID = id });
+            await connection.ExecuteAsync("DELETE FROM dbo.Reservations WHERE ListingID = @ListingID", new { ListingID = id });
+
+            // Step 4: Finally delete the listing itself
+            await connection.ExecuteAsync("DELETE FROM dbo.ParkingListings WHERE ListingID = @ListingID", new { ListingID = id });
 
             return Ok(new { message = "Listing deleted successfully." });
         }
