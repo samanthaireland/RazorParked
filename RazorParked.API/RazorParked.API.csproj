@@ -26,6 +26,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\FRONTEND FOLDER\" />
     <Folder Include="wwwroot\images\listings\" />
+    <Folder Include="wwwroot\Sections\wwwroot\js\" />
   </ItemGroup>
 
 </Project>

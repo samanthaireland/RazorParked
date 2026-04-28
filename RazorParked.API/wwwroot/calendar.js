@@ -250,10 +250,8 @@ var RazorParkedCalendar = (function () {
             .then(function (r) { return r.ok ? r.json() : {}; })
             .then(function (d) {
                 self.blockedSlots = d.blockedSlots || {};
-                // Block any day NOT in availableDates
                 var available = d.availableDates || [];
                 if (available.length > 0) {
-                    // Generate all dates from today to 1 year out
                     var today = new Date();
                     var allBlocked = [];
                     for (var i = 0; i < 365; i++) {
@@ -348,7 +346,6 @@ var RazorParkedCalendar = (function () {
             + '</div></div></div></div>';
     };
 
-    // Game filter pill buttons (scrollable horizontal strip)
     Cal.prototype._renderGameFilter = function () {
         var div = document.getElementById('rpc-gf-' + this.id);
         if (!div) return;
@@ -444,24 +441,52 @@ var RazorParkedCalendar = (function () {
         if (_ms(k) < _ms(_todayK()) || this.blockedDays.indexOf(k) >= 0) return;
 
         if (this.phase === 'arrive-date' || !this.arriveKey) {
+            // Step 1: pick arrive date fresh
             this.arriveKey = k; this.departKey = null;
             this.arriveTime = null; this.departTime = null;
             this.arriveIdx = null; this.departIdx = null;
             this.phase = 'depart-date';
+
         } else if (this.phase === 'depart-date') {
+            // Step 2: pick depart date (arrive date already set)
             if (_ms(k) < _ms(this.arriveKey)) {
                 this.departKey = this.arriveKey; this.arriveKey = k;
             } else {
-                this.departKey = k; // same day OK
+                this.departKey = k;
             }
             this.arriveTime = null; this.departTime = null;
             this.arriveIdx = null; this.departIdx = null;
             this.phase = 'arrive-time';
-        } else {
-            this.arriveKey = k; this.departKey = null;
-            this.arriveTime = null; this.departTime = null;
-            this.arriveIdx = null; this.departIdx = null;
-            this.phase = 'depart-date';
+
+        } else if (this.phase === 'arrive-time') {
+            // Arrive time not yet picked — allow changing depart date
+            if (_ms(k) < _ms(this.arriveKey)) {
+                // Clicked before arrive date → start fresh
+                this.arriveKey = k; this.departKey = null;
+                this.arriveTime = null; this.departTime = null;
+                this.arriveIdx = null; this.departIdx = null;
+                this.phase = 'depart-date';
+            } else {
+                this.departKey = k;
+                this.arriveTime = null; this.departTime = null;
+                this.arriveIdx = null; this.departIdx = null;
+                this.phase = 'arrive-time';
+            }
+
+        } else if (this.phase === 'depart-time' || this.phase === 'done') {
+            // Arrive time is locked in — only allow changing depart date
+            if (_ms(k) < _ms(this.arriveKey)) {
+                // Clicked before arrive date → start completely fresh
+                this.arriveKey = k; this.departKey = null;
+                this.arriveTime = null; this.departTime = null;
+                this.arriveIdx = null; this.departIdx = null;
+                this.phase = 'depart-date';
+            } else {
+                // Update depart date, keep arrive date+time
+                this.departKey = k;
+                this.departTime = null; this.departIdx = null;
+                this.phase = 'depart-time';
+            }
         }
         this._renderCal();
         this._updateBBoxes();
@@ -594,7 +619,6 @@ var RazorParkedCalendar = (function () {
             }
             this.departTime = s; this.departIdx = idx;
             this.phase = 'done';
-            // Auto-confirm: set globals immediately so listing page can read them
             this._confirm();
         }
         this._updateBBoxes();
@@ -634,8 +658,6 @@ var RazorParkedCalendar = (function () {
             }
         }
     };
-
-    // _updateResBtn removed — auto-confirms on time selection
 
     Cal.prototype._confirm = function () {
         if (!this.arriveKey || !this.departKey || !this.arriveTime || !this.departTime) return;
@@ -714,7 +736,6 @@ var RazorParkedCalendar = (function () {
     };
 
     Cal.prototype._jumpToGame = function (k, btn) {
-        // Highlight pill if btn passed
         if (btn) {
             document.querySelectorAll('#rpc-gf-' + this.id + ' .rpc-gfb').forEach(function (b) { b.classList.remove('rpc-gfsel'); });
             btn.classList.add('rpc-gfsel');
@@ -751,6 +772,25 @@ async function initReserveCalendar(listingId) {
     return cal;
 }
 
+// ─── Drawer toggle for the Find Parking search bar ───────────────────────────
+// Called by: <button onclick="toggleCalDrawer()"> on the "Select dates" bar.
+// Lazily initialises the search calendar the first time the drawer opens so
+// that initSearchCalendar() runs only after the #rp-cal-search element exists.
+function toggleCalDrawer() {
+    var drawer = document.getElementById('rp-cal-search');
+    if (!drawer) return;
+
+    var isOpen = drawer.style.display === 'block';
+    drawer.style.display = isOpen ? 'none' : 'block';
+
+    if (!isOpen && !window._rpSearchCalInit) {
+        window._rpSearchCalInit = true;
+        window._rpSearchCal = initSearchCalendar();
+    }
+}
+
 window.RazorParkedCalendar = RazorParkedCalendar;
 window.initSearchCalendar = initSearchCalendar;
 window.initReserveCalendar = initReserveCalendar;
+window.toggleCalDrawer = toggleCalDrawer;
+window._to24 = _to24;
