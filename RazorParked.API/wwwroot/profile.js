@@ -42,6 +42,7 @@ async function loadProfile() {
 
         // Load credit balance once profile is ready
         await loadCreditBalance();
+        loadCreditTransactions();
 
         // If host, load their recent reservations into the gift dropdown
         if (data.roles.includes('Host')) {
@@ -229,6 +230,34 @@ async function loadCreditBalance() {
         const badge = document.getElementById('credits-tab-badge');
         if (badge) badge.textContent = formatted;
     } catch { console.error('Could not load credit balance'); }
+}
+async function loadCreditTransactions() {
+    const container = document.getElementById('credits-transaction-list');
+    if (!container) return;
+    container.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:12px 0">Loading...</div>';
+    try {
+        const res = await fetch(`/api/Users/${currentUser.userId}/credits/transactions`);
+        if (!res.ok) { container.innerHTML = '<div style="font-size:13px;color:var(--muted)">No transactions yet.</div>'; return; }
+        const data = await res.json();
+        const txns = Array.isArray(data) ? data : (data.transactions || []);
+        if (!txns.length) { container.innerHTML = '<div style="font-size:13px;color:var(--muted)">No transactions yet.</div>'; return; }
+        container.innerHTML = txns.map(function (t) {
+            const isPos = t.amount > 0;
+            const date = new Date(t.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const time = new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const icon = t.note && t.note.toLowerCase().includes('cancel') ? '❌' : isPos ? '➕' : '➖';
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div style="font-size:18px">${icon}</div>
+                    <div>
+                        <div style="font-size:13px;font-weight:600;color:var(--text)">${t.note || (isPos ? 'Credits added' : 'Credits deducted')}</div>
+                        <div style="font-size:11px;color:var(--muted)">${date} · ${time}</div>
+                    </div>
+                </div>
+                <div style="font-size:15px;font-weight:700;color:${isPos ? '#2d7a4f' : 'var(--red)'}">${isPos ? '+' : ''}$${Math.abs(t.amount).toFixed(2)}</div>
+            </div>`;
+        }).join('');
+    } catch { container.innerHTML = '<div style="font-size:13px;color:var(--muted)">Could not load transactions.</div>'; }
 }
 
 async function buyCredits() {
@@ -477,5 +506,6 @@ function switchProfileTab(tab) {
     if (tab === 'credits') {
         loadCreditBalance();
         loadCardOnFile();
+        loadCreditTransactions();
     }
 }

@@ -77,6 +77,26 @@ namespace RazorParked.API.Controllers
             await _db.SaveChangesAsync();
             return Ok(new { balance = sender.Credits, message = "Credits gifted." });
         }
+
+        // GET /api/Users/{userId}/credits/transactions
+        [HttpGet("transactions")]
+        public async Task<IActionResult> GetTransactions(int userId)
+        {
+            var transactions = await _db.CreditTransactions
+                .Where(t => t.SenderUserID == userId || t.ReceiverUserID == userId)
+                .OrderByDescending(t => t.CreatedAt)
+                .Take(50)
+                .Select(t => new {
+                    transactionId = t.TransactionID,
+                    type = t.Type,
+                    amount = t.ReceiverUserID == userId ? t.Amount : -t.Amount,
+                    note = t.Note,
+                    createdAt = t.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(transactions);
+        }
     }
 
     public class PurchaseRequest
