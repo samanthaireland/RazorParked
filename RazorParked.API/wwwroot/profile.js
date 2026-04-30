@@ -429,7 +429,7 @@ function formatCofExpiry(input) {
 }
 
 function loadCardOnFile() {
-    const saved = localStorage.getItem('rp_card_on_file');
+    const saved = localStorage.getItem(`rp_card_${currentUser.userId}`);
     if (!saved) return;
     try {
         const card = JSON.parse(saved);
@@ -459,7 +459,7 @@ function saveCardOnFile() {
     const expiryFmt = expiry.replace(' / ', '/');
 
     // Store only masked info — never store full card number or CVV
-    localStorage.setItem('rp_card_on_file', JSON.stringify({ last4, name, expiry: expiryFmt }));
+    localStorage.setItem(`rp_card_${currentUser.userId}`, JSON.stringify({ last4, name, expiry: expiryFmt }));
 
     // Store full details temporarily in memory only for payment use
     window._cofFull = { cardName: name, cardNumber: number, cardExpiry: expiry, last4 };
@@ -475,7 +475,7 @@ function saveCardOnFile() {
 }
 
 function removeCardOnFile() {
-    localStorage.removeItem('rp_card_on_file');
+    localStorage.removeItem(`rp_card_${currentUser.userId}`);
     window._cofFull = null;
     document.getElementById('cof-no-card').style.display = 'block';
     document.getElementById('cof-has-card').style.display = 'none';

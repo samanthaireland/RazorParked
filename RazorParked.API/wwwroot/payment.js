@@ -140,7 +140,7 @@ function updatePaymentMethodForm(method) {
 
 function getSavedCard() {
     try {
-        const saved = localStorage.getItem('rp_card_on_file');
+        const saved = localStorage.getItem(`rp_card_${currentUser?.userId}`);
         return saved ? JSON.parse(saved) : null;
     } catch { return null; }
 }
