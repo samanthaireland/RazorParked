@@ -575,7 +575,7 @@
                 border: 1px solid #e8b4bc;
             }
 
-        /* ── FILTERS — Task 9 / Criteria 8 ── */
+        /* ── FILTERS ── */
         .filters {
             background: var(--surface);
             border: 1.5px solid var(--border);
@@ -611,7 +611,6 @@
                 color: var(--text);
             }
 
-        /* ── VIEW TOGGLE — Task 10 / Criteria 9 ── */
         .view-toggle {
             display: flex;
             align-items: center;
@@ -647,7 +646,6 @@
                 color: #fff;
             }
 
-        /* ── MAP CONTAINER — Task 10 / Criteria 9 ── */
         #map-container {
             display: none;
             margin-top: 20px;
@@ -667,7 +665,6 @@
             width: 100%;
         }
 
-        /* Leaflet popup custom styling */
         .leaflet-popup-content-wrapper {
             border-radius: 10px !important;
             box-shadow: 0 8px 28px rgba(0,0,0,0.14) !important;
@@ -755,7 +752,6 @@
                 display: block;
             }
 
-        /* ── DETAIL GRID ── */
         .detail-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -786,7 +782,6 @@
                 color: var(--text);
             }
 
-        /* ── EMPTY / LOADING ── */
         .empty {
             text-align: center;
             padding: 64px 20px;
@@ -812,7 +807,6 @@
             font-style: italic;
         }
 
-        /* ── FOOTER ── */
         footer {
             margin-top: 80px;
             background: var(--red);
@@ -835,7 +829,6 @@
                 color: var(--gold);
             }
 
-        /* ── Carter: Notification Bell ── */
         .notif-wrapper {
             position: relative;
         }
@@ -944,7 +937,6 @@
             font-size: 13px;
         }
 
-        /* ── Carter: Reservation History ── */
         .history-table {
             width: 100%;
             border-collapse: collapse;
@@ -967,7 +959,6 @@
                 border-bottom: 1px solid var(--border);
             }
 
-        /* ── Carter Sprint 6: Toggle switch ── */
         .promo-toggle {
             position: relative;
             display: inline-block;
@@ -1030,14 +1021,12 @@
             <button class="nav-btn highlight" onclick="showPage('register')">Sign Up</button>
         </div>
         <div id="nav-user">
-            <span id="nav-name" onclick="showPage('profile')" style="cursor:pointer;text-decoration:underline">
-            </span>
+            <span id="nav-name" onclick="showPage('profile')" style="cursor:pointer;text-decoration:underline"></span>
             <button class="nav-btn" onclick="showPage('search')">Find Parking</button>
             <button class="nav-btn" id="nav-host-btn" onclick="showPage('host')" style="display:none">My Listings</button>
             <button class="nav-btn" onclick="showPage('my-reservations')">My Reservations</button>
             <button class="nav-btn" onclick="showPage('favorites')">❤️ Favorites</button>
             <button class="nav-btn" onclick="showPage('history')">History</button>
-
             <div class="notif-wrapper">
                 <button class="notif-btn" onclick="toggleNotifDropdown()" title="Notifications">
                     🔔<span id="notif-badge" class="notif-badge hidden">0</span>
@@ -1045,11 +1034,7 @@
                 <div id="notif-dropdown" class="notif-dropdown">
                     <div class="notif-dropdown-header" style="display:flex;justify-content:space-between;align-items:center">
                         Notifications
-                        <button onclick="showPage('messages');toggleNotifDropdown()"
-                                style="background:var(--red);color:#fff;border:none;font-family:'DM Sans',sans-serif;
-            font-size:12px;font-weight:600;padding:4px 12px;border-radius:6px;cursor:pointer">
-                            💬 Messages
-                        </button>
+                        <button onclick="showPage('messages');toggleNotifDropdown()" style="background:var(--red);color:#fff;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:4px 12px;border-radius:6px;cursor:pointer">💬 Messages</button>
                     </div>
                     <div id="notif-list"></div>
                 </div>
@@ -1071,46 +1056,22 @@
             </div>
             <div class="section-divider"><span>What We Offer</span></div>
             <div class="feature-grid">
-                <div class="feature-card" onclick="showPage('search')">
-                    <div class="feature-icon">🔍</div>
-                    <h3>Search Listings</h3>
-                    <p>Browse available spots near your event by location, date, and price.</p>
-                </div>
-                <div class="feature-card" onclick="currentUser ? showPage('create-listing') : showPage('register')">
-                    <div class="feature-icon">🏠</div>
-                    <h3>Host Your Space</h3>
-                    <p>Have a driveway near Razorback Stadium? List it and earn on game days.</p>
-                </div>
-                <div class="feature-card" onclick="showPage('my-reservations')">
-                    <div class="feature-icon">🎫</div>
-                    <h3>My Reservations</h3>
-                    <p>View and manage your upcoming parking reservations in one place.</p>
-                </div>
+                <div class="feature-card" onclick="showPage('search')"><div class="feature-icon">🔍</div><h3>Search Listings</h3><p>Browse available spots near your event by location, date, and price.</p></div>
+                <div class="feature-card" onclick="currentUser ? showPage('create-listing') : showPage('register')"><div class="feature-icon">🏠</div><h3>Host Your Space</h3><p>Have a driveway near Razorback Stadium? List it and earn on game days.</p></div>
+                <div class="feature-card" onclick="showPage('my-reservations')"><div class="feature-icon">🎫</div><h3>My Reservations</h3><p>View and manage your upcoming parking reservations in one place.</p></div>
             </div>
         </div>
     </div>
 
-    <!-- PAGE: REGISTER (Samantha) -->
     <div id="page-register" class="page"></div>
-
-    <!-- PAGE: PROFILE (Samantha) -->
     <div id="page-profile" class="page"></div>
 
-    <!-- PAGE: LOGIN (Samantha) -->
+    <!-- PAGE: LOGIN -->
     <div id="page-login" class="page">
         <div class="form-card">
-            <div class="card-top">
-                <div class="form-title">Welcome Back</div>
-                <div class="form-subtitle">Log in to your RazorParked account.</div>
-            </div>
-            <div class="form-group">
-                <label>Email</label>
-                <input id="login-email" type="email" placeholder="jane@uark.edu" />
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input id="login-password" type="password" placeholder="••••••••" />
-            </div>
+            <div class="card-top"><div class="form-title">Welcome Back</div><div class="form-subtitle">Log in to your RazorParked account.</div></div>
+            <div class="form-group"><label>Email</label><input id="login-email" type="email" placeholder="jane@uark.edu" /></div>
+            <div class="form-group"><label>Password</label><input id="login-password" type="password" placeholder="••••••••" /></div>
             <button class="btn-primary" style="width:100%" onclick="login()">Log In</button>
             <div id="login-msg" class="msg"></div>
             <div class="form-link">Don't have an account? <a onclick="showPage('register')">Sign up</a></div>
@@ -1119,62 +1080,34 @@
 
     <!-- PAGE: SEARCH LISTINGS -->
     <div id="page-search" class="page">
-        <div class="page-header">
-            <h2>Find Parking</h2>
-            <p>Browse available spots near your event.</p>
-        </div>
+        <div class="page-header"><h2>Find Parking</h2><p>Browse available spots near your event.</p></div>
         <div class="filters">
-            <div class="form-group">
-                <label>Event / Location</label>
-                <input id="search-location" placeholder="Razorback Stadium, Dickson St..." />
-            </div>
-            <div class="form-group">
-                <label>Max Price / hr ($)</label>
-                <input id="search-price" type="number" min="0" placeholder="50" />
-            </div>
-            <div class="form-group">
-                <label>Availability</label>
-                <select id="search-availability">
-                    <option value="">Any</option>
-                    <option value="true">Available Only</option>
-                </select>
-            </div>
+            <div class="form-group"><label>Event / Location</label><input id="search-location" placeholder="Razorback Stadium, Dickson St..." /></div>
+            <div class="form-group"><label>Max Price / hr ($)</label><input id="search-price" type="number" min="0" placeholder="50" /></div>
+            <div class="form-group"><label>Availability</label><select id="search-availability"><option value="">Any</option><option value="true">Available Only</option></select></div>
             <button class="btn-primary" onclick="searchListings()">Search</button>
         </div>
         <div style="margin-top:16px;margin-bottom:4px">
             <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Dates and Times</div>
-            <button id="cal-date-display" onclick="toggleCalDrawer()"
-                    style="width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);cursor:pointer">
-                📅 Select dates — click to open calendar
-            </button>
+            <button id="cal-date-display" onclick="toggleCalDrawer()" style="width:100%;text-align:left;background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);cursor:pointer">📅 Select dates — click to open calendar</button>
             <div id="rp-cal-search" style="display:none;margin-top:8px;"></div>
         </div>
-        <div id="cal-drawer" style="display:none;margin-bottom:16px">
-            <div id="rp-cal-search"></div>
-        </div>
+        <div id="cal-drawer" style="display:none;margin-bottom:16px"><div id="rp-cal-search"></div></div>
         <div class="view-toggle">
             <button class="view-toggle-btn active" id="btn-list-view" onclick="setView('list')">☰ List View</button>
             <button class="view-toggle-btn" id="btn-map-view" onclick="setView('map')">🗺 Map View</button>
         </div>
-        <div class="map-notice" id="map-notice">
-            ⚠️ Some listings don't have coordinates and won't appear on the map. Switch to List View to see all results.
-        </div>
+        <div class="map-notice" id="map-notice">⚠️ Some listings don't have coordinates and won't appear on the map. Switch to List View to see all results.</div>
         <div id="map-container"><div id="leaflet-map"></div></div>
         <div id="search-results">
-            <div class="empty">
-                <div class="empty-icon">🅿️</div>
-                <p>Use the filters above to find parking near you.</p>
-            </div>
+            <div class="empty"><div class="empty-icon">🅿️</div><p>Use the filters above to find parking near you.</p></div>
         </div>
     </div>
 
-    <!-- PAGE: HOST REPORTS (Shietsu) -->
+    <!-- PAGE: HOST REPORTS -->
     <div id="page-host-reports" class="page">
         <button class="btn-ghost" onclick="showPage('host')" style="margin-bottom:24px">← Back to My Listings</button>
-        <div class="page-header">
-            <h2>Host Reports</h2>
-            <p>Track earnings, reservations, and parking usage for your listings.</p>
-        </div>
+        <div class="page-header"><h2>Host Reports</h2><p>Track earnings, reservations, and parking usage for your listings.</p></div>
         <div class="listings-grid" style="margin-bottom:24px">
             <div class="listing-card"><h3>Total Earnings</h3><div class="price" id="report-total-earnings">$0.00</div></div>
             <div class="listing-card"><h3>Total Reservations</h3><div class="price" id="report-total-reservations">0</div></div>
@@ -1197,21 +1130,16 @@
         </div>
     </div>
 
-    <!-- PAGE: LISTING DETAIL + RESERVE (Carter) -->
+    <!-- PAGE: LISTING DETAIL -->
     <div id="page-listing" class="page">
         <button class="btn-ghost" id="listing-back-btn" onclick="showPage('search')" style="margin-bottom:24px">← Back to Search</button>
-        <div id="listing-detail-content">
-            <div class="loading">Loading listing...</div>
-        </div>
+        <div id="listing-detail-content"><div class="loading">Loading listing...</div></div>
     </div>
 
-    <!-- PAGE: HOST DASHBOARD (Shietsu) -->
+    <!-- PAGE: HOST DASHBOARD -->
     <div id="page-host" class="page">
         <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div>
-                <h2>My Listings</h2>
-                <p>Manage your parking spaces.</p>
-            </div>
+            <div><h2>My Listings</h2><p>Manage your parking spaces.</p></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
                 <button class="btn-primary" onclick="showPage('create-listing')">+ New Listing</button>
                 <button class="btn-secondary" onclick="window.location.href='Sections/business.html?page=bulk-listing'">+ Bulk Listing</button>
@@ -1225,14 +1153,11 @@
         <div id="host-listings"><div class="loading">Loading your listings...</div></div>
     </div>
 
-    <!-- PAGE: CREATE LISTING (Shietsu) -->
+    <!-- PAGE: CREATE LISTING -->
     <div id="page-create-listing" class="page">
         <button class="btn-ghost" onclick="showPage('host')" style="margin-bottom:24px">← Back to Dashboard</button>
         <div class="form-card" style="max-width:600px">
-            <div class="card-top">
-                <div class="form-title">New Listing</div>
-                <div class="form-subtitle">Add a parking space to rent out on game days.</div>
-            </div>
+            <div class="card-top"><div class="form-title">New Listing</div><div class="form-subtitle">Add a parking space to rent out on game days.</div></div>
             <div class="form-group"><label>Title</label><input id="cl-title" placeholder="e.g. Driveway near Razorback Stadium" /></div>
             <div class="form-group"><label>Description</label><textarea id="cl-desc" rows="3" placeholder="Any details about your space..."></textarea></div>
             <div class="form-group"><label>Location / Address</label><input id="cl-location" placeholder="123 Dickson St, Fayetteville, AR" /></div>
@@ -1251,13 +1176,13 @@
         </div>
     </div>
 
-    <!-- PAGE: MY RESERVATIONS + CANCEL (Ryleigh) -->
+    <!-- PAGE: MY RESERVATIONS -->
     <div id="page-my-reservations" class="page">
         <div class="page-header"><h2>My Reservations</h2><p>View and manage your parking bookings.</p></div>
         <div id="reservations-list"><div class="loading">Loading reservations...</div></div>
     </div>
 
-    <!-- PAGE: PAYMENT (Ryleigh) -->
+    <!-- PAGE: PAYMENT -->
     <div id="page-payment" class="page">
         <button class="btn-ghost" onclick="showPage('my-reservations')" style="margin-bottom:24px">← Back to Reservations</button>
         <div class="form-card">
@@ -1276,17 +1201,15 @@
         </div>
     </div>
 
-    <!-- PAGE: RESERVATION HISTORY (Carter) -->
+    <!-- PAGE: RESERVATION HISTORY -->
     <div id="page-history" class="page">
         <div class="page-header"><h2>Reservation History</h2><p>All your past and upcoming parking reservations.</p></div>
         <div id="history-content"><div class="loading">Loading history...</div></div>
     </div>
 
     <!-- EDIT LISTING MODAL -->
-    <div id="edit-listing-modal" onclick="closeEditModal()"
-         style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center">
-        <div onclick="event.stopPropagation()"
-             style="background:#fff;border-radius:12px;padding:32px;max-width:480px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,0.2)">
+    <div id="edit-listing-modal" onclick="closeEditModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center">
+        <div onclick="event.stopPropagation()" style="background:#fff;border-radius:12px;padding:32px;max-width:480px;width:90%;box-shadow:0 16px 48px rgba(0,0,0,0.2)">
             <input type="hidden" id="edit-listing-id" />
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;margin-bottom:20px;border-bottom:3px solid var(--red);padding-bottom:12px">Edit Listing</div>
             <div class="form-group"><label>Title</label><input id="edit-title" placeholder="Listing title" /></div>
@@ -1302,21 +1225,14 @@
     </div>
 
     <script>
-        // ══════════════════════════════════════
-        // STATE
-        // ══════════════════════════════════════
         let currentUser = JSON.parse(localStorage.getItem('rp_user') || 'null');
         let selectedListingId = null;
         let selectedReservationId = null;
         let selectedPaymentAmount = 0;
-
         let leafletMap = null;
         let currentView = 'list';
         let mapMarkers = [];
 
-        // ══════════════════════════════════════
-        // NAVIGATION
-        // ══════════════════════════════════════
         function showPage(name) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             const pageEl = document.getElementById('page-' + name);
@@ -1331,7 +1247,6 @@
             if (name === 'register') clearRegisterForm();
             if (name === 'login') clearLoginForm();
             if (name === 'search') {
-                // Clear previous selection so each search starts fresh
                 window.calendarArriveKey = null;
                 window.calendarDepartKey = null;
                 window.calendarArriveTime = null;
@@ -1356,9 +1271,7 @@
             if (name === 'receipt' && window._lastReceipt) setTimeout(() => renderReceipt(window._lastReceipt), 100);
             if (name === 'favorites' && currentUser) loadFavorites();
             if (name === 'availability' && currentUser) setTimeout(() => window.initAvailabilityPage && window.initAvailabilityPage(), 100);
-            if (name === 'search' && currentView === 'map' && leafletMap) {
-                setTimeout(() => leafletMap.invalidateSize(), 150);
-            }
+            if (name === 'search' && currentView === 'map' && leafletMap) setTimeout(() => leafletMap.invalidateSize(), 150);
             window.scrollTo(0, 0);
         }
 
@@ -1368,55 +1281,31 @@
             const hostBtn = document.getElementById('nav-host-btn');
             const nameEl = document.getElementById('nav-name');
             if (currentUser) {
-                guest.style.display = 'none';
-                user.style.display = 'flex';
+                guest.style.display = 'none'; user.style.display = 'flex';
                 nameEl.textContent = currentUser.fullName;
                 if (currentUser.role === 'Host') hostBtn.style.display = 'inline-block';
                 const adminBtn = document.getElementById('nav-admin-btn');
-                if (adminBtn && currentUser.roles && currentUser.roles.includes('Admin')) {
-                    adminBtn.style.display = 'inline-block';
-                }
-            } else {
-                guest.style.display = 'flex';
-                user.style.display = 'none';
-            }
+                if (adminBtn && currentUser.roles && currentUser.roles.includes('Admin')) adminBtn.style.display = 'inline-block';
+            } else { guest.style.display = 'flex'; user.style.display = 'none'; }
         }
 
         function logout() {
             currentUser = null;
             localStorage.removeItem('rp_user');
-            // Clear any saved calendar state so next user starts clean
-            window.calendarArriveKey = null;
-            window.calendarDepartKey = null;
-            window.calendarArriveTime = null;
-            window.calendarDepartTime = null;
-            window.calendarStartISO = null;
-            window.calendarEndISO = null;
-            updateNav();
-            showPage('home');
+            window.calendarArriveKey = null; window.calendarDepartKey = null;
+            window.calendarArriveTime = null; window.calendarDepartTime = null;
+            window.calendarStartISO = null; window.calendarEndISO = null;
+            updateNav(); showPage('home');
         }
 
-        // ══════════════════════════════════════
-        // AUTH — Samantha
-        // ══════════════════════════════════════
         async function register() {
-            const msg = document.getElementById('reg-msg');
-            msg.className = 'msg';
+            const msg = document.getElementById('reg-msg'); msg.className = 'msg';
             try {
                 const roles = [];
                 if (document.getElementById('role-customer').checked) roles.push('Customer');
                 if (document.getElementById('role-host').checked) roles.push('Host');
                 if (roles.length === 0) { msg.className = 'msg error'; msg.textContent = 'Please select at least one role.'; return; }
-                const res = await fetch('/api/Auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        fullName: document.getElementById('reg-name').value,
-                        email: document.getElementById('reg-email').value,
-                        password: document.getElementById('reg-password').value,
-                        roleNames: roles
-                    })
-                });
+                const res = await fetch('/api/Auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fullName: document.getElementById('reg-name').value, email: document.getElementById('reg-email').value, password: document.getElementById('reg-password').value, roleNames: roles }) });
                 const data = await res.json();
                 if (res.ok) { msg.className = 'msg success'; msg.textContent = 'Account created! Redirecting to login...'; setTimeout(() => showPage('login'), 1500); }
                 else { msg.className = 'msg error'; msg.textContent = data.message || 'Registration failed.'; }
@@ -1425,46 +1314,30 @@
 
         function clearRegisterForm() {
             ['reg-name', 'reg-email', 'reg-password'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-            const c = document.getElementById('role-customer');
-            const h = document.getElementById('role-host');
-            if (c) c.checked = false;
-            if (h) h.checked = false;
-            const msg = document.getElementById('reg-msg');
-            if (msg) msg.className = 'msg';
+            const c = document.getElementById('role-customer'); const h = document.getElementById('role-host');
+            if (c) c.checked = false; if (h) h.checked = false;
+            const msg = document.getElementById('reg-msg'); if (msg) msg.className = 'msg';
         }
 
         async function login() {
-            const msg = document.getElementById('login-msg');
-            msg.className = 'msg';
+            const msg = document.getElementById('login-msg'); msg.className = 'msg';
             try {
-                const res = await fetch('/api/Auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: document.getElementById('login-email').value,
-                        password: document.getElementById('login-password').value
-                    })
-                });
+                const res = await fetch('/api/Auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value }) });
                 const data = await res.json();
                 if (res.ok) {
                     currentUser = { userId: data.userId, fullName: data.fullName, email: data.email, role: data.role || 'Customer' };
                     window.currentUser = currentUser;
                     localStorage.setItem('rp_user', JSON.stringify(currentUser));
-                    updateNav();
-                    showPage('home');
+                    updateNav(); showPage('home');
                 } else { msg.className = 'msg error'; msg.textContent = data.message || 'Invalid credentials.'; }
             } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
         }
 
         function clearLoginForm() {
             ['login-email', 'login-password'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-            const msg = document.getElementById('login-msg');
-            if (msg) msg.className = 'msg';
+            const msg = document.getElementById('login-msg'); if (msg) msg.className = 'msg';
         }
 
-        // ══════════════════════════════════════
-        // SEARCH LISTINGS
-        // ══════════════════════════════════════
         async function searchListings() {
             const location = document.getElementById('search-location').value.trim();
             const date = window.calendarArriveKey || '';
@@ -1484,115 +1357,74 @@
                 const listings = await res.json();
                 if (!listings || listings.length === 0) {
                     container.innerHTML = `<div class="empty"><div class="empty-icon">🅿️</div><p>No listings found. Try adjusting your filters.</p></div>`;
-                    if (currentView === 'map') clearMapMarkers();
-                    return;
+                    if (currentView === 'map') clearMapMarkers(); return;
                 }
-                const hostCache = {};
-                const photoCache = {};
+                const hostCache = {}, photoCache = {};
                 await Promise.all(listings.map(async l => {
                     const hid = l.hostUserID || l.HostUserID;
-                    if (hid && !hostCache[hid]) {
-                        try { const r = await fetch(`/api/Users/${hid}`); if (r.ok) hostCache[hid] = await r.json(); } catch { }
-                    }
+                    if (hid && !hostCache[hid]) { try { const r = await fetch(`/api/Users/${hid}`); if (r.ok) hostCache[hid] = await r.json(); } catch { } }
                     try { const pr = await fetch(`/api/Listings/${l.listingID}/photos`); if (pr.ok) photoCache[l.listingID] = await pr.json(); } catch { }
                 }));
                 container.innerHTML = `
-                                            <div class="results-meta">
-                                                <span class="results-count"><strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found</span>
-                                            </div>
-                                            <div class="listings-grid">
-                                                ${listings.map(l => {
+                        <div class="results-meta"><span class="results-count"><strong>${listings.length}</strong> listing${listings.length !== 1 ? 's' : ''} found</span></div>
+                        <div class="listings-grid">${listings.map(l => {
                     const hid = l.hostUserID || l.HostUserID;
                     const host = hostCache[hid];
                     const photos = photoCache[l.listingID] || [];
                     const cover = photos[0];
-                    return `
-                                                        <div class="listing-card" onclick="viewListing(${l.listingID})" style="padding:0;overflow:hidden">
-                                                            ${cover ? `<div style="height:160px;overflow:hidden;background:var(--surface2)"><img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'" /></div>` : ''}
-                                                            <div style="padding:18px">
-                                                                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                                                    <h3>${l.title}</h3>
-                                                                    ${date ? `<span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Taken'}</span>` : ''}
-                                                                </div>
-                                                                <div class="location">📍 ${approxLocation(l.location)}</div>
-                                                                <div class="price">$${l.pricePerHour}<span>/hr</span></div>
-                                                                ${host ? `
-                                                                <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-                                                                    <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)">
-                                                                        ${host.profilePicUrl
-                                ? `<img src="${host.profilePicUrl}" style="width:100%;height:100%;object-fit:cover"/>`
-                                : `<div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}</div>`}
-                                                                    </div>
-                                                                    <span style="font-size:13px;color:var(--muted)">Hosted by <strong style="color:var(--text)">${host.fullName || 'Host'}</strong></span>
-                                                                </div>` : ''}
-                                                            </div>
-                                                        </div>`;
-                }).join('')}
-                                            </div>`;
+                    return `<div class="listing-card" onclick="viewListing(${l.listingID})" style="padding:0;overflow:hidden">
+                                ${cover ? `<div style="height:160px;overflow:hidden;background:var(--surface2)"><img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'" /></div>` : ''}
+                                <div style="padding:18px">
+                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                        <h3>${l.title}</h3>
+                                        ${date ? `<span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Taken'}</span>` : ''}
+                                    </div>
+                                    <div class="location">📍 ${approxLocation(l.location)}</div>
+                                    <div class="price">$${l.pricePerHour}<span>/hr</span></div>
+                                    ${host ? `<div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+                                        <div style="width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)">
+                                            ${host.profilePicUrl ? `<img src="${host.profilePicUrl}" style="width:100%;height:100%;object-fit:cover"/>` : `<div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}</div>`}
+                                        </div>
+                                        <span style="font-size:13px;color:var(--muted)">Hosted by <strong style="color:var(--text)">${host.fullName || 'Host'}</strong></span>
+                                    </div>` : ''}
+                                </div>
+                            </div>`;
+                }).join('')}</div>`;
                 if (currentView === 'map') await loadMapView();
-            } catch {
-                container.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><p>Error loading listings. Make sure the API is running.</p></div>`;
-            }
+            } catch { container.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><p>Error loading listings. Make sure the API is running.</p></div>`; }
         }
 
-        // ══════════════════════════════════════
-        // MAP VIEW
-        // ══════════════════════════════════════
         function setView(view) {
             currentView = view;
             const mapContainer = document.getElementById('map-container');
             const searchResults = document.getElementById('search-results');
             const btnList = document.getElementById('btn-list-view');
             const btnMap = document.getElementById('btn-map-view');
-            if (view === 'map') {
-                btnMap.classList.add('active'); btnList.classList.remove('active');
-                mapContainer.classList.add('visible'); searchResults.style.display = 'none';
-                loadMapView();
-            } else {
-                btnList.classList.add('active'); btnMap.classList.remove('active');
-                mapContainer.classList.remove('visible'); searchResults.style.display = 'block';
-                document.getElementById('map-notice').classList.remove('visible');
-            }
+            if (view === 'map') { btnMap.classList.add('active'); btnList.classList.remove('active'); mapContainer.classList.add('visible'); searchResults.style.display = 'none'; loadMapView(); }
+            else { btnList.classList.add('active'); btnMap.classList.remove('active'); mapContainer.classList.remove('visible'); searchResults.style.display = 'block'; document.getElementById('map-notice').classList.remove('visible'); }
         }
 
         async function loadMapView() {
-            const FAYETTEVILLE_LAT = 36.0682;
-            const FAYETTEVILLE_LNG = -94.1719;
+            const FAYETTEVILLE_LAT = 36.0682, FAYETTEVILLE_LNG = -94.1719;
             if (!leafletMap) {
                 leafletMap = L.map('leaflet-map').setView([FAYETTEVILLE_LAT, FAYETTEVILLE_LNG], 14);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                    maxZoom: 19
-                }).addTo(leafletMap);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', maxZoom: 19 }).addTo(leafletMap);
             }
             clearMapMarkers();
             try {
                 const res = await fetch('/api/Listings/locations');
-                if (!res.ok) throw new Error('Could not load locations');
+                if (!res.ok) throw new Error();
                 const locations = await res.json();
                 if (!locations || locations.length === 0) return;
-                const redIcon = L.divIcon({
-                    className: '',
-                    html: `<div style="width:28px;height:28px;background:#9d2235;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 3px 10px rgba(157,34,53,0.45);"></div>`,
-                    iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -30]
-                });
-                let hasNoCoords = false;
-                const boundsPoints = [];
+                const redIcon = L.divIcon({ className: '', html: `<div style="width:28px;height:28px;background:#9d2235;border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 3px 10px rgba(157,34,53,0.45);"></div>`, iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -30] });
+                let hasNoCoords = false; const boundsPoints = [];
                 locations.forEach(listing => {
                     if (listing.latitude == null || listing.longitude == null) { hasNoCoords = true; return; }
-                    const lat = parseFloat(listing.latitude);
-                    const lng = parseFloat(listing.longitude);
+                    const lat = parseFloat(listing.latitude), lng = parseFloat(listing.longitude);
                     if (isNaN(lat) || isNaN(lng)) { hasNoCoords = true; return; }
                     boundsPoints.push([lat, lng]);
                     const marker = L.marker([lat, lng], { icon: redIcon }).addTo(leafletMap);
-                    marker.bindPopup(`
-                                                <div class="map-popup">
-                                                    <div class="map-popup-title">${listing.title}</div>
-                                                    <div class="map-popup-location">📍 ${listing.approximateLocation || listing.location || 'Fayetteville, AR'}</div>
-                                                    <div class="map-popup-price">$${listing.pricePerHour}<span>/hr</span></div>
-                                                    <div class="map-popup-badge"><span class="badge ${listing.isAvailable ? 'available' : 'unavailable'}">${listing.isAvailable ? 'Available' : 'Taken'}</span></div>
-                                                    <button class="map-popup-btn" onclick="viewListing(${listing.listingID})">View &amp; Reserve</button>
-                                                </div>`, { maxWidth: 230 });
+                    marker.bindPopup(`<div class="map-popup"><div class="map-popup-title">${listing.title}</div><div class="map-popup-location">📍 ${listing.approximateLocation || listing.location || 'Fayetteville, AR'}</div><div class="map-popup-price">$${listing.pricePerHour}<span>/hr</span></div><div class="map-popup-badge"><span class="badge ${listing.isAvailable ? 'available' : 'unavailable'}">${listing.isAvailable ? 'Available' : 'Taken'}</span></div><button class="map-popup-btn" onclick="viewListing(${listing.listingID})">View &amp; Reserve</button></div>`, { maxWidth: 230 });
                     mapMarkers.push(marker);
                 });
                 document.getElementById('map-notice').classList.toggle('visible', hasNoCoords);
@@ -1602,34 +1434,26 @@
             } catch (err) { console.error('Map load error:', err); }
         }
 
-        function clearMapMarkers() {
-            if (!leafletMap) return;
-            mapMarkers.forEach(m => leafletMap.removeLayer(m));
-            mapMarkers = [];
-        }
+        function clearMapMarkers() { if (!leafletMap) return; mapMarkers.forEach(m => leafletMap.removeLayer(m)); mapMarkers = []; }
 
-        // ══════════════════════════════════════
-        // GEOCODING — Nominatim
-        // ══════════════════════════════════════
         async function geocodeAddress() {
             const address = document.getElementById('cl-location').value.trim();
             if (!address) { alert('Please enter a location/address first.'); return; }
             try {
-                const encoded = encodeURIComponent(address);
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encoded}&format=json&limit=1`, { headers: { 'Accept-Language': 'en' } });
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`, { headers: { 'Accept-Language': 'en' } });
                 const results = await res.json();
-                if (!results || results.length === 0) { alert('Address not found. Try being more specific (e.g. "123 Dickson St, Fayetteville, AR").'); return; }
+                if (!results || results.length === 0) { alert('Address not found. Try being more specific.'); return; }
                 document.getElementById('cl-lat').value = parseFloat(results[0].lat).toFixed(6);
                 document.getElementById('cl-lng').value = parseFloat(results[0].lon).toFixed(6);
             } catch { alert('Geocoding failed. Check your connection and try again.'); }
         }
 
         // ══════════════════════════════════════
-        // LISTING DETAIL + RESERVE — Carter
+        // LISTING DETAIL — reviews removed
         // ══════════════════════════════════════
         async function viewListing(id) {
             selectedListingId = id;
-            window.currentListingId = id;   // ADD THIS
+            window.currentListingId = id;
             showPage('listing');
             const backBtn = document.getElementById('listing-back-btn');
             if (backBtn) { backBtn.textContent = '← Back to Search'; backBtn.onclick = () => showPage('search'); }
@@ -1639,115 +1463,60 @@
                 const res = await fetch(`/api/Listings/${id}`);
                 const l = await res.json();
                 container.innerHTML = `
-                                            <div id="listing-photos-carousel"></div>
-                                            <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
-                                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-                                                <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Unavailable'}</span>
-                                                ${currentUser ? `
-                                                <button id="fav-btn" onclick="toggleFavorite(${l.listingID})"
-                                                    style="background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s">
-                                                    ♡ Save to Favorites
-                                                </button>` : ''}
-                                            </div>
-                                            <div class="detail-grid">
-                                              <div class="detail-item"><label>Approximate Area</label>
-                                                    <span>📍 ${approxLocation(l.location)}</span>
-                                                    <div style="font-size:11px;color:var(--muted);margin-top:4px">🔒 Exact address shared after booking</div>
-                                                </div>
-                                                <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
-                                            </div>
-                                            ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
-                                            ${currentUser && currentUser.userId === l.hostUserID ? `
-                                            <div style="background:var(--gold-light);border:1.5px solid var(--gold);border-radius:var(--radius);padding:16px 20px;margin-bottom:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-                                                <span style="font-size:13px;font-weight:600;color:#7a5a10;flex:1">🏠 You own this listing</span>
-                                                <button class="btn-secondary" style="padding:8px 16px;font-size:13px"
-                                                    onclick="editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${((l.approximateLocation || l.location) || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit Details</button>
-                                                <button class="btn-secondary" style="padding:8px 16px;font-size:13px" onclick="managePhotos(${l.listingID})">📷 Manage Photos</button>
-                                            </div>` : ''}
-                                            <div style="margin:20px 0">
-                                                <div class="section-divider"><span>Your Host</span></div>
-                                                <div onclick="openHostModal(${l.hostUserID})" style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.2s"
-                                                     onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
-                                                    <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)" id="detail-host-avatar-${l.listingID}">
-                                                        <div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">?</div>
-                                                    </div>
-                                                    <div>
-                                                        <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Hosted by</div>
-                                                        <div style="font-weight:600;color:var(--text)" id="detail-host-name-${l.listingID}">Loading...</div>
-                                                    </div>
-                                                    <div style="margin-left:auto;color:var(--muted2);font-size:13px">View Profile →</div>
-                                                </div>
-                                            </div>
+                        <div id="listing-photos-carousel"></div>
+                        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;margin-bottom:8px">${l.title}</h2>
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                            <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Available' : 'Unavailable'}</span>
+                            ${currentUser ? `<button id="fav-btn" onclick="toggleFavorite(${l.listingID})" style="background:none;border:1.5px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s">♡ Save to Favorites</button>` : ''}
+                        </div>
+                        <div class="detail-grid">
+                            <div class="detail-item"><label>Approximate Area</label>
+                                <span>📍 ${approxLocation(l.location)}</span>
+                                <div style="font-size:11px;color:var(--muted);margin-top:4px">🔒 Exact address shared after booking</div>
+                            </div>
+                            <div class="detail-item"><label>Price</label><span>$${l.pricePerHour}/hr</span></div>
+                        </div>
+                        ${l.description ? `<p style="color:var(--muted);margin-bottom:24px;font-family:'Source Serif 4',serif;font-size:15px">${l.description}</p>` : ''}
+                        ${currentUser && currentUser.userId === l.hostUserID ? `
+                        <div style="background:var(--gold-light);border:1.5px solid var(--gold);border-radius:var(--radius);padding:16px 20px;margin-bottom:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+                            <span style="font-size:13px;font-weight:600;color:#7a5a10;flex:1">🏠 You own this listing</span>
+                            <button class="btn-secondary" style="padding:8px 16px;font-size:13px" onclick="editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${((l.approximateLocation || l.location) || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit Details</button>
+                            <button class="btn-secondary" style="padding:8px 16px;font-size:13px" onclick="managePhotos(${l.listingID})">📷 Manage Photos</button>
+                        </div>` : ''}
+                        <div style="margin:20px 0">
+                            <div class="section-divider"><span>Your Host</span></div>
+                            <div onclick="openHostModal(${l.hostUserID})" style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
+                                <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex-shrink:0;border:2px solid var(--red)" id="detail-host-avatar-${l.listingID}">
+                                    <div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">?</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Hosted by</div>
+                                    <div style="font-weight:600;color:var(--text)" id="detail-host-name-${l.listingID}">Loading...</div>
+                                </div>
+                                <div style="margin-left:auto;color:var(--muted2);font-size:13px">View Profile →</div>
+                            </div>
+                        </div>
+                        ${l.isAvailable && currentUser && currentUser.userId !== l.hostUserID ? `<div id="reserve-section"><div class="loading">Checking availability...</div></div>`
+                        : (!currentUser ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
+                            : (currentUser.userId === l.hostUserID ? '' : `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`))}`;
 
-                                                                            ${l.isAvailable && currentUser ? `
-                                                <div id="reserve-section">
-                                                    <div class="loading">Checking availability...</div>
-                                                </div>`
-                        : (!currentUser
-                            ? `<div class="msg error" style="display:block">Please <a onclick="showPage('login')" style="color:var(--red);cursor:pointer;font-weight:600">log in</a> to reserve this spot.</div>`
-                            : (currentUser.userId === l.hostUserID ? '' :
-                                `<div class="msg error" style="display:block">This listing is currently unavailable.</div>`)
-                        )}
+                fetch(`/api/Users/${l.hostUserID}`).then(r => r.json()).then(host => {
+                    const nameEl = document.getElementById(`detail-host-name-${l.listingID}`);
+                    const avatarEl = document.getElementById(`detail-host-avatar-${l.listingID}`);
+                    if (nameEl) nameEl.textContent = host.fullName || 'Host';
+                    if (avatarEl) avatarEl.innerHTML = host.profilePicUrl ? `<img src="${host.profilePicUrl}" style="width:100%;height:100%;object-fit:cover"/>` : `<div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}</div>`;
+                }).catch(() => { });
 
-                                            <!-- REVIEWS SECTION -->
-                                            <div style="margin-top:40px">
-                                                <div class="section-divider"><span>Reviews</span></div>
-                                                <div id="reviews-container"><div class="loading">Loading reviews...</div></div>
-                                                ${currentUser ? `
-                                                <div class="form-card" style="margin-top:24px;max-width:100%">
-                                                    <div class="card-top"><div class="form-title" style="font-size:22px">Leave a Review</div></div>
-                                                    <div class="form-group">
-                                                        <label>Star Rating</label>
-                                                        <select id="review-rating">
-                                                            <option value="">Select rating</option>
-                                                            <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
-                                                            <option value="4">⭐⭐⭐⭐ 4 - Good</option>
-                                                            <option value="3">⭐⭐⭐ 3 - Average</option>
-                                                            <option value="2">⭐⭐ 2 - Poor</option>
-                                                            <option value="1">⭐ 1 - Terrible</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="form-group"><label>Comment (optional)</label><textarea id="review-comment" rows="3" placeholder="Share your experience..."></textarea></div>
-                                                    <div class="form-group"><label>Reservation ID</label><input id="review-reservation-id" type="number" placeholder="Enter your reservation ID for this listing" /></div>
-                                                    <button class="btn-primary" style="width:100%" onclick="submitReview(${l.listingID})">Submit Review</button>
-                                                    <div id="review-msg" class="msg"></div>
-                                                </div>` : ''}
-                                            </div>`;
+                fetch(`/api/Listings/${id}/photos`).then(r => r.json()).then(photos => { if (photos.length) renderCarousel(photos, 'listing-photos-carousel'); }).catch(() => { });
 
-                fetch(`/api/Users/${l.hostUserID}`)
-                    .then(r => r.json())
-                    .then(host => {
-                        const nameEl = document.getElementById(`detail-host-name-${l.listingID}`);
-                        const avatarEl = document.getElementById(`detail-host-avatar-${l.listingID}`);
-                        if (nameEl) nameEl.textContent = host.fullName || 'Host';
-                        if (avatarEl) avatarEl.innerHTML = host.profilePicUrl
-                            ? `<img src="${host.profilePicUrl}" style="width:100%;height:100%;object-fit:cover"/>`
-                            : `<div style="width:100%;height:100%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">${host.fullName ? host.fullName.charAt(0).toUpperCase() : '?'}</div>`;
-                    }).catch(() => { });
-
-                fetch(`/api/Listings/${id}/photos`)
-                    .then(r => r.json())
-                    .then(photos => { if (photos.length) renderCarousel(photos, 'listing-photos-carousel'); }).catch(() => { });
-
-                loadReviews(id);
                 if (currentUser) checkIfFavorited(id);
-                // CHANGED: Criteria 15 — only show reserve form if listing has availability slots
-                if (l.isAvailable && currentUser) loadReserveSection(id);
-
+                if (l.isAvailable && currentUser && currentUser.userId !== l.hostUserID) loadReserveSection(id);
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listing.</p></div>'; }
         }
-
-        // CHANGED: Criteria 15 — new function, checks availability slots before showing reserve form
-        // Criteria 15: Only show reserve form if listing has availability slots
-        // CHANGED: Now uses calendar with blocked days so only available dates are selectable
-
-
-
 
         async function loadReserveSection(listingId) {
             const section = document.getElementById('reserve-section');
             if (!section) return;
-
             const aKey = window.calendarArriveKey || '';
             const dKey = window.calendarDepartKey || '';
             const aTime = window.calendarArriveTime || '';
@@ -1756,86 +1525,60 @@
             const fmt = k => new Date(k + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
             if (hasSelection) {
-                // Dates already picked from search — show pre-filled, no calendar needed
                 section.innerHTML = `
-                    <div style="margin-top:24px">
-                        <div class="section-divider"><span>Reserve This Spot</span></div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-                            <div style="border:2px solid #222;border-radius:10px;padding:12px 14px">
-                                <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:4px">Arrive</div>
-                                <div style="font-size:13px;font-weight:600;color:var(--text)">${fmt(aKey)}</div>
-                                <div style="font-size:15px;font-weight:700;color:var(--red);margin-top:3px">${aTime}</div>
+                        <div style="margin-top:24px">
+                            <div class="section-divider"><span>Reserve This Spot</span></div>
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                                <div style="border:2px solid #222;border-radius:10px;padding:12px 14px">
+                                    <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:4px">Arrive</div>
+                                    <div style="font-size:13px;font-weight:600;color:var(--text)">${fmt(aKey)}</div>
+                                    <div style="font-size:15px;font-weight:700;color:var(--red);margin-top:3px">${aTime}</div>
+                                </div>
+                                <div style="border:2px solid #222;border-radius:10px;padding:12px 14px">
+                                    <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:4px">Depart</div>
+                                    <div style="font-size:13px;font-weight:600;color:var(--text)">${fmt(dKey)}</div>
+                                    <div style="font-size:15px;font-weight:700;color:var(--red);margin-top:3px">${dTime}</div>
+                                </div>
                             </div>
-                            <div style="border:2px solid #222;border-radius:10px;padding:12px 14px">
-                                <div style="font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#aaa;margin-bottom:4px">Depart</div>
-                                <div style="font-size:13px;font-weight:600;color:var(--text)">${fmt(dKey)}</div>
-                                <div style="font-size:15px;font-weight:700;color:var(--red);margin-top:3px">${dTime}</div>
+                            <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:16px">
+                                Wrong dates? <a href="#" onclick="window._showReserveCal=true;loadReserveSection(${listingId});return false;" style="color:var(--red);font-weight:600;text-decoration:underline">Pick different dates</a>
+                                &nbsp;or&nbsp;<a href="#" onclick="showPage('search');return false;" style="color:var(--red);font-weight:600;text-decoration:underline">go back to search</a>
                             </div>
-                        </div>
-                        <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:16px">
-                            Wrong dates?
-                            <a href="#" onclick="window._showReserveCal=true;loadReserveSection(${listingId});return false;"
-                               style="color:var(--red);font-weight:600;text-decoration:underline">Pick different dates</a>
-                            &nbsp;or&nbsp;
-                            <a href="#" onclick="showPage('search');return false;"
-                               style="color:var(--red);font-weight:600;text-decoration:underline">go back to search</a>
-                        </div>
-                        <input type="hidden" id="res-start" value="${window.calendarStartISO || ''}" />
-                        <input type="hidden" id="res-end"   value="${window.calendarEndISO || ''}" />
-                        <button class="btn-primary" style="width:100%" id="res-submit-btn" onclick="makeReservation()">
-                            Confirm Reservation
-                        </button>
-                        <div id="res-msg" class="msg"></div>
-                    </div>`;
+                            <input type="hidden" id="res-start" value="${window.calendarStartISO || ''}" />
+                            <input type="hidden" id="res-end" value="${window.calendarEndISO || ''}" />
+                            <button class="btn-primary" style="width:100%" id="res-submit-btn" onclick="makeReservation()">Confirm Reservation</button>
+                            <div id="res-msg" class="msg"></div>
+                        </div>`;
                 window._showReserveCal = false;
             } else {
-                // No dates from search — show the calendar
                 section.innerHTML = `
-                    <div style="margin-top:24px">
-                        <div class="section-divider"><span>Reserve This Spot</span></div>
-                        <div id="rp-cal-reserve"></div>
-                        <input type="hidden" id="res-start" />
-                        <input type="hidden" id="res-end" />
-                        <div style="margin-top:16px">
-                            <button class="btn-primary" style="width:100%" id="res-submit-btn" disabled>
-                                Select dates and times to reserve
-                            </button>
-                            <div style="text-align:center;margin-top:8px">
-                                <a href="#" onclick="showPage('search');return false;"
-                                   style="font-size:12px;color:var(--muted);text-decoration:underline">
-                                   Go back to search to pick dates
-                                </a>
+                        <div style="margin-top:24px">
+                            <div class="section-divider"><span>Reserve This Spot</span></div>
+                            <div id="rp-cal-reserve"></div>
+                            <input type="hidden" id="res-start" />
+                            <input type="hidden" id="res-end" />
+                            <div style="margin-top:16px">
+                                <button class="btn-primary" style="width:100%" id="res-submit-btn" disabled>Select dates and times to reserve</button>
+                                <div style="text-align:center;margin-top:8px"><a href="#" onclick="showPage('search');return false;" style="font-size:12px;color:var(--muted);text-decoration:underline">Go back to search to pick dates</a></div>
+                                <div id="res-msg" class="msg"></div>
                             </div>
-                            <div id="res-msg" class="msg"></div>
-                        </div>
-                    </div>`;
-
+                        </div>`;
                 document.getElementById('res-submit-btn').addEventListener('click', makeReservation);
-
                 const cal = await initReserveCalendar(listingId);
                 const calEl = document.getElementById('rp-cal-reserve');
                 if (calEl) {
-                    const tabs = calEl.querySelector('.rpc-tabs');
-                    const gf = calEl.querySelector('.rpc-gf');
-                    const leg = calEl.querySelector('.rpc-legend');
-                    if (tabs) tabs.style.display = 'none';
-                    if (gf) gf.style.display = 'none';
-                    if (leg) leg.style.display = 'none';
+                    const tabs = calEl.querySelector('.rpc-tabs'); const gf = calEl.querySelector('.rpc-gf'); const leg = calEl.querySelector('.rpc-legend');
+                    if (tabs) tabs.style.display = 'none'; if (gf) gf.style.display = 'none'; if (leg) leg.style.display = 'none';
                 }
                 cal.onConfirm = function (aKey, dKey, aTime, dTime) {
-                    const se = document.getElementById('res-start');
-                    const ee = document.getElementById('res-end');
-                    if (se) se.value = aKey + 'T' + _to24(aTime);
-                    if (ee) ee.value = dKey + 'T' + _to24(dTime);
+                    const se = document.getElementById('res-start'); const ee = document.getElementById('res-end');
+                    if (se) se.value = aKey + 'T' + _to24(aTime); if (ee) ee.value = dKey + 'T' + _to24(dTime);
                     const btn = document.getElementById('res-submit-btn');
                     if (btn) { btn.disabled = false; btn.textContent = `Reserve: ${aTime} → ${dTime}`; }
                 };
             }
         }
 
-        // ══════════════════════════════════════
-        // HOST DASHBOARD — Shietsu
-        // ══════════════════════════════════════
         async function loadHostListings() {
             if (!currentUser) return;
             const container = document.getElementById('host-listings');
@@ -1843,98 +1586,60 @@
             try {
                 const res = await fetch(`/api/Listings/host/${currentUser.userId}`);
                 const listings = await res.json();
-                if (!listings.length) {
-                    container.innerHTML = '<div class="empty"><div class="empty-icon">🏠</div><p>No listings yet. Create your first one!</p></div>';
-                    return;
-                }
+                if (!listings.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">🏠</div><p>No listings yet. Create your first one!</p></div>'; return; }
                 const photoCache = {};
-                await Promise.all(listings.map(async l => {
-                    try { const pr = await fetch(`/api/Listings/${l.listingID}/photos`); if (pr.ok) photoCache[l.listingID] = await pr.json(); } catch { }
-                }));
+                await Promise.all(listings.map(async l => { try { const pr = await fetch(`/api/Listings/${l.listingID}/photos`); if (pr.ok) photoCache[l.listingID] = await pr.json(); } catch { } }));
                 container.innerHTML = `<div class="listings-grid">${listings.map(l => {
-                    const photos = photoCache[l.listingID] || [];
-                    const cover = photos[0];
-                    return `
-            <div class="listing-card" style="padding:0;overflow:hidden;cursor:pointer" onclick="viewListingFromHost(${l.listingID})">
-                ${cover ? `
-                <div style="height:160px;overflow:hidden;background:var(--surface2)">
-                    <img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;display:block"
-                         onerror="this.parentElement.style.display='none'" />
-                </div>` : ''}
-                <div style="padding:18px">
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                        <h3 style="color:var(--text)">${l.title}</h3>
-                        <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
-                    </div>
-                    <div class="location">📍 ${l.location}</div>
-                    <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap">
-                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
-                            onclick="event.stopPropagation();openAvailability(${l.listingID})">🗓 Availability</button>
-                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
-                            onclick="event.stopPropagation();managePhotos(${l.listingID})">📷 Photos</button>
-                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
-                            onclick="event.stopPropagation();editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${(l.location || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit</button>
-                        <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px"
-                            onclick="event.stopPropagation();deleteListing(${l.listingID})">Delete</button>
-                    </div>
-                </div>
-            </div>`;
+                    const photos = photoCache[l.listingID] || []; const cover = photos[0];
+                    return `<div class="listing-card" style="padding:0;overflow:hidden;cursor:pointer" onclick="viewListingFromHost(${l.listingID})">
+                            ${cover ? `<div style="height:160px;overflow:hidden;background:var(--surface2)"><img src="${cover.url}" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.parentElement.style.display='none'" /></div>` : ''}
+                            <div style="padding:18px">
+                                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                                    <h3 style="color:var(--text)">${l.title}</h3>
+                                    <span class="badge ${l.isAvailable ? 'available' : 'unavailable'}">${l.isAvailable ? 'Active' : 'Inactive'}</span>
+                                </div>
+                                <div class="location">📍 ${l.location}</div>
+                                <div class="price" style="margin-bottom:16px">$${l.pricePerHour}<span>/hr</span></div>
+                                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="event.stopPropagation();openAvailability(${l.listingID})">🗓 Availability</button>
+                                    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="event.stopPropagation();managePhotos(${l.listingID})">📷 Photos</button>
+                                    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="event.stopPropagation();editListing(${l.listingID}, '${(l.title || '').replace(/'/g, '')}', '${(l.location || '').replace(/'/g, '')}', ${l.pricePerHour})">✏️ Edit</button>
+                                    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="event.stopPropagation();deleteListing(${l.listingID})">Delete</button>
+                                </div>
+                            </div>
+                        </div>`;
                 }).join('')}</div>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading listings.</p></div>'; }
         }
 
         async function createListing() {
-            const msg = document.getElementById('cl-msg');
-            msg.className = 'msg';
+            const msg = document.getElementById('cl-msg'); msg.className = 'msg';
             try {
-                const res = await fetch('/api/Listings', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        hostUserID: currentUser.userId,
-                        title: document.getElementById('cl-title').value,
-                        description: document.getElementById('cl-desc').value,
-                        location: document.getElementById('cl-location').value,
-                        pricePerHour: parseFloat(document.getElementById('cl-price').value),
-                        latitude: parseFloat(document.getElementById('cl-lat').value) || null,
-                        longitude: parseFloat(document.getElementById('cl-lng').value) || null
-                    })
-                });
+                const res = await fetch('/api/Listings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hostUserID: currentUser.userId, title: document.getElementById('cl-title').value, description: document.getElementById('cl-desc').value, location: document.getElementById('cl-location').value, pricePerHour: parseFloat(document.getElementById('cl-price').value), latitude: parseFloat(document.getElementById('cl-lat').value) || null, longitude: parseFloat(document.getElementById('cl-lng').value) || null }) });
                 const data = await res.json();
-                if (res.ok) { msg.className = 'msg success'; msg.textContent = 'Listing created successfully!'; setTimeout(() => showPage('host'), 1500); }
+                if (res.ok) { msg.className = 'msg success'; msg.textContent = 'Listing created! Add an availability slot to make it visible to drivers.'; setTimeout(() => showPage('host'), 2000); }
                 else { msg.className = 'msg error'; msg.textContent = data.message || 'Failed to create listing.'; }
             } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
         }
 
         async function deleteListing(id) {
             if (!confirm('Delete this listing?')) return;
-            try {
-                const res = await fetch(`/api/Listings/${id}?hostUserId=${currentUser.userId}`, { method: 'DELETE' });
-                if (res.ok) loadHostListings();
-            } catch { alert('Error deleting listing.'); }
+            try { const res = await fetch(`/api/Listings/${id}?hostUserId=${currentUser.userId}`, { method: 'DELETE' }); if (res.ok) loadHostListings(); } catch { alert('Error deleting listing.'); }
         }
 
-        function managePhotos(listingId) {
-            selectedListingId = listingId;
-            showPage('manage-photos');
-            setTimeout(() => renderPhotoUploadWidget('photo-upload-widget', listingId, currentUser.userId), 100);
-        }
+        function managePhotos(listingId) { selectedListingId = listingId; showPage('manage-photos'); setTimeout(() => renderPhotoUploadWidget('photo-upload-widget', listingId, currentUser.userId), 100); }
 
-        // ══════════════════════════════════════
-        // RESERVATIONS + CANCEL — Ryleigh
-        // ══════════════════════════════════════
         function viewListingFromHost(id) {
             const backBtn = document.getElementById('listing-back-btn');
             if (backBtn) { backBtn.textContent = '← Back to My Listings'; backBtn.onclick = () => showPage('host'); }
             viewListing(id);
         }
+
         function messageHostForReservation(listingId, reservationId, hostId, listingTitle) {
-            window._autoOpenHostId = hostId;
-            window._autoOpenListingId = listingId;
-            window._autoOpenListingName = listingTitle;
+            window._autoOpenHostId = hostId; window._autoOpenListingId = listingId; window._autoOpenListingName = listingTitle;
             showPage('messages');
         }
+
         async function loadMyReservations() {
             if (!currentUser) { showPage('login'); return; }
             const container = document.getElementById('reservations-list');
@@ -1942,213 +1647,88 @@
             try {
                 const res = await fetch(`/api/Reservations/user/${currentUser.userId}`);
                 const reservations = await res.json();
-                if (!reservations.length) {
-                    container.innerHTML = '<div class="empty"><div class="empty-icon">🎫</div><p>No reservations yet. Find parking to get started!</p></div>';
-                    return;
-                }
+                if (!reservations.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">🎫</div><p>No reservations yet. Find parking to get started!</p></div>'; return; }
                 const paymentCache = {};
-                await Promise.all(reservations.map(async r => {
-                    try { const pr = await fetch(`/api/Payments/reservation/${r.reservationID}`); if (pr.ok) paymentCache[r.reservationID] = await pr.json(); } catch { }
-                }));
+                await Promise.all(reservations.map(async r => { try { const pr = await fetch(`/api/Payments/reservation/${r.reservationID}`); if (pr.ok) paymentCache[r.reservationID] = await pr.json(); } catch { } }));
 
-                // ── Game schedule (same as calendar.js) ──
-                const FB_SCHED = {
-                    '2026-09-05': { opp: 'North Alabama', home: true, time: '11:00 AM' },
-                    '2026-09-12': { opp: 'Utah', home: false, time: '3:30 PM' },
-                    '2026-09-19': { opp: 'Georgia', home: true, time: '6:00 PM' },
-                    '2026-09-26': { opp: 'Tulsa', home: true, time: '11:00 AM' },
-                    '2026-10-03': { opp: 'Texas A&M', home: false, time: '6:00 PM' },
-                    '2026-10-10': { opp: 'Tennessee', home: true, time: '2:30 PM' },
-                    '2026-10-17': { opp: 'Vanderbilt', home: false, time: '11:00 AM' },
-                    '2026-10-31': { opp: 'Missouri', home: true, time: '11:00 AM' },
-                    '2026-11-07': { opp: 'Auburn', home: false, time: '6:00 PM' },
-                    '2026-11-14': { opp: 'South Carolina', home: true, time: '11:00 AM' },
-                    '2026-11-21': { opp: 'Texas', home: false, time: '6:00 PM' },
-                    '2026-11-28': { opp: 'LSU', home: true, time: '2:30 PM' }
-                };
-                const BB_SCHED = {
-                    '2026-02-20': { opp: 'Xavier', home: true, time: '3:00 PM' },
-                    '2026-02-21': { opp: 'Xavier', home: true, time: '1:00 PM' },
-                    '2026-02-22': { opp: 'Xavier', home: true, time: 'Noon' },
-                    '2026-02-24': { opp: 'Arkansas State', home: true, time: '3:00 PM' },
-                    '2026-02-25': { opp: 'Arkansas State', home: true, time: '3:00 PM' },
-                    '2026-03-01': { opp: 'Texas-Arlington', home: true, time: '11:00 AM' },
-                    '2026-03-03': { opp: 'Oral Roberts', home: true, time: '3:00 PM' },
-                    '2026-03-13': { opp: 'Mississippi State', home: true, time: '6:00 PM' },
-                    '2026-03-14': { opp: 'Mississippi State', home: true, time: '1:00 PM' },
-                    '2026-03-27': { opp: 'Florida', home: true, time: '6:00 PM' },
-                    '2026-03-28': { opp: 'Florida', home: true, time: '1:00 PM' },
-                    '2026-03-29': { opp: 'Florida', home: true, time: 'Noon' },
-                    '2026-04-16': { opp: 'Georgia', home: true, time: '7:00 PM' },
-                    '2026-04-17': { opp: 'Georgia', home: true, time: '6:00 PM' },
-                    '2026-04-18': { opp: 'Georgia', home: true, time: '1:00 PM' },
-                    '2026-04-23': { opp: 'Missouri', home: false, time: '7:00 PM' },
-                    '2026-04-28': { opp: 'Northwestern State', home: true, time: '6:00 PM' },
-                    '2026-05-01': { opp: 'Ole Miss', home: true, time: '6:00 PM' },
-                    '2026-05-08': { opp: 'Oklahoma', home: true, time: '6:00 PM' },
-                    '2026-05-09': { opp: 'Oklahoma', home: true, time: '2:00 PM' },
-                    '2026-05-10': { opp: 'Oklahoma', home: true, time: '1:00 PM' }
-                };
+                const FB_SCHED = { '2026-09-05': { opp: 'North Alabama', home: true, time: '11:00 AM' }, '2026-09-12': { opp: 'Utah', home: false, time: '3:30 PM' }, '2026-09-19': { opp: 'Georgia', home: true, time: '6:00 PM' }, '2026-09-26': { opp: 'Tulsa', home: true, time: '11:00 AM' }, '2026-10-03': { opp: 'Texas A&M', home: false, time: '6:00 PM' }, '2026-10-10': { opp: 'Tennessee', home: true, time: '2:30 PM' }, '2026-10-17': { opp: 'Vanderbilt', home: false, time: '11:00 AM' }, '2026-10-31': { opp: 'Missouri', home: true, time: '11:00 AM' }, '2026-11-07': { opp: 'Auburn', home: false, time: '6:00 PM' }, '2026-11-14': { opp: 'South Carolina', home: true, time: '11:00 AM' }, '2026-11-21': { opp: 'Texas', home: false, time: '6:00 PM' }, '2026-11-28': { opp: 'LSU', home: true, time: '2:30 PM' } };
+                const BB_SCHED = { '2026-02-20': { opp: 'Xavier', home: true, time: '3:00 PM' }, '2026-02-21': { opp: 'Xavier', home: true, time: '1:00 PM' }, '2026-02-22': { opp: 'Xavier', home: true, time: 'Noon' }, '2026-02-24': { opp: 'Arkansas State', home: true, time: '3:00 PM' }, '2026-02-25': { opp: 'Arkansas State', home: true, time: '3:00 PM' }, '2026-03-01': { opp: 'Texas-Arlington', home: true, time: '11:00 AM' }, '2026-03-03': { opp: 'Oral Roberts', home: true, time: '3:00 PM' }, '2026-03-13': { opp: 'Mississippi State', home: true, time: '6:00 PM' }, '2026-03-14': { opp: 'Mississippi State', home: true, time: '1:00 PM' }, '2026-03-27': { opp: 'Florida', home: true, time: '6:00 PM' }, '2026-03-28': { opp: 'Florida', home: true, time: '1:00 PM' }, '2026-03-29': { opp: 'Florida', home: true, time: 'Noon' }, '2026-04-16': { opp: 'Georgia', home: true, time: '7:00 PM' }, '2026-04-17': { opp: 'Georgia', home: true, time: '6:00 PM' }, '2026-04-18': { opp: 'Georgia', home: true, time: '1:00 PM' }, '2026-04-23': { opp: 'Missouri', home: false, time: '7:00 PM' }, '2026-04-28': { opp: 'Northwestern State', home: true, time: '6:00 PM' }, '2026-05-01': { opp: 'Ole Miss', home: true, time: '6:00 PM' }, '2026-05-08': { opp: 'Oklahoma', home: true, time: '6:00 PM' }, '2026-05-09': { opp: 'Oklahoma', home: true, time: '2:00 PM' }, '2026-05-10': { opp: 'Oklahoma', home: true, time: '1:00 PM' } };
                 const ALL_GAMES = { ...FB_SCHED, ...BB_SCHED };
-
                 function gameKey(iso) { return iso ? iso.slice(0, 10) : ''; }
                 function getGame(iso) { return ALL_GAMES[gameKey(iso)] || null; }
                 function getSport(iso) { return FB_SCHED[gameKey(iso)] ? 'FB' : 'BB'; }
+                const presentGameDates = [...new Set(reservations.map(r => gameKey(r.reservationStart)).filter(k => ALL_GAMES[k]))].sort();
 
-                // ── Collect games that actually appear in this user's reservations ──
-                const presentGameDates = [...new Set(
-                    reservations.map(r => gameKey(r.reservationStart)).filter(k => ALL_GAMES[k])
-                )].sort();
-
-                // ── Build filter bar HTML ──
                 container.innerHTML = `
-                    <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
-                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end">
-                            <div>
-                                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Sort by</div>
-                                <select id="res-sort" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--surface)">
-                                    <option value="date">Date (soonest first)</option>
-                                    <option value="date-desc">Date (latest first)</option>
-                                    <option value="alpha">A → Z</option>
-                                    <option value="alpha-desc">Z → A</option>
-                                    <option value="gameday">Game day only</option>
-                                </select>
+                        <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
+                            <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end">
+                                <div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Sort by</div><select id="res-sort" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--surface)"><option value="date">Date (soonest first)</option><option value="date-desc">Date (latest first)</option><option value="alpha">A → Z</option><option value="alpha-desc">Z → A</option><option value="gameday">Game day only</option></select></div>
+                                <div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Status</div><select id="res-status" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--surface)"><option value="all">All statuses</option><option value="Confirmed">Confirmed</option><option value="Cancelled">Cancelled</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option></select></div>
+                                <div><div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Date range</div><select id="res-range" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--surface)"><option value="all">All time</option><option value="upcoming">Upcoming</option><option value="past">Past</option></select></div>
+                                <div style="display:flex;gap:8px;padding-bottom:1px"><button onclick="resFilterClear()" style="padding:9px 14px;background:#fff;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted)">Clear</button><button onclick="resFilterApply()" style="padding:9px 18px;background:var(--red);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#fff">Apply</button></div>
                             </div>
-                            <div>
-                                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Status</div>
-                                <select id="res-status" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--surface)">
-                                    <option value="all">All statuses</option>
-                                    <option value="Confirmed">Confirmed</option>
-                                    <option value="Cancelled">Cancelled</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="unpaid">Unpaid</option>
-                                </select>
-                            </div>
-                            <div>
-                                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px">Date range</div>
-                                <select id="res-range" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--surface)">
-                                    <option value="all">All time</option>
-                                    <option value="upcoming">Upcoming</option>
-                                    <option value="past">Past</option>
-                                </select>
-                            </div>
-                            <div style="display:flex;gap:8px;padding-bottom:1px">
-                                <button onclick="resFilterClear()" style="padding:9px 14px;background:#fff;border:1.5px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;color:var(--muted)">Clear</button>
-                                <button onclick="resFilterApply()" style="padding:9px 18px;background:var(--red);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;color:#fff">Apply</button>
+                            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+                                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Quick filters</div>
+                                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                                    <button class="res-qchip" data-key="gameday" onclick="resQuickFilter('gameday')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--red);background:var(--red-light);color:var(--red-dark);cursor:pointer;font-family:'DM Sans',sans-serif">Game days only</button>
+                                    <button class="res-qchip" data-key="upcoming" onclick="resQuickFilter('upcoming')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">Upcoming</button>
+                                    <button class="res-qchip" data-key="unpaid" onclick="resQuickFilter('unpaid')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">Needs payment</button>
+                                    <button class="res-qchip" data-key="paid" onclick="resQuickFilter('paid')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">Paid</button>
+                                </div>
                             </div>
                         </div>
-
-                        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
-                            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Quick filters</div>
-                            <div style="display:flex;gap:6px;flex-wrap:wrap">
-                                <button class="res-qchip" data-key="gameday" onclick="resQuickFilter('gameday')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--red);background:var(--red-light);color:var(--red-dark);cursor:pointer;font-family:'DM Sans',sans-serif">Game days only</button>
-                                <button class="res-qchip" data-key="upcoming" onclick="resQuickFilter('upcoming')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">Upcoming</button>
-                                <button class="res-qchip" data-key="unpaid" onclick="resQuickFilter('unpaid')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">Needs payment</button>
-                                <button class="res-qchip" data-key="paid" onclick="resQuickFilter('paid')" style="font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif">Paid</button>
+                        <div id="res-game-panel" style="display:none;background:#fff;border:1.5px solid var(--red);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
+                            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--red-dark)">Filter by game</div>
+                                <button onclick="resClearGameFilter()" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:'DM Sans',sans-serif">Clear game filter</button>
                             </div>
+                            <div id="res-game-chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
                         </div>
-                    </div>
+                        <div id="res-result-count" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
+                        <div id="res-cards-grid" class="listings-grid"></div>`;
 
-                    <div id="res-game-panel" style="display:none;background:#fff;border:1.5px solid var(--red);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--red-dark)">Filter by game</div>
-                            <button onclick="resClearGameFilter()" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:'DM Sans',sans-serif">Clear game filter</button>
-                        </div>
-                        <div id="res-game-chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-                    </div>
-
-                    <div id="res-result-count" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
-                    <div id="res-cards-grid" class="listings-grid"></div>`;
-
-                // ── State & helpers ──
                 let selectedGameDate = null;
 
                 function buildGameChips() {
-                    const chips = document.getElementById('res-game-chips');
-                    if (!chips) return;
+                    const chips = document.getElementById('res-game-chips'); if (!chips) return;
                     chips.innerHTML = presentGameDates.map(date => {
-                        const g = ALL_GAMES[date];
-                        const d = new Date(date + 'T12:00:00');
-                        const sport = FB_SCHED[date] ? 'FB' : 'BB';
+                        const g = ALL_GAMES[date]; const d = new Date(date + 'T12:00:00'); const sport = FB_SCHED[date] ? 'FB' : 'BB';
                         const lbl = (d.getMonth() + 1) + '/' + d.getDate() + ' ' + (g.home ? 'vs ' : '@ ') + 'Arkansas ' + g.opp;
                         const active = selectedGameDate === date;
-                        const activeBg = sport === 'FB' ? 'var(--red)' : '#2d7a4f';
-                        const activeLight = sport === 'FB' ? 'var(--red-light)' : '#edf7f0';
-                        const activeDark = sport === 'FB' ? 'var(--red-dark)' : '#1a4a2e';
-                        const activeBorder = sport === 'FB' ? 'var(--red)' : '#2d7a4f';
-                        return `<button onclick="window._resSelectGame('${date}')"
-                                style="font-size:12px;padding:5px 12px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;
-                                border:1px solid ${active ? activeBorder : 'var(--border)'};
-                                background:${active ? activeBg : activeLight};
-                                color:${active ? '#fff' : activeDark}">
-                                ${lbl}
-                            </button>`;
+                        const activeBg = sport === 'FB' ? 'var(--red)' : '#2d7a4f'; const activeLight = sport === 'FB' ? 'var(--red-light)' : '#edf7f0';
+                        const activeDark = sport === 'FB' ? 'var(--red-dark)' : '#1a4a2e'; const activeBorder = sport === 'FB' ? 'var(--red)' : '#2d7a4f';
+                        return `<button onclick="window._resSelectGame('${date}')" style="font-size:12px;padding:5px 12px;border-radius:99px;cursor:pointer;font-family:'DM Sans',sans-serif;border:1px solid ${active ? activeBorder : 'var(--border)'};background:${active ? activeBg : activeLight};color:${active ? '#fff' : activeDark}">${lbl}</button>`;
                     }).join('') || '<span style="font-size:12px;color:var(--muted)">No game-day reservations found.</span>';
                 }
 
-                window._resSelectGame = function (date) {
-                    selectedGameDate = selectedGameDate === date ? null : date;
-                    buildGameChips();
-                    renderFilteredCards();
-                };
-
-                window.resClearGameFilter = function () {
-                    selectedGameDate = null;
-                    buildGameChips();
-                    renderFilteredCards();
-                };
-
+                window._resSelectGame = function (date) { selectedGameDate = selectedGameDate === date ? null : date; buildGameChips(); renderFilteredCards(); };
+                window.resClearGameFilter = function () { selectedGameDate = null; buildGameChips(); renderFilteredCards(); };
                 window.resFilterApply = renderFilteredCards;
-
                 window.resFilterClear = function () {
-                    document.getElementById('res-sort').value = 'date';
-                    document.getElementById('res-status').value = 'all';
-                    document.getElementById('res-range').value = 'all';
-                    document.getElementById('res-game-panel').style.display = 'none';
-                    selectedGameDate = null;
-                    document.querySelectorAll('.res-qchip').forEach(c => {
-                        c.style.background = 'var(--surface)'; c.style.color = 'var(--muted)'; c.style.borderColor = 'var(--border)';
-                    });
+                    document.getElementById('res-sort').value = 'date'; document.getElementById('res-status').value = 'all'; document.getElementById('res-range').value = 'all';
+                    document.getElementById('res-game-panel').style.display = 'none'; selectedGameDate = null;
+                    document.querySelectorAll('.res-qchip').forEach(c => { c.style.background = 'var(--surface)'; c.style.color = 'var(--muted)'; c.style.borderColor = 'var(--border)'; });
                     renderFilteredCards();
                 };
-
                 window.resQuickFilter = function (key) {
-                    document.querySelectorAll('.res-qchip').forEach(c => {
-                        c.style.background = 'var(--surface)'; c.style.color = 'var(--muted)'; c.style.borderColor = 'var(--border)';
-                    });
+                    document.querySelectorAll('.res-qchip').forEach(c => { c.style.background = 'var(--surface)'; c.style.color = 'var(--muted)'; c.style.borderColor = 'var(--border)'; });
                     const btn = document.querySelector(`.res-qchip[data-key="${key}"]`);
                     if (btn) { btn.style.background = 'var(--red-light)'; btn.style.color = 'var(--red-dark)'; btn.style.borderColor = 'var(--red)'; }
-                    if (key === 'gameday') {
-                        document.getElementById('res-sort').value = 'gameday';
-                        document.getElementById('res-game-panel').style.display = 'block';
-                        buildGameChips();
-                    }
+                    if (key === 'gameday') { document.getElementById('res-sort').value = 'gameday'; document.getElementById('res-game-panel').style.display = 'block'; buildGameChips(); }
                     if (key === 'upcoming') document.getElementById('res-range').value = 'upcoming';
                     if (key === 'unpaid') document.getElementById('res-status').value = 'unpaid';
                     if (key === 'paid') document.getElementById('res-status').value = 'paid';
                     renderFilteredCards();
                 };
-
-                // ── Sort dropdown shows/hides game panel ──
                 document.getElementById('res-sort').addEventListener('change', function () {
                     const panel = document.getElementById('res-game-panel');
-                    if (this.value === 'gameday') {
-                        panel.style.display = 'block';
-                        buildGameChips();
-                    } else {
-                        panel.style.display = 'none';
-                        selectedGameDate = null;
-                    }
+                    if (this.value === 'gameday') { panel.style.display = 'block'; buildGameChips(); } else { panel.style.display = 'none'; selectedGameDate = null; }
                     renderFilteredCards();
                 });
 
                 function renderFilteredCards() {
-                    const sort = document.getElementById('res-sort').value;
-                    const status = document.getElementById('res-status').value;
-                    const range = document.getElementById('res-range').value;
-                    const now = new Date();
+                    const sort = document.getElementById('res-sort').value; const status = document.getElementById('res-status').value; const range = document.getElementById('res-range').value; const now = new Date();
                     let items = [...reservations];
-
                     if (status === 'Confirmed') items = items.filter(r => r.status === 'Confirmed');
                     if (status === 'Cancelled') items = items.filter(r => r.status === 'Cancelled');
                     if (status === 'paid') items = items.filter(r => !!paymentCache[r.reservationID]);
@@ -2161,152 +1741,81 @@
                     if (sort === 'date-desc') items.sort((a, b) => new Date(b.reservationStart) - new Date(a.reservationStart));
                     if (sort === 'alpha') items.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
                     if (sort === 'alpha-desc') items.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
-
-                    const countEl = document.getElementById('res-result-count');
-                    if (countEl) countEl.textContent = `Showing ${items.length} reservation${items.length !== 1 ? 's' : ''}`;
-
-                    const grid = document.getElementById('res-cards-grid');
-                    if (!grid) return;
-                    if (!items.length) {
-                        grid.innerHTML = '<div class="empty"><p>No reservations match your filters.</p></div>';
-                        return;
-                    }
-
+                    const countEl = document.getElementById('res-result-count'); if (countEl) countEl.textContent = `Showing ${items.length} reservation${items.length !== 1 ? 's' : ''}`;
+                    const grid = document.getElementById('res-cards-grid'); if (!grid) return;
+                    if (!items.length) { grid.innerHTML = '<div class="empty"><p>No reservations match your filters.</p></div>'; return; }
                     grid.innerHTML = items.map(r => {
-                        const payment = paymentCache[r.reservationID];
-                        const isPaid = !!payment;
-                        const g = getGame(r.reservationStart);
-                        const sport = g ? getSport(r.reservationStart) : null;
-                        const gdAccent = sport === 'FB' ? 'var(--red)' : '#2d7a4f';
-                        const gdBg = sport === 'FB' ? 'var(--red-light)' : '#edf7f0';
-                        const gdDark = sport === 'FB' ? 'var(--red-dark)' : '#1a4a2e';
-                        const gdBorder = sport === 'FB' ? '#e8b4bc' : '#b3dfc4';
-
+                        const payment = paymentCache[r.reservationID]; const isPaid = !!payment;
+                        const g = getGame(r.reservationStart); const sport = g ? getSport(r.reservationStart) : null;
+                        const gdAccent = sport === 'FB' ? 'var(--red)' : '#2d7a4f'; const gdBg = sport === 'FB' ? 'var(--red-light)' : '#edf7f0';
+                        const gdDark = sport === 'FB' ? 'var(--red-dark)' : '#1a4a2e'; const gdBorder = sport === 'FB' ? '#e8b4bc' : '#b3dfc4';
                         return `<div class="listing-card" style="padding:0;overflow:hidden;border:${g ? '1.5px solid ' + gdAccent : '1.5px solid var(--border)'}">
-                                ${g ? `<div style="background:${gdBg};border-bottom:1px solid ${gdBorder};padding:8px 14px;display:flex;align-items:center;gap:6px">
-                                    <div style="width:6px;height:6px;border-radius:50%;background:${gdAccent};flex-shrink:0"></div>
-                                    <div style="font-size:11px;font-weight:600;color:${gdDark}">${sport === 'FB' ? 'Football' : 'Baseball'}: Arkansas ${g.home ? 'vs' : '@'} ${g.opp} · ${g.time}</div>
-                                </div>` : ''}
+                                ${g ? `<div style="background:${gdBg};border-bottom:1px solid ${gdBorder};padding:8px 14px;display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:50%;background:${gdAccent};flex-shrink:0"></div><div style="font-size:11px;font-weight:600;color:${gdDark}">${sport === 'FB' ? 'Football' : 'Baseball'}: Arkansas ${g.home ? 'vs' : '@'} ${g.opp} · ${g.time}</div></div>` : ''}
                                 <div style="padding:16px">
                                     <h3>${r.title}</h3>
-                                    ${r.status === 'Confirmed'
-                                ? `<div style="background:#edf7f0;border:1px solid #b3dfc4;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px">
-                   <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#2d7a4f;margin-bottom:3px">📍 Exact Address</div>
-                   <div style="font-weight:600;color:var(--text)">${r.fullAddress}</div>
-                   <a href="https://maps.google.com/?q=${encodeURIComponent(r.fullAddress)}" target="_blank"
-                      style="font-size:12px;color:var(--red);font-weight:600;text-decoration:none;margin-top:4px;display:inline-block">
-                      Open in Maps →
-                   </a>
-               </div>`
-                                : `<div class="location">📍 ${r.fullAddress || 'Address provided after booking'}</div>`
-                            }
-                                    <div style="margin:10px 0;display:flex;gap:6px;flex-wrap:wrap">
-                                        <span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>
-                                        ${isPaid ? '<span class="badge available">✅ Paid</span>' : ''}
-                                    </div>
-                                    <div style="font-size:13px;color:var(--muted);margin-bottom:4px">
-                                        Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong>
-                                    </div>
-                                    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
-                                        ${new Date(r.reservationStart).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })} →
-                                        ${new Date(r.reservationEnd).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                    </div>
-                                    ${r.status === 'Confirmed' ? `
-<div style="display:flex;gap:8px;flex-wrap:wrap">
-                ${isPaid
-                                    ? `<button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="loadReceiptForReservation(${r.reservationID})">🧾 View Receipt</button>`
-                                    : `<button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="showPaymentPage(${r.reservationID},${r.pricePerHour},'${(r.title || '').replace(/'/g, '')}','${r.reservationStart}','${r.reservationEnd}',${r.pricePerHour})">Pay</button>`}
-                <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID}, '${r.reservationStart}', '${r.reservationEnd}', '${(r.title || '').replace(/'/g, '')}', '${r.hostUserID || 0}')"
-</div>
-<div style="margin-top:6px">
-                 <button class="btn-secondary" style="width:100%;padding:8px;font-size:13px" onclick="messageHostForReservation(${r.listingID},${r.reservationID},${r.hostUserID || 0},'${(r.title || '').replace(/'/g, '')}')">💬 Message Host</button>
-</div>` : ''}
+                                    ${r.status === 'Confirmed' ? `<div style="background:#edf7f0;border:1px solid #b3dfc4;border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#2d7a4f;margin-bottom:3px">📍 Exact Address</div><div style="font-weight:600;color:var(--text)">${r.fullAddress}</div><a href="https://maps.google.com/?q=${encodeURIComponent(r.fullAddress)}" target="_blank" style="font-size:12px;color:var(--red);font-weight:600;text-decoration:none;margin-top:4px;display:inline-block">Open in Maps →</a></div>` : `<div class="location">📍 ${r.fullAddress || 'Address provided after booking'}</div>`}
+                                    <div style="margin:10px 0;display:flex;gap:6px;flex-wrap:wrap"><span class="badge ${r.status === 'Confirmed' ? 'available' : 'unavailable'}">${r.status}</span>${isPaid ? '<span class="badge available">✅ Paid</span>' : ''}</div>
+                                    <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Spot: <strong style="color:var(--text)">${r.assignedSpotNumber}</strong></div>
+                                    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">${new Date(r.reservationStart).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })} → ${new Date(r.reservationEnd).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+                                    ${r.status === 'Confirmed' ? `<div style="display:flex;gap:8px;flex-wrap:wrap">${isPaid ? `<button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="loadReceiptForReservation(${r.reservationID})">🧾 View Receipt</button>` : `<button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="showPaymentPage(${r.reservationID},${r.pricePerHour},'${(r.title || '').replace(/'/g, '')}','${r.reservationStart}','${r.reservationEnd}',${r.pricePerHour})">Pay</button>`}<button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="cancelReservation(${r.reservationID})">Cancel</button></div><div style="margin-top:6px"><button class="btn-secondary" style="width:100%;padding:8px;font-size:13px" onclick="messageHostForReservation(${r.listingID},${r.reservationID},${r.hostUserID || 0},'${(r.title || '').replace(/'/g, '')}')">💬 Message Host</button></div>` : ''}
                                 </div>
                             </div>`;
                     }).join('');
                 }
-
                 renderFilteredCards();
-
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reservations.</p></div>'; }
         }
 
         async function makeReservation() {
             const btn = document.getElementById('res-submit-btn');
             if (btn) { if (btn.disabled) return; btn.disabled = true; btn.textContent = 'Processing...'; }
-            const msg = document.getElementById('res-msg');
-            msg.className = 'msg';
-
-            function ensureSeconds(iso) {
-                if (!iso) return iso;
-                if (/T\d{2}:\d{2}:\d{2}/.test(iso)) return iso;
-                return iso + ':00';
-            }
-
+            const msg = document.getElementById('res-msg'); msg.className = 'msg';
+            function ensureSeconds(iso) { if (!iso) return iso; if (/T\d{2}:\d{2}:\d{2}/.test(iso)) return iso; return iso + ':00'; }
             const start = ensureSeconds(document.getElementById('res-start').value);
             const end = ensureSeconds(document.getElementById('res-end').value);
-
             if (!start || !end) {
                 if (btn) { btn.disabled = false; btn.textContent = 'Confirm Reservation'; }
-                msg.className = 'msg error';
-                msg.textContent = 'Please select your dates and times before reserving.';
-                return;
+                msg.className = 'msg error'; msg.textContent = 'Please select your dates and times before reserving.'; return;
             }
-
             try {
-                const res = await fetch('/api/Reservations', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        listingID: selectedListingId,
-                        driverUserID: currentUser.userId,
-                        reservationStart: start,
-                        reservationEnd: end
-                    })
-                });
+                const res = await fetch('/api/Reservations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ listingID: selectedListingId, driverUserID: currentUser.userId, reservationStart: start, reservationEnd: end }) });
                 const data = await res.json();
                 if (res.ok) {
-                    msg.className = 'msg success';
-                    msg.textContent = `Reserved! Your spot: ${data.assignedSpotNumber}. Redirecting to payment...`;
+                    msg.className = 'msg success'; msg.textContent = `Reserved! Your spot: ${data.assignedSpotNumber}. Redirecting to payment...`;
                     selectedReservationId = data.reservationId;
                     const listingTitle = document.querySelector('#listing-detail-content h2')?.textContent || 'Parking Spot';
                     setTimeout(() => showPaymentPage(data.reservationId, null, listingTitle), 1500);
                 } else {
                     if (btn) { btn.disabled = false; btn.textContent = 'Confirm Reservation'; }
-                    msg.className = 'msg error';
-                    msg.textContent = data.message || 'Reservation failed.';
+                    msg.className = 'msg error'; msg.textContent = data.message || 'Reservation failed.';
                 }
             } catch {
                 if (btn) { btn.disabled = false; btn.textContent = 'Confirm Reservation'; }
-                msg.className = 'msg error';
-                msg.textContent = 'Connection error.';
+                msg.className = 'msg error'; msg.textContent = 'Connection error.';
             }
         }
 
         async function showPaymentPage(reservationId, amount, title, start, end, pricePerHour) {
-            selectedReservationId = reservationId;
-            window.selectedReservationId = reservationId;
-            window.selectedPaymentTitle = title || 'Parking Spot';
-            window.selectedPaymentAmount = amount || 0;
+            selectedReservationId = reservationId; window.selectedReservationId = reservationId;
+            window.selectedPaymentTitle = title || 'Parking Spot'; window.selectedPaymentAmount = amount || 0;
             if (!start || !end || !pricePerHour) {
-                try {
-                    const res = await fetch(`/api/Reservations/user/${currentUser.userId}`);
-                    const reservations = await res.json();
-                    const r = reservations.find(x => x.reservationID === reservationId);
-                    if (r) { start = r.reservationStart; end = r.reservationEnd; pricePerHour = r.pricePerHour; window.selectedPaymentTitle = r.title || title; }
-                } catch { }
+                try { const res = await fetch(`/api/Reservations/user/${currentUser.userId}`); const reservations = await res.json(); const r = reservations.find(x => x.reservationID === reservationId); if (r) { start = r.reservationStart; end = r.reservationEnd; pricePerHour = r.pricePerHour; window.selectedPaymentTitle = r.title || title; } } catch { }
             }
-            window.selectedReservationStart = start;
-            window.selectedReservationEnd = end;
-            window.selectedPricePerHour = pricePerHour || 0;
-            window.selectedPaymentAmount = amount || 0;
-            showPage('payment');
-            setTimeout(() => initPaymentPage(), 150);
+            window.selectedReservationStart = start; window.selectedReservationEnd = end;
+            window.selectedPricePerHour = pricePerHour || 0; window.selectedPaymentAmount = amount || 0;
+            showPage('payment'); setTimeout(() => initPaymentPage(), 150);
         }
 
-        // ══════════════════════════════════════
-        // NOTIFICATIONS — Carter
-        // ══════════════════════════════════════
+        async function cancelReservation(id) {
+            if (!confirm('Cancel this reservation?')) return;
+            try {
+                const res = await fetch(`/api/Reservations/${id}/cancel?driverUserId=${currentUser.userId}`, { method: 'PATCH' });
+                const data = await res.json();
+                if (res.ok) { alert(data.freeCancellation ? 'Cancelled — no charge!' : 'Cancelled. Note: cancellation fee may apply.'); loadMyReservations(); }
+                else { alert(data.message || 'Cancellation failed.'); }
+            } catch { alert('Connection error.'); }
+        }
+
         async function loadNotifications() {
             if (!currentUser) return;
             try {
@@ -2331,28 +1840,19 @@
         }
 
         function toggleNotifDropdown() {
-            const dd = document.getElementById('notif-dropdown');
-            const isOpen = dd.classList.contains('open');
-            dd.classList.toggle('open');
-            if (!isOpen) loadNotifications();
+            const dd = document.getElementById('notif-dropdown'); const isOpen = dd.classList.contains('open');
+            dd.classList.toggle('open'); if (!isOpen) loadNotifications();
         }
 
         document.addEventListener('click', function (e) {
-            const wrapper = document.querySelector('.notif-wrapper');
-            const dd = document.getElementById('notif-dropdown');
+            const wrapper = document.querySelector('.notif-wrapper'); const dd = document.getElementById('notif-dropdown');
             if (wrapper && dd && !wrapper.contains(e.target)) dd.classList.remove('open');
         });
 
         async function markAsRead(notificationId, el) {
-            try {
-                const res = await fetch(`/api/Notifications/${notificationId}/read`, { method: 'PATCH' });
-                if (res.ok) { el.classList.remove('unread'); updateNotifBadge(); }
-            } catch { }
+            try { const res = await fetch(`/api/Notifications/${notificationId}/read`, { method: 'PATCH' }); if (res.ok) { el.classList.remove('unread'); updateNotifBadge(); } } catch { }
         }
 
-        // ══════════════════════════════════════
-        // RESERVATION HISTORY — Carter
-        // ══════════════════════════════════════
         async function loadReservationHistory() {
             if (!currentUser) { showPage('login'); return; }
             const container = document.getElementById('history-content');
@@ -2361,31 +1861,12 @@
                 const res = await fetch(`/api/Reservations/user/${currentUser.userId}`);
                 const reservations = await res.json();
                 if (!reservations.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>No reservation history yet.</p></div>'; return; }
-                container.innerHTML = `
-                                            <table class="history-table">
-                                                <thead><tr><th>Listing</th><th>Spot</th><th>Date</th><th>Status</th><th>Amount</th></tr></thead>
-                                                <tbody>
-                                                    ${reservations.map(r => `
-                                                        <tr>
-                                                            <td><strong>${r.title || 'Parking Spot'}</strong><br><span style="font-size:12px;color:var(--muted)">${r.status === 'Confirmed' ? r.fullAddress : '🔒 Address after booking'}</span>
-                                                            <td>${r.assignedSpotNumber}</td>
-                                                            <td style="font-size:13px">${new Date(r.reservationStart).toLocaleDateString()}<br><span style="color:var(--muted)">${new Date(r.reservationStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(r.reservationEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td>
-                                                            <td><span class="badge ${r.status === 'Confirmed' ? 'available' : r.status === 'Cancelled' ? 'unavailable' : 'available'}">${r.status}</span></td>
-                                                            <td>$${r.pricePerHour != null ? r.pricePerHour.toFixed(2) : '—'}</td>
-                                                        </tr>`).join('')}
-                                                </tbody>
-                                            </table>`;
+                container.innerHTML = `<table class="history-table"><thead><tr><th>Listing</th><th>Spot</th><th>Date</th><th>Status</th><th>Amount</th></tr></thead><tbody>${reservations.map(r => `<tr><td><strong>${r.title || 'Parking Spot'}</strong><br><span style="font-size:12px;color:var(--muted)">${r.status === 'Confirmed' ? r.fullAddress : '🔒 Address after booking'}</span></td><td>${r.assignedSpotNumber}</td><td style="font-size:13px">${new Date(r.reservationStart).toLocaleDateString()}<br><span style="color:var(--muted)">${new Date(r.reservationStart).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(r.reservationEnd).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span></td><td><span class="badge ${r.status === 'Confirmed' ? 'available' : r.status === 'Cancelled' ? 'unavailable' : 'available'}">${r.status}</span></td><td>$${r.pricePerHour != null ? r.pricePerHour.toFixed(2) : '—'}</td></tr>`).join('')}</tbody></table>`;
             } catch { container.innerHTML = '<div class="empty"><p>Error loading reservation history.</p></div>'; }
         }
 
-        // ══════════════════════════════════════
-        // INIT
-        // ══════════════════════════════════════
         async function loadAllSections() {
-            const sections = ['register', 'login', 'search', 'listing', 'host',
-                'create-listing', 'my-reservations', 'payment', 'history', 'messages', 'profile', 'favorites',
-                'towing', 'admin-broadcast', 'receipt', 'availability',
-                'host-reports', 'business-analytics'];
+            const sections = ['register', 'login', 'search', 'listing', 'host', 'create-listing', 'my-reservations', 'payment', 'history', 'messages', 'profile', 'favorites', 'towing', 'admin-broadcast', 'receipt', 'availability', 'host-reports', 'business-analytics'];
             for (const name of sections) {
                 try {
                     const el = document.getElementById('page-' + name);
@@ -2397,151 +1878,46 @@
             }
         }
 
-        // ══════════════════════════════════════
-        // REVIEWS — Ryleigh (Sprint 6)
-        // ══════════════════════════════════════
-        async function loadReviews(listingId) {
-            const container = document.getElementById('reviews-container');
-            if (!container) return;
-            try {
-                const res = await fetch(`/api/Reviews/listing/${listingId}`);
-                const data = await res.json();
-                if (!data.reviews || data.reviews.length === 0) { container.innerHTML = '<div class="empty"><p>No reviews yet. Be the first to review!</p></div>'; return; }
-                const stars = (n) => '⭐'.repeat(n);
-                container.innerHTML = `
-                                            <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;display:flex;gap:24px;align-items:center">
-                                                <div style="text-align:center">
-                                                    <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--red);line-height:1">${data.averageRating}</div>
-                                                    <div style="font-size:13px;color:var(--muted)">${data.totalReviews} review${data.totalReviews !== 1 ? 's' : ''}</div>
-                                                </div>
-                                            </div>
-                                            ${data.reviews.map(r => `
-                                                <div style="background:#fff;border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px">
-                                                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-                                                        <div><strong style="font-size:14px">${r.reviewerName}</strong><div style="font-size:18px;margin-top:2px">${stars(r.starRating)}</div></div>
-                                                        <div style="font-size:12px;color:var(--muted2)">${new Date(r.createdAt).toLocaleDateString()}</div>
-                                                    </div>
-                                                    ${r.comment ? `<p style="font-size:14px;color:var(--muted);font-family:'Source Serif 4',serif">${r.comment}</p>` : ''}
-                                                </div>`).join('')}`;
-            } catch { container.innerHTML = '<div class="empty"><p>Error loading reviews.</p></div>'; }
-        }
-
-        async function submitReview(listingId) {
-            const msg = document.getElementById('review-msg');
-            msg.className = 'msg';
-            const rating = document.getElementById('review-rating').value;
-            const comment = document.getElementById('review-comment').value;
-            const reservationId = parseInt(document.getElementById('review-reservation-id').value);
-            if (!rating) { msg.className = 'msg error'; msg.textContent = 'Please select a star rating.'; return; }
-            if (!reservationId || reservationId <= 0) { msg.className = 'msg error'; msg.textContent = 'Please enter a valid reservation ID.'; return; }
-            try {
-                const res = await fetch('/api/Reviews', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ listingID: listingId, userID: currentUser.userId, reservationID: reservationId, starRating: parseInt(rating), comment: comment || null })
-                });
-                const data = await res.json();
-                if (res.ok) { msg.className = 'msg success'; msg.textContent = '✅ Review submitted successfully!'; loadReviews(listingId); }
-                else { msg.className = 'msg error'; msg.textContent = data.message || 'Failed to submit review.'; }
-            } catch { msg.className = 'msg error'; msg.textContent = 'Connection error.'; }
-        }
-
-        // ══════════════════════════════════════
-        // FAVORITES PAGE — Ryleigh
-        // ══════════════════════════════════════
         async function loadFavorites() {
-            const container = document.getElementById('favorites-list');
-            if (!container) return;
-            if (!currentUser) {
-                container.innerHTML = '<div class="empty"><div class="empty-icon">❤️</div><p>Please log in to view your favorites.</p></div>';
-                return;
-            }
+            const container = document.getElementById('favorites-list'); if (!container) return;
+            if (!currentUser) { container.innerHTML = '<div class="empty"><div class="empty-icon">❤️</div><p>Please log in to view your favorites.</p></div>'; return; }
             container.innerHTML = '<div class="loading">Loading favorites...</div>';
             try {
                 const res = await fetch(`/api/Favorites/user/${currentUser.userId}`);
                 const favorites = await res.json();
-                if (!favorites || favorites.length === 0) {
-                    container.innerHTML = '<div class="empty"><div class="empty-icon">❤️</div><p>No favorites yet. Save a listing to see it here!</p></div>';
-                    return;
-                }
-                container.innerHTML = `<div class="listings-grid">${favorites.map(f => `
-                            <div class="listing-card">
-                                <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-                                    <h3>${f.title}</h3>
-                                    <span class="badge ${f.isAvailable ? 'available' : 'unavailable'}">${f.isAvailable ? 'Available' : 'Unavailable'}</span>
-                                </div>
-                                <div class="location">📍 ${f.location}</div>
-                                <div class="price" style="margin-bottom:16px">$${f.pricePerHour}<span>/hr</span></div>
-                                <div style="display:flex;gap:8px">
-                                    <button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="viewListing(${f.listingID})">View & Book</button>
-                                    <button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="removeFavorite(${f.favoriteID})">Remove</button>
-                                </div>
-                            </div>`).join('')}</div>`;
-            } catch {
-                container.innerHTML = '<div class="empty"><p>Error loading favorites.</p></div>';
-            }
+                if (!favorites || favorites.length === 0) { container.innerHTML = '<div class="empty"><div class="empty-icon">❤️</div><p>No favorites yet. Save a listing to see it here!</p></div>'; return; }
+                container.innerHTML = `<div class="listings-grid">${favorites.map(f => `<div class="listing-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><h3>${f.title}</h3><span class="badge ${f.isAvailable ? 'available' : 'unavailable'}">${f.isAvailable ? 'Available' : 'Unavailable'}</span></div><div class="location">📍 ${f.location}</div><div class="price" style="margin-bottom:16px">$${f.pricePerHour}<span>/hr</span></div><div style="display:flex;gap:8px"><button class="btn-primary" style="flex:1;padding:8px;font-size:13px" onclick="viewListing(${f.listingID})">View & Book</button><button class="btn-secondary" style="flex:1;padding:8px;font-size:13px" onclick="removeFavorite(${f.favoriteID})">Remove</button></div></div>`).join('')}</div>`;
+            } catch { container.innerHTML = '<div class="empty"><p>Error loading favorites.</p></div>'; }
         }
 
         async function removeFavorite(favoriteId) {
             if (!confirm('Remove this listing from favorites?')) return;
-            try {
-                const res = await fetch(`/api/Favorites/${favoriteId}?userId=${currentUser.userId}`, { method: 'DELETE' });
-                if (res.ok) loadFavorites();
-            } catch { alert('Connection error.'); }
+            try { const res = await fetch(`/api/Favorites/${favoriteId}?userId=${currentUser.userId}`, { method: 'DELETE' }); if (res.ok) loadFavorites(); } catch { alert('Connection error.'); }
         }
 
-        // ══════════════════════════════════════
-        // FAVORITES — Ryleigh (Sprint 6)
-        // ══════════════════════════════════════
         async function checkIfFavorited(listingId) {
             try {
                 const res = await fetch(`/api/Favorites/user/${currentUser.userId}`);
                 const favorites = await res.json();
                 const fav = favorites.find(f => f.listingID === listingId);
-                const btn = document.getElementById('fav-btn');
-                if (!btn) return;
+                const btn = document.getElementById('fav-btn'); if (!btn) return;
                 if (fav) { btn.textContent = '♥ Saved to Favorites'; btn.style.color = 'var(--red)'; btn.style.borderColor = 'var(--red)'; btn.dataset.favoriteId = fav.favoriteID; }
             } catch { }
         }
 
         async function toggleFavorite(listingId) {
-            const btn = document.getElementById('fav-btn');
-            if (!btn) return;
+            const btn = document.getElementById('fav-btn'); if (!btn) return;
             const existingFavId = btn.dataset.favoriteId;
             if (existingFavId) {
-                try {
-                    const res = await fetch(`/api/Favorites/${existingFavId}?userId=${currentUser.userId}`, { method: 'DELETE' });
-                    if (res.ok) { btn.textContent = '♡ Save to Favorites'; btn.style.color = 'var(--muted)'; btn.style.borderColor = 'var(--border)'; delete btn.dataset.favoriteId; }
-                } catch { }
+                try { const res = await fetch(`/api/Favorites/${existingFavId}?userId=${currentUser.userId}`, { method: 'DELETE' }); if (res.ok) { btn.textContent = '♡ Save to Favorites'; btn.style.color = 'var(--muted)'; btn.style.borderColor = 'var(--border)'; delete btn.dataset.favoriteId; } } catch { }
             } else {
-                try {
-                    const res = await fetch('/api/Favorites', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userID: currentUser.userId, listingID: listingId }) });
-                    const data = await res.json();
-                    if (res.ok) { btn.textContent = '♥ Saved to Favorites'; btn.style.color = 'var(--red)'; btn.style.borderColor = 'var(--red)'; btn.dataset.favoriteId = data.favoriteId; }
-                } catch { }
+                try { const res = await fetch('/api/Favorites', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userID: currentUser.userId, listingID: listingId }) }); const data = await res.json(); if (res.ok) { btn.textContent = '♥ Saved to Favorites'; btn.style.color = 'var(--red)'; btn.style.borderColor = 'var(--red)'; btn.dataset.favoriteId = data.favoriteId; } } catch { }
             }
         }
 
         function approxLocation(loc) {
             if (!loc) return 'Fayetteville, AR';
-            // Strip street number — turn "471 Garland Ave, Fayetteville, AR" into "Garland Ave, Fayetteville, AR"
             return loc.replace(/^\d+\s+/, '');
-        }
-
-        async function cancelReservation(id) {
-            if (!confirm('Cancel this reservation?')) return;
-            try {
-                const res = await fetch(`/api/Reservations/${id}/cancel?driverUserId=${currentUser.userId}`, { method: 'PATCH' });
-                const data = await res.json();
-                if (res.ok) {
-                    alert(data.freeCancellation ? 'Cancelled — no charge!' : 'Cancelled. Note: cancellation fee may apply.');
-                    loadMyReservations();
-                } else {
-                    alert(data.message || 'Cancellation failed.');
-                }
-            } catch {
-                alert('Connection error.');
-            }
         }
 
         updateNav();
@@ -2549,29 +1925,17 @@
         loadAllSections();
     </script>
 
-    <!-- PAGE: BUSINESS ANALYTICS -->
     <div id="page-business-analytics" class="page"></div>
-
-    <!-- PAGE: FAVORITES -->
     <div id="page-favorites" class="page"></div>
-    <!-- PAGE: MESSAGES -->
     <div id="page-messages" class="page"></div>
-    <!-- PAGE: VIEW HOST -->
     <div id="page-view-host" class="page"></div>
-    <!-- PAGE: AVAILABILITY -->
     <div id="page-availability" class="page"></div>
-    <!-- PAGE: EDIT LISTING -->
     <script src="edit-listing.js"></script>
-    <!-- PAGE: PAYMENT -->
     <script src="payment.js"></script>
-    <!-- PAGE: RECEIPT -->
     <div id="page-receipt" class="page"></div>
-    <!--PAGE:CALENDAR-->
     <script src="calendar.js"></script>
-    <!--PAGE:CANCEL MODEL-->
     <script src="cancel-modal.js"></script>
 
-    <!-- PAGE: MANAGE PHOTOS -->
     <div id="page-manage-photos" class="page">
         <button class="btn-ghost" onclick="showPage('host')" style="margin-bottom:24px">← Back to My Listings</button>
         <div class="page-header"><h2>Manage Photos</h2><p>Add or remove photos for this listing.</p></div>
@@ -2586,11 +1950,9 @@
         </div>
     </div>
 
-    <!-- PAGE: TOWING CONTACTS (Carter — Sprint 6) -->
     <div id="page-towing" class="page"></div>
-    <!-- PAGE: ADMIN BROADCAST (Carter — Sprint 6) -->
     <div id="page-admin-broadcast" class="page"></div>
-    f
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="host-reports.js"></script>
     <script src="business-analytics.js"></script>
