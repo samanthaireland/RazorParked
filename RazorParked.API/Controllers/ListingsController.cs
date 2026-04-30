@@ -49,7 +49,8 @@ namespace RazorParked.Controllers
                     .SqlQueryRaw<int>(@"
                         SELECT DISTINCT ListingID FROM dbo.AvailabilitySlots
                         WHERE CAST(StartDateTime AS DATE) <= {0}
-                        AND CAST(EndDateTime AS DATE) >= {1}",
+                        AND CAST(EndDateTime AS DATE) >= {1}
+                        AND RemainingSpots > 0",
                         dateFrom, dateTo2)
                     .ToListAsync();
 
@@ -149,6 +150,8 @@ namespace RazorParked.Controllers
         // ===============================
         // POST /api/Listings
         // Create a new listing
+        // CHANGED: IsAvailable starts as 0 — listing only becomes
+        //          available when the host adds an availability slot
         // ===============================
         [HttpPost]
         public async Task<IActionResult> CreateListing([FromBody] CreateListingRequest request)
@@ -170,11 +173,12 @@ namespace RazorParked.Controllers
             if (hostExists == null)
                 return NotFound(new { message = "Host user not found." });
 
+            // CHANGED: IsAvailable = 0 — listing hidden until host adds availability slot
             var newId = await connection.QuerySingleAsync<int>(@"
                 INSERT INTO dbo.ParkingListings 
                     (HostUserID, Title, Description, Location, PricePerHour, IsAvailable, AvailableFrom, AvailableTo, Latitude, Longitude)
                 VALUES 
-                    (@HostUserID, @Title, @Description, @Location, @PricePerHour, 1, @AvailableFrom, @AvailableTo, @Latitude, @Longitude);
+                    (@HostUserID, @Title, @Description, @Location, @PricePerHour, 0, @AvailableFrom, @AvailableTo, @Latitude, @Longitude);
                 SELECT CAST(SCOPE_IDENTITY() AS INT);",
                 new
                 {
@@ -189,7 +193,7 @@ namespace RazorParked.Controllers
                     request.Longitude
                 });
 
-            return StatusCode(201, new { message = "Listing created successfully.", listingId = newId });
+            return StatusCode(201, new { message = "Listing created successfully. Add an availability slot to make it visible to drivers.", listingId = newId });
         }
 
         // ===============================
@@ -236,8 +240,6 @@ namespace RazorParked.Controllers
         // ===============================
         // DELETE /api/Listings/{id}
         // Delete a listing (owner only)
-        // CHANGED: Full cascade delete — removes all related
-        // records in correct order to avoid FK constraint errors
         // ===============================
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteListing(int id, [FromQuery] int hostUserId)
@@ -256,7 +258,6 @@ namespace RazorParked.Controllers
             if (ownerId == null) return NotFound(new { message = "Listing not found." });
             if (ownerId != hostUserId) return Forbid();
 
-            // Step 1: Delete records that reference Reservations
             await connection.ExecuteAsync(@"
                 DELETE n FROM dbo.Notifications n
                 INNER JOIN dbo.Reservations r ON n.ReservationID = r.ReservationID
@@ -272,13 +273,11 @@ namespace RazorParked.Controllers
                 INNER JOIN dbo.Reservations r ON rv.ReservationID = r.ReservationID
                 WHERE r.ListingID = @ListingID", new { ListingID = id });
 
-            // Step 2: Delete records that reference Conversations
             await connection.ExecuteAsync(@"
                 DELETE m FROM dbo.Messages m
                 INNER JOIN dbo.Conversations c ON m.ConversationID = c.ConversationID
                 WHERE c.ListingID = @ListingID", new { ListingID = id });
 
-            // Step 3: Delete direct child tables of ParkingListings
             await connection.ExecuteAsync("DELETE FROM dbo.AvailabilitySlots WHERE ListingID = @ListingID", new { ListingID = id });
             await connection.ExecuteAsync("DELETE FROM dbo.ListingDates WHERE ListingID = @ListingID", new { ListingID = id });
             await connection.ExecuteAsync("DELETE FROM dbo.BusinessHours WHERE ListingID = @ListingID", new { ListingID = id });
@@ -287,8 +286,6 @@ namespace RazorParked.Controllers
             await connection.ExecuteAsync("DELETE FROM dbo.Reviews WHERE ListingID = @ListingID", new { ListingID = id });
             await connection.ExecuteAsync("DELETE FROM dbo.Conversations WHERE ListingID = @ListingID", new { ListingID = id });
             await connection.ExecuteAsync("DELETE FROM dbo.Reservations WHERE ListingID = @ListingID", new { ListingID = id });
-
-            // Step 4: Finally delete the listing itself
             await connection.ExecuteAsync("DELETE FROM dbo.ParkingListings WHERE ListingID = @ListingID", new { ListingID = id });
 
             return Ok(new { message = "Listing deleted successfully." });
@@ -296,7 +293,6 @@ namespace RazorParked.Controllers
 
         // ===============================
         // POST /api/Listings/{id}/dates
-        // Save selected dates for a listing
         // ===============================
         [HttpPost("{id}/dates")]
         public async Task<IActionResult> AddListingDates(int id, [FromBody] CreateListingDateRequest request)
@@ -328,7 +324,6 @@ namespace RazorParked.Controllers
 
         // ===============================
         // GET /api/Listings/{id}/dates
-        // Get all listed dates for a listing
         // ===============================
         [HttpGet("{id}/dates")]
         public async Task<IActionResult> GetListingDates(int id)
@@ -352,7 +347,6 @@ namespace RazorParked.Controllers
 
         // ===============================
         // DELETE /api/Listings/{id}/dates/{dateId}
-        // Remove a specific listed date
         // ===============================
         [HttpDelete("{id}/dates/{dateId}")]
         public async Task<IActionResult> DeleteListingDate(int id, int dateId, [FromQuery] int hostUserId)
@@ -384,7 +378,6 @@ namespace RazorParked.Controllers
 
         // ===============================
         // POST /api/Listings/bulk
-        // Create multiple listings at once
         // ===============================
         [HttpPost("bulk")]
         public async Task<IActionResult> CreateBulkListings([FromBody] BulkListingRequest request)
@@ -411,7 +404,7 @@ namespace RazorParked.Controllers
                     INSERT INTO dbo.ParkingListings 
                         (HostUserID, Title, Description, Location, PricePerHour, IsAvailable, AvailableFrom, AvailableTo)
                     VALUES 
-                        (@HostUserID, @Title, @Description, @Location, @PricePerHour, 1, @AvailableFrom, @AvailableTo);
+                        (@HostUserID, @Title, @Description, @Location, @PricePerHour, 0, @AvailableFrom, @AvailableTo);
                     SELECT CAST(SCOPE_IDENTITY() AS INT);",
                     new
                     {
@@ -436,7 +429,6 @@ namespace RazorParked.Controllers
 
         // ===============================
         // PATCH /api/Listings/{id}/businessHours
-        // Set business hours for a listing
         // ===============================
         [HttpPatch("{id}/businessHours")]
         public async Task<IActionResult> SetBusinessHours(int id, [FromBody] BusinessHoursRequest request)
@@ -472,7 +464,6 @@ namespace RazorParked.Controllers
 
         // ===============================
         // PATCH /api/Listings/{id}/disable
-        // Temporarily disable or enable a listing
         // ===============================
         [HttpPatch("{id}/disable")]
         public async Task<IActionResult> DisableListing(int id, [FromBody] DisableListingRequest request)
@@ -503,7 +494,7 @@ namespace RazorParked.Controllers
 
         // ===============================
         // GET /api/Listings/{id}/availability
-        // Criteria 7: Get all availability slots for a listing
+        // Returns only slots with remaining spots > 0
         // ===============================
         [HttpGet("{id}/availability")]
         public async Task<IActionResult> GetAvailability(int id)
@@ -515,10 +506,11 @@ namespace RazorParked.Controllers
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
 
+            // CHANGED: Return TotalSpots and RemainingSpots, only slots with spots > 0
             var slots = await connection.QueryAsync<dynamic>(@"
-                SELECT SlotID, ListingID, StartDateTime, EndDateTime, CreatedAt
+                SELECT SlotID, ListingID, StartDateTime, EndDateTime, TotalSpots, RemainingSpots, CreatedAt
                 FROM dbo.AvailabilitySlots
-                WHERE ListingID = @ListingID
+                WHERE ListingID = @ListingID AND RemainingSpots > 0
                 ORDER BY StartDateTime ASC",
                 new { ListingID = id });
 
@@ -527,8 +519,8 @@ namespace RazorParked.Controllers
 
         // ===============================
         // POST /api/Listings/{id}/availability
-        // Criteria 8: Add a new availability slot
-        // Auto-sets IsAvailable = 1 on the listing when slot is added
+        // CHANGED: Accepts TotalSpots, sets RemainingSpots = TotalSpots
+        //          Marks listing as IsAvailable = 1
         // ===============================
         [HttpPost("{id}/availability")]
         public async Task<IActionResult> AddAvailabilitySlot(int id, [FromBody] AddAvailabilitySlotRequest request)
@@ -538,6 +530,8 @@ namespace RazorParked.Controllers
 
             if (request.StartDateTime >= request.EndDateTime)
                 return BadRequest(new { message = "Start time must be before end time." });
+
+            var totalSpots = request.TotalSpots > 0 ? request.TotalSpots : 1;
 
             var connectionString = _config.GetConnectionString("DefaultConnection");
             using var connection = new SqlConnection(connectionString);
@@ -550,17 +544,23 @@ namespace RazorParked.Controllers
             if (ownerId == null) return NotFound(new { message = "Listing not found." });
             if (ownerId != request.HostUserID) return Forbid();
 
+            // CHANGED: Insert slot with TotalSpots and RemainingSpots
             var newSlotId = await connection.QuerySingleAsync<int>(@"
-                INSERT INTO dbo.AvailabilitySlots (ListingID, StartDateTime, EndDateTime, CreatedAt)
-                VALUES (@ListingID, @StartDateTime, @EndDateTime, GETUTCDATE());
+                INSERT INTO dbo.AvailabilitySlots (ListingID, StartDateTime, EndDateTime, TotalSpots, RemainingSpots, CreatedAt)
+                VALUES (@ListingID, @StartDateTime, @EndDateTime, @TotalSpots, @RemainingSpots, GETUTCDATE());
                 SELECT CAST(SCOPE_IDENTITY() AS INT);",
-                new { ListingID = id, request.StartDateTime, request.EndDateTime });
+                new
+                {
+                    ListingID = id,
+                    request.StartDateTime,
+                    request.EndDateTime,
+                    TotalSpots = totalSpots,
+                    RemainingSpots = totalSpots
+                });
 
-            // Criteria 15: mark listing as available when a slot is added
+            // Mark listing as available now that it has a slot
             await connection.ExecuteAsync(@"
-                UPDATE dbo.ParkingListings
-                SET IsAvailable = 1
-                WHERE ListingID = @ListingID",
+                UPDATE dbo.ParkingListings SET IsAvailable = 1 WHERE ListingID = @ListingID",
                 new { ListingID = id });
 
             return StatusCode(201, new
@@ -569,14 +569,16 @@ namespace RazorParked.Controllers
                 slotId = newSlotId,
                 listingId = id,
                 request.StartDateTime,
-                request.EndDateTime
+                request.EndDateTime,
+                totalSpots,
+                remainingSpots = totalSpots
             });
         }
 
         // ===============================
         // DELETE /api/Listings/{id}/availability/{slotId}
-        // Criteria 9: Remove a specific availability slot
-        // Auto-sets IsAvailable = 0 when last slot is deleted
+        // CHANGED: Sets IsAvailable = 0 only if no slots with
+        //          remaining spots exist after deletion
         // ===============================
         [HttpDelete("{id}/availability/{slotId}")]
         public async Task<IActionResult> DeleteAvailabilitySlot(int id, int slotId, [FromQuery] int hostUserId)
@@ -603,18 +605,16 @@ namespace RazorParked.Controllers
             if (affected == 0)
                 return NotFound(new { message = "Slot not found." });
 
-            // Criteria 15: if no slots remain, mark listing as unavailable
-            var remainingSlots = await connection.QuerySingleAsync<int>(@"
+            // CHANGED: Check if any slots with remaining spots still exist
+            var remainingActiveSlots = await connection.QuerySingleAsync<int>(@"
                 SELECT COUNT(*) FROM dbo.AvailabilitySlots
-                WHERE ListingID = @ListingID",
+                WHERE ListingID = @ListingID AND RemainingSpots > 0",
                 new { ListingID = id });
 
-            if (remainingSlots == 0)
+            if (remainingActiveSlots == 0)
             {
                 await connection.ExecuteAsync(@"
-                    UPDATE dbo.ParkingListings
-                    SET IsAvailable = 0
-                    WHERE ListingID = @ListingID",
+                    UPDATE dbo.ParkingListings SET IsAvailable = 0 WHERE ListingID = @ListingID",
                     new { ListingID = id });
             }
 

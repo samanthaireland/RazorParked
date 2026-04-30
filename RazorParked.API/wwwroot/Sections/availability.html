@@ -20,7 +20,7 @@
 <div class="form-card" style="max-width:600px;margin:0 0 32px 0">
     <div class="card-top">
         <div class="form-title" style="font-size:24px">Add Availability Slot</div>
-        <div class="form-subtitle">Set a start and end time for when this spot is available.</div>
+        <div class="form-subtitle">Set a start time, end time, and number of parking spots available.</div>
     </div>
     <div class="form-row">
         <div class="form-group">
@@ -31,6 +31,11 @@
             <label>End Date &amp; Time</label>
             <input id="avail-end" type="datetime-local" />
         </div>
+    </div>
+    <!-- CHANGED: Added Number of Spots field -->
+    <div class="form-group">
+        <label>Number of Spots Available</label>
+        <input id="avail-spots" type="number" min="1" placeholder="e.g. 3" value="1" />
     </div>
     <button class="btn-primary" style="width:100%" onclick="addAvailabilitySlot()">
         + Add Slot

@@ -40,7 +40,7 @@ async function initAvailabilityPage() {
     await loadAvailabilitySlots();
 }
 
-// Criteria 7: GET /api/Listings/{id}/availability
+// GET /api/Listings/{id}/availability
 async function loadAvailabilitySlots() {
     const container = document.getElementById('avail-slots-container');
     const countEl = document.getElementById('avail-slot-count');
@@ -67,29 +67,43 @@ async function loadAvailabilitySlots() {
 
         container.innerHTML = `
             <div class="listings-grid">
-                ${slots.map(s => `
+                ${slots.map(s => {
+            // CHANGED: Show spots remaining out of total
+            const total = s.totalSpots ?? 1;
+            const remaining = s.remainingSpots ?? total;
+            const spotsColor = remaining === 0 ? 'var(--red)' : remaining <= 1 ? 'var(--gold)' : '#2d7a4f';
+            return `
                     <div class="listing-card" style="cursor:default">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
                             <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px">
                                 Slot #${s.slotID}
                             </div>
-                            <span class="badge available">Active</span>
+                            <span class="badge ${remaining > 0 ? 'available' : 'unavailable'}">
+                                ${remaining > 0 ? 'Active' : 'Full'}
+                            </span>
                         </div>
                         <div style="font-size:13px;color:var(--muted);margin-bottom:6px">
                             🕐 <strong style="color:var(--text)">Start:</strong>
                             ${new Date(s.startDateTime).toLocaleString()}
                         </div>
-                        <div style="font-size:13px;color:var(--muted);margin-bottom:16px">
+                        <div style="font-size:13px;color:var(--muted);margin-bottom:10px">
                             🕐 <strong style="color:var(--text)">End:</strong>
                             ${new Date(s.endDateTime).toLocaleString()}
+                        </div>
+                        <!-- CHANGED: Spots remaining indicator -->
+                        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+                            <span style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Spots</span>
+                            <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:${spotsColor};letter-spacing:1px">
+                                ${remaining} <span style="font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400">/ ${total}</span>
+                            </span>
                         </div>
                         <button class="btn-secondary"
                             style="width:100%;padding:8px;font-size:13px;color:var(--red);border-color:var(--red)"
                             onclick="deleteAvailabilitySlot(${s.slotID})">
                             🗑 Remove Slot
                         </button>
-                    </div>
-                `).join('')}
+                    </div>`;
+        }).join('')}
             </div>`;
 
     } catch {
@@ -101,13 +115,14 @@ async function loadAvailabilitySlots() {
     }
 }
 
-// Criteria 8: POST /api/Listings/{id}/availability
+// CHANGED: POST /api/Listings/{id}/availability — now sends totalSpots
 async function addAvailabilitySlot() {
     const msg = document.getElementById('avail-msg');
     msg.className = 'msg';
 
     const start = document.getElementById('avail-start').value;
     const end = document.getElementById('avail-end').value;
+    const spots = parseInt(document.getElementById('avail-spots').value) || 1;
 
     if (!start || !end) {
         msg.className = 'msg error';
@@ -117,6 +132,11 @@ async function addAvailabilitySlot() {
     if (new Date(start) >= new Date(end)) {
         msg.className = 'msg error';
         msg.textContent = 'Start time must be before end time.';
+        return;
+    }
+    if (spots < 1) {
+        msg.className = 'msg error';
+        msg.textContent = 'Number of spots must be at least 1.';
         return;
     }
 
@@ -129,15 +149,17 @@ async function addAvailabilitySlot() {
             body: JSON.stringify({
                 hostUserID: user.userId,
                 startDateTime: start,
-                endDateTime: end
+                endDateTime: end,
+                totalSpots: spots
             })
         });
         const data = await res.json();
         if (res.ok) {
             msg.className = 'msg success';
-            msg.textContent = 'Slot added successfully!';
+            msg.textContent = `Slot added with ${spots} spot${spots !== 1 ? 's' : ''}!`;
             document.getElementById('avail-start').value = '';
             document.getElementById('avail-end').value = '';
+            document.getElementById('avail-spots').value = '1';
             await loadAvailabilitySlots();
         } else {
             msg.className = 'msg error';
@@ -149,8 +171,7 @@ async function addAvailabilitySlot() {
     }
 }
 
-// Criteria 9: DELETE /api/Listings/{id}/availability/{slotId}
-// Confirmation dialog prevents accidental deletion
+// DELETE /api/Listings/{id}/availability/{slotId}
 async function deleteAvailabilitySlot(slotId) {
     if (!confirm('Are you sure you want to remove this availability slot?')) return;
 

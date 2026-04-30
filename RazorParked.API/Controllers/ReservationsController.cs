@@ -22,7 +22,8 @@ namespace RazorParked.API.Controllers
 
         // ===============================
         // POST /api/Reservations
-        // Create a new reservation
+        // CHANGED: Checks RemainingSpots on the matching slot,
+        //          decrements it, hides listing when all slots full
         // ===============================
         [HttpPost]
         public async Task<IActionResult> CreateReservation([FromBody] CreateReservationRequest request)
@@ -52,12 +53,13 @@ namespace RazorParked.API.Controllers
             if ((int)listing.HostUserID == request.DriverUserID)
                 return BadRequest(new { message = "Hosts cannot reserve their own listing." });
 
-            // Criteria 15: check reservation falls within an availability slot
-            var slotMatch = await connection.QueryFirstOrDefaultAsync<int?>(@"
-                SELECT SlotID FROM dbo.AvailabilitySlots
+            // CHANGED: Find matching slot and check it has spots remaining
+            var slotMatch = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
+                SELECT SlotID, RemainingSpots FROM dbo.AvailabilitySlots
                 WHERE ListingID = @ListingID
                 AND StartDateTime <= @ReservationStart
-                AND EndDateTime >= @ReservationEnd",
+                AND EndDateTime >= @ReservationEnd
+                AND RemainingSpots > 0",
                 new
                 {
                     request.ListingID,
@@ -66,7 +68,7 @@ namespace RazorParked.API.Controllers
                 });
 
             if (slotMatch == null)
-                return BadRequest(new { message = "Your selected time does not fall within any available time slot set by the host. Please choose a time within the listed availability." });
+                return BadRequest(new { message = "Your selected time does not fall within any available time slot set by the host, or that slot is fully booked. Please choose another time." });
 
             var conflict = await connection.QueryFirstOrDefaultAsync<int?>(@"
                 SELECT ReservationID FROM dbo.Reservations
@@ -103,6 +105,27 @@ namespace RazorParked.API.Controllers
                     request.ReservationStart,
                     request.ReservationEnd
                 });
+
+            // CHANGED: Decrement RemainingSpots on the matched slot
+            int slotId = (int)slotMatch.SlotID;
+            await connection.ExecuteAsync(@"
+                UPDATE dbo.AvailabilitySlots
+                SET RemainingSpots = RemainingSpots - 1
+                WHERE SlotID = @SlotID",
+                new { SlotID = slotId });
+
+            // CHANGED: If no slots have remaining spots, mark listing unavailable
+            var activeSlots = await connection.QuerySingleAsync<int>(@"
+                SELECT COUNT(*) FROM dbo.AvailabilitySlots
+                WHERE ListingID = @ListingID AND RemainingSpots > 0",
+                new { request.ListingID });
+
+            if (activeSlots == 0)
+            {
+                await connection.ExecuteAsync(@"
+                    UPDATE dbo.ParkingListings SET IsAvailable = 0 WHERE ListingID = @ListingID",
+                    new { request.ListingID });
+            }
 
             await connection.ExecuteAsync(@"
                 INSERT INTO dbo.Notifications (UserID, ReservationID, Type, Message, IsRead, CreatedAt)
@@ -167,8 +190,7 @@ namespace RazorParked.API.Controllers
 
         // ===============================
         // GET /api/Reservations/listing/{listingId}/blocked
-        // ADDED: Returns available date range and already-booked
-        // time slots so the calendar can black out unavailable days
+        // CHANGED: Only returns dates from slots with spots > 0
         // ===============================
         [HttpGet("listing/{listingId}/blocked")]
         public async Task<IActionResult> GetBlockedSlots(int listingId)
@@ -183,7 +205,7 @@ namespace RazorParked.API.Controllers
             var availSlots = await connection.QueryAsync<dynamic>(@"
                 SELECT StartDateTime, EndDateTime
                 FROM dbo.AvailabilitySlots
-                WHERE ListingID = @ListingID
+                WHERE ListingID = @ListingID AND RemainingSpots > 0
                 ORDER BY StartDateTime ASC",
                 new { ListingID = listingId });
 
@@ -228,7 +250,6 @@ namespace RazorParked.API.Controllers
 
         // ===============================
         // GET /api/Reservations/{id}
-        // Get reservation by ID
         // ===============================
         [HttpGet("{id}")]
         public async Task<IActionResult> GetReservationById(int id)
@@ -257,7 +278,6 @@ namespace RazorParked.API.Controllers
 
         // ===============================
         // GET /api/Reservations/user/{userId}
-        // Get all reservations for a driver
         // ===============================
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetReservationsByUser(int userId)
@@ -284,7 +304,6 @@ namespace RazorParked.API.Controllers
 
         // ===============================
         // GET /api/Reservations/host/{userId}
-        // Get all confirmed reservations for a host
         // ===============================
         [HttpGet("host/{userId}")]
         public async Task<IActionResult> GetReservationsByHost(int userId)
@@ -313,7 +332,8 @@ namespace RazorParked.API.Controllers
 
         // ===============================
         // PATCH /api/Reservations/{id}/cancel
-        // Cancel a reservation (free if >12hrs before start)
+        // CHANGED: Increments RemainingSpots on the slot,
+        //          re-enables listing if spots freed up
         // ===============================
         [HttpPatch("{id}/cancel")]
         public async Task<IActionResult> CancelReservation(int id, [FromQuery] int driverUserId)
@@ -326,7 +346,7 @@ namespace RazorParked.API.Controllers
             await connection.OpenAsync();
 
             var reservation = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
-                SELECT ReservationID, DriverUserID, ReservationStart, Status
+                SELECT ReservationID, DriverUserID, ReservationStart, ReservationEnd, Status, ListingID
                 FROM dbo.Reservations
                 WHERE ReservationID = @ReservationID",
                 new { ReservationID = id });
@@ -344,10 +364,46 @@ namespace RazorParked.API.Controllers
             var isFreeCancellation = hoursUntilStart > 12;
 
             await connection.ExecuteAsync(@"
-                UPDATE dbo.Reservations
-                SET Status = 'Cancelled'
+                UPDATE dbo.Reservations SET Status = 'Cancelled'
                 WHERE ReservationID = @ReservationID",
                 new { ReservationID = id });
+
+            // CHANGED: Find the slot this reservation fell within and restore a spot
+            int listingId = (int)reservation.ListingID;
+            DateTime resStart = (DateTime)reservation.ReservationStart;
+            DateTime resEnd = (DateTime)reservation.ReservationEnd;
+
+            var matchingSlot = await connection.QueryFirstOrDefaultAsync<dynamic>(@"
+                SELECT SlotID, TotalSpots FROM dbo.AvailabilitySlots
+                WHERE ListingID = @ListingID
+                AND StartDateTime <= @ReservationStart
+                AND EndDateTime >= @ReservationEnd",
+                new { ListingID = listingId, ReservationStart = resStart, ReservationEnd = resEnd });
+
+            if (matchingSlot != null)
+            {
+                await connection.ExecuteAsync(@"
+                    UPDATE dbo.AvailabilitySlots
+                    SET RemainingSpots = CASE
+                        WHEN RemainingSpots < TotalSpots THEN RemainingSpots + 1
+                        ELSE TotalSpots
+                    END
+                    WHERE SlotID = @SlotID",
+                    new { SlotID = (int)matchingSlot.SlotID });
+            }
+
+            // Re-enable listing if spots are available again
+            var activeSlots = await connection.QuerySingleAsync<int>(@"
+                SELECT COUNT(*) FROM dbo.AvailabilitySlots
+                WHERE ListingID = @ListingID AND RemainingSpots > 0",
+                new { ListingID = listingId });
+
+            if (activeSlots > 0)
+            {
+                await connection.ExecuteAsync(@"
+                    UPDATE dbo.ParkingListings SET IsAvailable = 1 WHERE ListingID = @ListingID",
+                    new { ListingID = listingId });
+            }
 
             return Ok(new
             {

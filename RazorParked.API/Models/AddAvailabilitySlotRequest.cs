@@ -5,5 +5,6 @@
         public int HostUserID { get; set; }
         public DateTime StartDateTime { get; set; }
         public DateTime EndDateTime { get; set; }
+        public int TotalSpots { get; set; }
     }
 }
