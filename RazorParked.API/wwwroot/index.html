@@ -1283,7 +1283,7 @@
             if (currentUser) {
                 guest.style.display = 'none'; user.style.display = 'flex';
                 nameEl.textContent = currentUser.fullName;
-                if (currentUser.role === 'Host') hostBtn.style.display = 'inline-block';
+                if (currentUser.role === 'Host' || (currentUser.roles && currentUser.roles.includes('Host'))) hostBtn.style.display = 'inline-block';
                 const adminBtn = document.getElementById('nav-admin-btn');
                 if (adminBtn && currentUser.roles && currentUser.roles.includes('Admin')) adminBtn.style.display = 'inline-block';
             } else { guest.style.display = 'flex'; user.style.display = 'none'; }
@@ -1325,7 +1325,13 @@
                 const res = await fetch('/api/Auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('login-email').value, password: document.getElementById('login-password').value }) });
                 const data = await res.json();
                 if (res.ok) {
-                    currentUser = { userId: data.userId, fullName: data.fullName, email: data.email, role: data.role || 'Customer' };
+                    currentUser = {
+                        userId: data.userId,
+                        fullName: data.fullName,
+                        email: data.email,
+                        role: data.role || (data.roles && data.roles.includes('Host') ? 'Host' : 'Customer'),
+                        roles: data.roles || []
+                    };
                     window.currentUser = currentUser;
                     localStorage.setItem('rp_user', JSON.stringify(currentUser));
                     updateNav(); showPage('home');
