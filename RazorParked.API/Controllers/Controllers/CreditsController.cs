@@ -38,11 +38,17 @@ namespace RazorParked.API.Controllers
                 SenderUserID = userId,
                 ReceiverUserID = userId,
                 Type = "purchase",
-                Amount = req.Amount
+                Amount = req.Amount,
+                Note = $"Purchased ${req.Amount:F2} in credits"
             });
 
             await _db.SaveChangesAsync();
-            return Ok(new { balance = user.Credits, message = "Credits added." });
+
+            return Ok(new
+            {
+                balance = user.Credits,
+                message = $"Successfully added ${req.Amount:F2} in credits."
+            });
         }
 
         // POST /api/Users/{userId}/credits/gift
@@ -71,17 +77,25 @@ namespace RazorParked.API.Controllers
                 Type = "gift",
                 Amount = req.Amount,
                 ReservationId = req.ReservationId,
-                Note = req.Note
+                Note = req.Note ?? $"Gift of ${req.Amount:F2} from {sender.Username}"
             });
 
             await _db.SaveChangesAsync();
-            return Ok(new { balance = sender.Credits, message = "Credits gifted." });
+
+            return Ok(new
+            {
+                balance = sender.Credits,
+                message = $"Successfully gifted ${req.Amount:F2} to {recipient.Username}."
+            });
         }
 
         // GET /api/Users/{userId}/credits/transactions
         [HttpGet("transactions")]
         public async Task<IActionResult> GetTransactions(int userId)
         {
+            var user = await _db.Users.FindAsync(userId);
+            if (user == null) return NotFound(new { message = "User not found." });
+
             var transactions = await _db.CreditTransactions
                 .Where(t => t.SenderUserID == userId || t.ReceiverUserID == userId)
                 .OrderByDescending(t => t.CreatedAt)

@@ -272,6 +272,12 @@ async function buyCredits() {
         msg.textContent = 'Please enter a valid amount.';
         return;
     }
+    const card = getSavedCard();
+    if (!card) {
+        msg.className = 'msg error';
+        msg.textContent = 'You must have a card on file before purchasing credits.';
+        return;
+    }
 
     const btn = document.getElementById('credits-buy-btn');
     btn.disabled = true;
@@ -484,6 +490,10 @@ function removeCardOnFile() {
 // ═══════════════════════════════════════════════════════
 
 function switchProfileTab(tab) {
+    if (!document.getElementById('profile-tab-info')) {
+        setTimeout(() => switchProfileTab(tab), 150);
+        return;
+    }
     ['info', 'edit', 'password', 'picture', 'email', 'preferences', 'credits'].forEach(t => {
         const panel = document.getElementById('profile-tab-' + t);
         const btn = document.getElementById('tab-btn-' + t);
@@ -494,6 +504,7 @@ function switchProfileTab(tab) {
             btn.style.fontWeight = '500';
         }
     });
+
     const activePanel = document.getElementById('profile-tab-' + tab);
     const activeBtn = document.getElementById('tab-btn-' + tab);
     if (activePanel) activePanel.style.display = 'block';

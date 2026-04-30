@@ -1243,7 +1243,7 @@
             if (name === 'towing' && currentUser) loadTowingContacts();
             if (name === 'admin-broadcast' && !currentUser) showPage('login');
             if (name === 'host-reports' && currentUser) loadHostReports();
-            if (name === 'profile' && currentUser) setTimeout(() => loadProfile(), 100);
+            if (name === 'profile' && currentUser) setTimeout(() => loadProfile(), 300);
             if (name === 'register') clearRegisterForm();
             if (name === 'login') clearLoginForm();
             if (name === 'search') {
